@@ -11,6 +11,6 @@ definePage({
 <template>
     <the-root-pages>
         <view></view>
-        <hy-button text="按钮" type="error"></hy-button>
+        <hy-button text="按钮" type="success"></hy-button>
     </the-root-pages>
 </template>

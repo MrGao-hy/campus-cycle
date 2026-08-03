@@ -1,6 +1,8 @@
 {
   "extends": "@vue/tsconfig/tsconfig.json",
   "compilerOptions": {
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
