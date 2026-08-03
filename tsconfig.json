@@ -9,7 +9,6 @@
     "lib": ["esnext", "dom"],
     "types": [
       "@dcloudio/types",
-      "@types/uni-app",
       "@uni-helper/uni-types",
       "@hy-app/ui/global"
     ]
