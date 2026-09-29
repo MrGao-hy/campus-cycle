@@ -4,7 +4,7 @@ import { ref } from 'vue';
 export const useToolsStore = defineStore(
   'hy-tools',
   () => {
-    const darkMode = ref('light');
+    const darkMode = ref<'light' | 'dark'>('light');
     const themeColor = ref('#3D7EFF');
 
     return {

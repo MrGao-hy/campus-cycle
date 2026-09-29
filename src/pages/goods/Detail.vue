@@ -1,0 +1,427 @@
+<script setup lang="ts">
+import TheRootPages from '@/components/TheRootPages.vue';
+import SafetyTips from '@/components/SafetyTips.vue';
+import { getGoodsDetailApi, startConversationApi } from '@/api';
+import { useUserStore } from '@/store';
+import { useToast } from '@hy-app/ui';
+import { fmtTime } from '@/utils/format';
+import { GOODS_STATUS_TEXT } from '@/types';
+import { onLoad } from '@dcloudio/uni-app';
+import { computed, ref } from 'vue';
+import type { IGoodsDetail } from '@/api';
+
+definePage({
+    style: {
+        navigationBarTitleText: '商品详情',
+    },
+});
+
+const toast = useToast();
+const userStore = useUserStore();
+
+const detail = ref<IGoodsDetail | null>(null);
+const current = ref(0);
+
+const isMine = computed(
+    () => detail.value?.sellerId === userStore.userInfo?.id
+);
+const canBuy = computed(
+    () => detail.value && detail.value.status === 'ON_SALE' && !isMine.value
+);
+
+onLoad(async options => {
+    const id = options?.id as string;
+    if (!id) return;
+    detail.value = await getGoodsDetailApi(id);
+    // 动态分享：标题带商品与价格，路径带商品 id
+    shareConfig.title = `${detail.value.title}｜￥${detail.value.price}`;
+    shareConfig.path = `/pages/goods/Detail?id=${id}`;
+});
+
+const onSwiperChange = (e: { detail: { current: number } }) => {
+    current.value = e.detail.current;
+};
+
+/** 站内会话沟通 */
+const goChat = async () => {
+    if (!detail.value) return;
+    if (isMine.value) {
+        toast.info('这是您发布的商品');
+        return;
+    }
+    const conversationId = await startConversationApi(detail.value.id);
+    uni.navigateTo({ url: `/pages/chat/Detail?id=${conversationId}` });
+};
+
+/** 买家提交购买申请 */
+const goApply = () => {
+    if (!detail.value) return;
+    uni.navigateTo({ url: `/pages/goods/Apply?id=${detail.value.id}` });
+};
+
+/** 预览图片 */
+const previewImages = (index: number) => {
+    if (!detail.value) return;
+    uni.previewImage({ urls: detail.value.images, current: index });
+};
+</script>
+
+<template>
+    <the-root-pages>
+        <view v-if="detail" class="detail">
+            <!-- 图片轮播 -->
+            <swiper
+                class="detail__swiper"
+                circular
+                :indicator-dots="false"
+                @change="onSwiperChange"
+            >
+                <swiper-item
+                    v-for="(imgUrl, i) in detail.images"
+                    :key="i"
+                    @tap="previewImages(i)"
+                >
+                    <hy-image
+                        :src="imgUrl"
+                        width="100%"
+                        height="100%"
+                        mode="aspectFill"
+                    />
+                    <view
+                        v-if="detail.status === 'SOLD'"
+                        class="detail__sold-mask"
+                    >
+                        <text>已售出</text>
+                    </view>
+                </swiper-item>
+            </swiper>
+            <view class="detail__indicator"
+                >{{ current + 1 }}/{{ detail.images.length }}</view
+            >
+
+            <view class="detail__main">
+                <!-- 价格与成色 -->
+                <view class="detail__price-row">
+                    <hy-price :text="String(detail.price)" :size="26" />
+                    <text v-if="detail.originalPrice" class="detail__origin"
+                        >原价 ￥{{ detail.originalPrice }}</text
+                    >
+                    <hy-tag
+                        :label="detail.condition"
+                        type="warning"
+                        plain
+                        size="small"
+                    />
+                    <view class="detail__flex-fill"></view>
+                    <hy-tag
+                        :label="GOODS_STATUS_TEXT[detail.status]"
+                        :type="detail.status === 'ON_SALE' ? 'success' : 'info'"
+                        size="small"
+                    />
+                </view>
+
+                <!-- 标题与描述 -->
+                <view class="detail__title">{{ detail.title }}</view>
+                <view class="detail__desc">{{ detail.description }}</view>
+
+                <!-- 元信息 -->
+                <view class="detail__meta">
+                    <text>发布于 {{ fmtTime(detail.publishTime) }}</text>
+                    <text>浏览 {{ detail.views }}</text>
+                    <text>{{ detail.wantCount }} 人想要</text>
+                </view>
+
+                <!-- 卖家信息 -->
+                <view class="detail__seller">
+                    <hy-avatar
+                        :text="detail.seller.nickname.slice(0, 1)"
+                        random-bg-color
+                        :name="detail.seller.nickname"
+                        :size="44"
+                    />
+                    <view class="detail__seller-info">
+                        <view class="detail__seller-name">
+                            {{ detail.seller.nickname }}
+                            <hy-tag
+                                v-if="isMine"
+                                label="我发布的"
+                                type="primary"
+                                size="mini"
+                            />
+                        </view>
+                        <text class="detail__seller-sub"
+                            >信用分 {{ detail.seller.creditScore }} · 成交
+                            {{ detail.seller.successCount }} 单</text
+                        >
+                    </view>
+                    <hy-button
+                        v-if="!isMine"
+                        text="聊一聊"
+                        size="small"
+                        shape="circle"
+                        plain
+                        type="primary"
+                        @click="goChat"
+                    ></hy-button>
+                </view>
+
+                <!-- 买家评价 -->
+                <view v-if="detail.reviews.length" class="detail__reviews">
+                    <view class="detail__section-title"
+                        >买家评价（{{ detail.reviews.length }}）</view
+                    >
+                    <view
+                        v-for="review in detail.reviews"
+                        :key="review.id"
+                        class="detail__review"
+                    >
+                        <view class="detail__review-head">
+                            <hy-avatar
+                                :text="review.fromNickname.slice(0, 1)"
+                                random-bg-color
+                                :name="review.fromNickname"
+                                :size="32"
+                            />
+                            <text class="detail__review-name">{{
+                                review.fromNickname
+                            }}</text>
+                            <hy-rate
+                                :model-value="review.rate"
+                                readonly
+                                :size="12"
+                                active-color="#FFB300"
+                            ></hy-rate>
+                        </view>
+                        <view class="detail__review-content">{{
+                            review.content
+                        }}</view>
+                    </view>
+                </view>
+
+                <!-- 交易安全提醒（商品页强制展示） -->
+                <view class="detail__safety">
+                    <safety-tips :compact="true"></safety-tips>
+                </view>
+            </view>
+
+            <!-- 底部操作栏 -->
+            <view class="detail__footer">
+                <hy-safe-bottom></hy-safe-bottom>
+                <view class="detail__footer-inner">
+                    <view v-if="canBuy" class="detail__footer-btns">
+                        <hy-button
+                            text="站内沟通"
+                            shape="circle"
+                            plain
+                            type="primary"
+                            :custom-style="{ flex: 1 }"
+                            @click="goChat"
+                        ></hy-button>
+                        <hy-button
+                            text="我想要"
+                            shape="circle"
+                            color="var(--hy-primary-color)"
+                            :custom-style="{ flex: 1 }"
+                            @click="goApply"
+                        ></hy-button>
+                    </view>
+                    <view v-else class="detail__footer-tip">
+                        <hy-icon
+                            :name="
+                                detail.status === 'ON_SALE' ? 'mine' : 'lock'
+                            "
+                            color="var(--hy-info-color)"
+                            :size="16"
+                        />
+                        <text>{{
+                            isMine
+                                ? '这是您发布的商品'
+                                : detail.status === 'SOLD'
+                                  ? '商品已售出，看看其他宝贝吧'
+                                  : '该商品交易进行中，暂不可申请'
+                        }}</text>
+                    </view>
+                </view>
+            </view>
+        </view>
+    </the-root-pages>
+</template>
+
+<style lang="scss" scoped>
+.detail {
+    min-height: 100vh;
+    padding-bottom: 160rpx;
+
+    &__swiper {
+        height: 640rpx;
+        position: relative;
+    }
+
+    &__sold-mask {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.45);
+        color: #fff;
+        font-size: 56rpx;
+        font-weight: 700;
+        letter-spacing: 8rpx;
+    }
+
+    &__indicator {
+        position: absolute;
+        top: 600rpx;
+        right: 32rpx;
+        background: rgba(0, 0, 0, 0.4);
+        color: #fff;
+        font-size: 22rpx;
+        padding: 4rpx 16rpx;
+        border-radius: 20rpx;
+    }
+
+    &__main {
+        padding: 24rpx;
+    }
+
+    &__price-row {
+        display: flex;
+        align-items: center;
+        gap: 16rpx;
+    }
+
+    &__flex-fill {
+        flex: 1;
+    }
+
+    &__origin {
+        font-size: 24rpx;
+        color: var(--hy-info-color, #909193);
+        text-decoration: line-through;
+    }
+
+    &__title {
+        margin-top: 20rpx;
+        font-size: 34rpx;
+        font-weight: 600;
+        color: var(--hy-main-color, #303133);
+        line-height: 1.5;
+    }
+
+    &__desc {
+        margin-top: 16rpx;
+        font-size: 28rpx;
+        color: var(--hy-content-color, #606266);
+        line-height: 1.7;
+    }
+
+    &__meta {
+        margin-top: 20rpx;
+        display: flex;
+        gap: 32rpx;
+        font-size: 24rpx;
+        color: var(--hy-info-color, #909193);
+    }
+
+    &__seller {
+        margin-top: 32rpx;
+        display: flex;
+        align-items: center;
+        gap: 20rpx;
+        background: var(--hy-bg-color, #fff);
+        border-radius: 16rpx;
+        padding: 24rpx;
+    }
+
+    &__seller-info {
+        flex: 1;
+    }
+
+    &__seller-name {
+        display: flex;
+        align-items: center;
+        gap: 12rpx;
+        font-size: 30rpx;
+        font-weight: 600;
+        color: var(--hy-main-color, #303133);
+    }
+
+    &__seller-sub {
+        font-size: 24rpx;
+        color: var(--hy-info-color, #909193);
+    }
+
+    &__reviews {
+        margin-top: 32rpx;
+    }
+
+    &__section-title {
+        font-size: 30rpx;
+        font-weight: 600;
+        color: var(--hy-main-color, #303133);
+        margin-bottom: 16rpx;
+    }
+
+    &__review {
+        background: var(--hy-bg-color, #fff);
+        border-radius: 16rpx;
+        padding: 24rpx;
+        margin-bottom: 16rpx;
+    }
+
+    &__review-head {
+        display: flex;
+        align-items: center;
+        gap: 12rpx;
+    }
+
+    &__review-name {
+        flex: 1;
+        font-size: 26rpx;
+        color: var(--hy-main-color, #303133);
+    }
+
+    &__review-content {
+        margin-top: 12rpx;
+        font-size: 26rpx;
+        color: var(--hy-content-color, #606266);
+        line-height: 1.6;
+    }
+
+    &__safety {
+        margin-top: 32rpx;
+    }
+
+    &__footer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--hy-bg-color, #fff);
+        box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+    }
+
+    &__footer-inner {
+        padding: 16rpx 24rpx;
+    }
+
+    &__footer-btns {
+        display: flex;
+        gap: 24rpx;
+    }
+
+    &__footer-tip {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10rpx;
+        font-size: 26rpx;
+        color: var(--hy-info-color, #909193);
+        padding: 16rpx 0;
+    }
+}
+</style>

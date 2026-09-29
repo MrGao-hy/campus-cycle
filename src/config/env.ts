@@ -32,26 +32,16 @@ interface IConfig {
 }
 
 const config: IConfig = {
-    // 开发环境配置
+    // 开发环境配置（H5 / App，小程序端使用下方 develop/trial/release）
+    // #ifdef H5 || APP_PLUS
     development: {
-        baseUrl:
-            // #ifdef H5
-            '/api',
-            // #endif
-            // #ifdef APP_PLUS
-            'http://lbc.free.svipss.top',
-            // #endif
+        baseUrl: '/api',
     },
     // 生产环境配置
     production: {
-        baseUrl:
-            // #ifdef H5
-            '/api',
-            // #endif
-            // #ifdef APP_PLUS
-            'http://lbc.free.svipss.top',
-            // #endif
+        baseUrl: '/api',
     },
+    // #endif
     // #ifndef H5 || APP_PLUS
     // 开发版
     develop: {

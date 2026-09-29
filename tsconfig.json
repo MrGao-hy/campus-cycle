@@ -12,7 +12,8 @@
     "types": [
       "@dcloudio/types",
       "@uni-helper/uni-types",
-      "@hy-app/ui/global"
+      "@hy-app/ui/global",
+      "vite/client"
     ]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
