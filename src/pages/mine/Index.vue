@@ -43,6 +43,7 @@ const goFee = () => uni.navigateTo({ url: '/pages/fee/Index' });
 const goSecurity = () => uni.navigateTo({ url: '/pages/security/Index' });
 const goRecords = () => uni.navigateTo({ url: '/pages/complaint/Record' });
 const goSchool = () => uni.navigateTo({ url: '/pages/school/Index' });
+const goProfile = () => uni.navigateTo({ url: '/pages/profile/Index' });
 
 const logout = () => {
     uni.showModal({
@@ -63,6 +64,8 @@ const logout = () => {
         <view class="mine">
             <!-- 用户信息 -->
             <view class="mine__user">
+                <view class="mine__user-decor"></view>
+                <view class="mine__user-decor mine__user-decor--2"></view>
                 <hy-avatar
                     :text="userStore.userInfo?.nickname.slice(0, 1) || '同'"
                     random-bg-color
@@ -98,6 +101,9 @@ const logout = () => {
                         >
                     </view>
                 </view>
+                <view class="mine__user-edit" @tap="goProfile">
+                    <hy-icon name="setting" color="rgba(255,255,255,0.9)" :size="16" />
+                </view>
             </view>
 
             <!-- 欠费提示 -->
@@ -117,6 +123,7 @@ const logout = () => {
             </view>
 
             <!-- 交易入口 -->
+            <view class="mine__group-title">我的交易</view>
             <hy-cell :border="false" custom-class="mine__group">
                 <hy-cell-item
                     title="我买到的"
@@ -189,6 +196,7 @@ const logout = () => {
             </hy-cell>
 
             <!-- 服务入口 -->
+            <view class="mine__group-title">更多服务</view>
             <hy-cell :border="false" custom-class="mine__group">
                 <hy-cell-item
                     title="手续费账单"
@@ -269,6 +277,7 @@ const logout = () => {
     box-sizing: border-box;
 
     &__user {
+        position: relative;
         display: flex;
         align-items: center;
         gap: 24rpx;
@@ -276,6 +285,46 @@ const logout = () => {
         padding: 36rpx 32rpx;
         box-shadow: 0 12rpx 32rpx rgba(30, 60, 120, 0.18);
         animation: mine-fade-up 0.45s ease-out both;
+        overflow: hidden;
+    }
+
+    &__user-decor {
+        position: absolute;
+        width: 240rpx;
+        height: 240rpx;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        right: -60rpx;
+        top: -100rpx;
+
+        &--2 {
+            width: 120rpx;
+            height: 120rpx;
+            right: 70rpx;
+            bottom: -70rpx;
+            top: auto;
+            background: rgba(255, 255, 255, 0.06);
+        }
+    }
+
+    &__user-edit {
+        position: relative;
+        z-index: 1;
+        width: 56rpx;
+        height: 56rpx;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.16);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    &__group-title {
+        font-size: 26rpx;
+        font-weight: 600;
+        color: var(--hy-text-color--3, #929295);
+        margin: 32rpx 8rpx 4rpx;
     }
 
     &__user-info {
