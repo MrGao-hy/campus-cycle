@@ -60,80 +60,84 @@ const goSchool = () => {
 <template>
     <the-root-pages>
         <view class="home">
-            <!-- 顶部：学校切换 + 搜索（随内容滚动） -->
-            <view class="home__school" @tap="goSchool">
-                <hy-icon
-                    name="/static/icons/location.png"
-                    :size="13"
-                />
-                <text class="home__school-name">{{
-                    userStore.school?.name || '选择学校'
-                }}</text>
-                <hy-icon
-                    name="down"
-                    color="var(--hy-text-color--3, #929295)"
-                    :size="12"
-                />
+            <!-- 固定头部：学校 + 搜索 + 分类 + 安全提醒（不随列表滚动，
+                 天然"吸顶"，彻底规避小程序 WKWebView sticky/fixed 穿透） -->
+            <view class="home__header">
+                <view class="home__school" @tap="goSchool">
+                    <hy-icon
+                        name="/static/icons/location.png"
+                        :size="13"
+                    />
+                    <text class="home__school-name">{{
+                        userStore.school?.name || '选择学校'
+                    }}</text>
+                    <hy-icon
+                        name="down"
+                        color="var(--hy-text-color--3, #929295)"
+                        :size="12"
+                    />
+                </view>
+
+                <!-- 搜索 -->
+                <view class="home__search">
+                    <hy-search
+                        v-model="keyword"
+                        placeholder="搜索本校二手好物"
+                        :show-action="false"
+                        @search="
+                            (_e: unknown, value: string) => onSearch(value)
+                        "
+                        @confirm="onSearch"
+                        @clear="loadList"
+                    ></hy-search>
+                </view>
+
+                <!-- 分类 -->
+                <view class="home__filter">
+                    <hy-tabs
+                        :list="GOODS_CATEGORIES.map(name => ({ name }))"
+                        :current="category"
+                        :scrollable="true"
+                        @change="onTabChange"
+                    ></hy-tabs>
+                </view>
+
+                <!-- 安全提醒 -->
+                <view class="home__safety">
+                    <hy-notice-bar
+                        :text="[
+                            '交易安全提醒：请选择校内公共场所当面交易，勿提前转账，勿脱离平台沟通',
+                        ]"
+                        color="var(--warning, #f9ae3d)"
+                        bg-color="var(--warning-light, rgba(249,174,61,0.1))"
+                        url="/pages/security/Index"
+                    ></hy-notice-bar>
+                </view>
             </view>
 
-            <!-- 搜索 -->
-            <view class="home__search">
-                <hy-search
-                    v-model="keyword"
-                    placeholder="搜索本校二手好物"
-                    :show-action="false"
-                    @search="
-                        (_e: unknown, value: string) => onSearch(value)
-                    "
-                    @confirm="onSearch"
-                    @clear="loadList"
-                ></hy-search>
-            </view>
-
-            <!-- 分类（CSS sticky 吸顶：page 级滚动已由全局样式修复，
-                 滚动到其位置后固定顶部并遮挡后续内容，无 JS 状态、无跳动） -->
-            <view class="home__filter">
-                <hy-tabs
-                    :list="GOODS_CATEGORIES.map(name => ({ name }))"
-                    :current="category"
-                    :scrollable="true"
-                    @change="onTabChange"
-                ></hy-tabs>
-            </view>
-
-            <!-- 安全提醒（商品页强制展示） -->
-            <view class="home__safety">
-                <hy-notice-bar
-                    :text="[
-                        '交易安全提醒：请选择校内公共场所当面交易，勿提前转账，勿脱离平台沟通',
-                    ]"
-                    color="var(--warning, #f9ae3d)"
-                    bg-color="var(--warning-light, rgba(249,174,61,0.1))"
-                    url="/pages/security/Index"
-                ></hy-notice-bar>
-            </view>
-
-            <!-- 商品双列列表（已售出置灰不隐藏） -->
-            <view v-if="loading" class="home__loading">
-                <hy-skeleton
-                    theme="paragraph"
-                    :row-col="[1, 2, 2]"
-                    animation="gradient"
-                ></hy-skeleton>
-            </view>
-            <view v-else-if="list.length" class="home__list">
-                <goods-card
-                    v-for="item in list"
-                    :key="item.id"
-                    :goods="item"
-                    @click="goDetail(item)"
-                ></goods-card>
-            </view>
-            <hy-empty
-                v-else
-                mode="shop"
-                description="本校暂无相关商品，去发布一件吧"
-            ></hy-empty>
+            <!-- 商品列表（scroll-view 原生滚动，内容从头部下方开始） -->
+            <scroll-view class="home__scroll" scroll-y>
+                <view v-if="loading" class="home__loading">
+                    <hy-skeleton
+                        theme="paragraph"
+                        :row-col="[1, 2, 2]"
+                        animation="gradient"
+                    ></hy-skeleton>
+                </view>
+                <view v-else-if="list.length" class="home__list">
+                    <goods-card
+                        v-for="item in list"
+                        :key="item.id"
+                        :goods="item"
+                        @click="goDetail(item)"
+                    ></goods-card>
+                </view>
+                <hy-empty
+                    v-else
+                    mode="shop"
+                    description="本校暂无相关商品，去发布一件吧"
+                ></hy-empty>
+            </scroll-view>
         </view>
     </the-root-pages>
 </template>
@@ -141,17 +145,39 @@ const goSchool = () => {
 <style lang="scss" scoped>
 @use '../../styles/design.scss' as *;
 .home {
-    min-height: 100vh;
-    padding-bottom: 20rpx;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--window-bottom, 0px));
+    box-sizing: border-box;
 
-    /* 分类栏：CSS sticky 吸顶（page 级滚动下遮挡正常；
-       will-change 强制合成层，规避 WKWebView sticky 穿透渲染 bug） */
-    &__filter {
-        position: sticky;
-        top: var(--status-bar-height);
-        z-index: 999;
+    /* 固定头部（flex-shrink: 0，不随列表滚动） */
+    &__header {
+        flex-shrink: 0;
         background: #ffffff;
-        will-change: transform;
+        z-index: 999;
+    }
+
+    /* 商品列表滚动区（scroll-view 原生滚动，双端稳定） */
+    &__scroll {
+        flex: 1;
+        height: 0;
+        padding-bottom: 40rpx;
+        box-sizing: border-box;
+
+        /* H5 端 uni scroll-view 默认触摸驱动，桌面滚轮不可用；
+           覆盖为原生 overflow 滚动（MP 端为原生 scroll-view 不受影响） */
+        /* #ifdef H5 */
+        :deep(.uni-scroll-view) {
+            overflow-y: auto !important;
+            height: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+        /* #endif */
+    }
+
+    /* 分类栏（固定头部内，天然吸顶） */
+    &__filter {
+        background: #ffffff;
         box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.04);
         margin-bottom: 8rpx;
     }
