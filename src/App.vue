@@ -12,4 +12,8 @@ if (userStore.token) {
 </script>
 
 <style lang="scss">
+/* 全局浅灰底：卡片白底更立体，贴近闲鱼/电商信息层级 */
+page {
+    background-color: #f5f6f8;
+}
 </style>
