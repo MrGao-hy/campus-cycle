@@ -204,7 +204,7 @@ const goSchool = () => {
     }
 
     &__safety {
-        padding: 20rpx 24rpx 0;
+        padding: 20rpx 24rpx 40rpx;
     }
 
     &__loading {
@@ -215,7 +215,7 @@ const goSchool = () => {
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
-        padding: 24rpx;
+        padding: 24rpx 24rpx 0;
     }
 }
 </style>
