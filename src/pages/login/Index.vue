@@ -263,26 +263,40 @@ const handleLogin = async () => {
             </view>
         </view>
 
-        <!-- 协议内容弹窗 -->
-        <hy-modal
-            v-model="agreementShow"
-            :title="currentAgreement.title"
-            :show-cancel-button="false"
-            :close-on-click-overlay="true"
+        <!-- 协议内容弹窗（自定义弹层：hy-modal 组件链在小程序端多层 virtualHost 嵌套不可控，改为纯 view + fixed） -->
+        <view
+            v-if="agreementShow"
+            class="login__modal-mask"
+            @tap="agreementShow = false"
         >
-            <scroll-view class="login__agreement" scroll-y>
-                <view
-                    v-for="(s, i) in currentAgreement.sections"
-                    :key="i"
-                    class="login__agreement-item"
-                >
-                    <text class="login__agreement-heading">{{
-                        s.heading
+            <view class="login__modal" @tap.stop>
+                <view class="login__modal-head">
+                    <text class="login__modal-title">{{
+                        currentAgreement.title
                     }}</text>
-                    <text class="login__agreement-text">{{ s.text }}</text>
+                    <view
+                        class="login__modal-close"
+                        @tap="agreementShow = false"
+                    >
+                        <hy-icon
+                            name="/static/icons/close.png"
+                            color="#929295"
+                            :size="14"
+                        ></hy-icon>
+                    </view>
                 </view>
-            </scroll-view>
-            <template #confirmButton>
+                <scroll-view class="login__agreement" scroll-y>
+                    <view
+                        v-for="(s, i) in currentAgreement.sections"
+                        :key="i"
+                        class="login__agreement-item"
+                    >
+                        <text class="login__agreement-heading">{{
+                            s.heading
+                        }}</text>
+                        <text class="login__agreement-text">{{ s.text }}</text>
+                    </view>
+                </scroll-view>
                 <view class="login__agreement-btn">
                     <hy-button
                         text="同意并继续"
@@ -291,8 +305,8 @@ const handleLogin = async () => {
                         @click="agreeFromModal"
                     ></hy-button>
                 </view>
-            </template>
-        </hy-modal>
+            </view>
+        </view>
     </the-root-pages>
 </template>
 
@@ -488,12 +502,59 @@ const handleLogin = async () => {
     }
 
     /* 协议弹窗 */
+    &__modal-mask {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 999;
+        background: rgba(0, 0, 0, 0.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &__modal {
+        width: 620rpx;
+        max-height: 74vh;
+        background: #fff;
+        border-radius: 24rpx;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        animation: login-modal-in 0.25s ease-out both;
+    }
+
+    &__modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 32rpx 32rpx 8rpx;
+        flex-shrink: 0;
+    }
+
+    &__modal-title {
+        font-size: 30rpx;
+        font-weight: 600;
+        color: #1f2329;
+    }
+
+    &__modal-close {
+        width: 48rpx;
+        height: 48rpx;
+        border-radius: 50%;
+        background: #f2f3f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     &__agreement {
-        /* 内容自适应：max-height 限制弹窗内最高高度，overflow-y 内容超出时可滚动；
-           原 620rpx 固定高度导致第 5 段正文被截断成半行（看起来像乱码） */
-        max-height: 760rpx;
+        max-height: 52vh;
         overflow-y: auto;
         text-align: left;
+        padding: 16rpx 32rpx 0;
     }
 
     &__agreement-item {
@@ -516,7 +577,20 @@ const handleLogin = async () => {
     }
 
     &__agreement-btn {
-        padding: 0 40rpx 24rpx;
+        padding: 24rpx 40rpx;
+        padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+        flex-shrink: 0;
+    }
+}
+
+@keyframes login-modal-in {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(24rpx);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }
 
