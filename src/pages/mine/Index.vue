@@ -272,9 +272,9 @@ const logout = () => {
 <style lang="scss" scoped>
 @use '../../styles/design.scss' as *;
 .mine {
-    min-height: 100vh;
     padding: 24rpx;
     box-sizing: border-box;
+    padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
 
     &__user {
         position: relative;
@@ -416,7 +416,6 @@ const logout = () => {
     }
 
     &__logout {
-        @include hy-safe-bottom(48rpx);
         margin-top: 24rpx;
     }
 }

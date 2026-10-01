@@ -60,39 +60,39 @@ const goSchool = () => {
 <template>
     <the-root-pages>
         <view class="home">
-            <!-- 吸顶头部：学校切换 + 搜索 + 分类（原生 sticky，小程序/H5 均可靠） -->
-            <view class="home__header">
-                <view class="home__school" @tap="goSchool">
-                    <hy-icon
-                        name="map-fill"
-                        color="var(--primary, #3d7eff)"
-                        :size="13"
-                    />
-                    <text class="home__school-name">{{
-                        userStore.school?.name || '选择学校'
-                    }}</text>
-                    <hy-icon
-                        name="down"
-                        color="var(--hy-text-color--3, #929295)"
-                        :size="12"
-                    />
-                </view>
+            <!-- 顶部：学校切换 + 搜索（随内容滚动） -->
+            <view class="home__school" @tap="goSchool">
+                <hy-icon
+                    name="map-fill"
+                    color="var(--primary, #3d7eff)"
+                    :size="13"
+                />
+                <text class="home__school-name">{{
+                    userStore.school?.name || '选择学校'
+                }}</text>
+                <hy-icon
+                    name="down"
+                    color="var(--hy-text-color--3, #929295)"
+                    :size="12"
+                />
+            </view>
 
-                <!-- 搜索 -->
-                <view class="home__search">
-                    <hy-search
-                        v-model="keyword"
-                        placeholder="搜索本校二手好物"
-                        :show-action="false"
-                        @search="
-                            (_e: unknown, value: string) => onSearch(value)
-                        "
-                        @confirm="onSearch"
-                        @clear="loadList"
-                    ></hy-search>
-                </view>
+            <!-- 搜索 -->
+            <view class="home__search">
+                <hy-search
+                    v-model="keyword"
+                    placeholder="搜索本校二手好物"
+                    :show-action="false"
+                    @search="
+                        (_e: unknown, value: string) => onSearch(value)
+                    "
+                    @confirm="onSearch"
+                    @clear="loadList"
+                ></hy-search>
+            </view>
 
-                <!-- 分类 -->
+            <!-- 分类（仅此栏吸顶，滚动时保持可见） -->
+            <view class="home__filter">
                 <hy-tabs
                     :list="GOODS_CATEGORIES.map(name => ({ name }))"
                     :current="category"
@@ -144,10 +144,10 @@ const goSchool = () => {
     min-height: 100vh;
     padding-bottom: 20rpx;
 
-    /* 吸顶头部（原生 sticky） */
-    &__header {
+    /* 分类栏吸顶（custom 导航页，吸在状态栏下方） */
+    &__filter {
         position: sticky;
-        top: 0;
+        top: var(--status-bar-height);
         z-index: 99;
         background: #ffffff;
     }
