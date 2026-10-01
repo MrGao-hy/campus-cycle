@@ -334,15 +334,31 @@ const goAppeal = () => {
                 ></hy-button>
             </view>
 
-            <!-- 取消确认 -->
-            <hy-modal
-                v-model="modalShow"
-                title="取消投诉"
-                content="取消后投诉流程将终止，如后续仍有纠纷可重新发起投诉。确认取消？"
-                confirm-text="确认取消"
-                show-cancel-button
-                @confirm="doCancel"
-            ></hy-modal>
+            <!-- 取消确认（自定义弹层：hy-modal 小程序端不渲染，改纯 view + fixed） -->
+            <view
+                v-if="modalShow"
+                class="complaint__modal-mask"
+                @tap="modalShow = false"
+            >
+                <view class="complaint__modal" @tap.stop>
+                    <text class="complaint__modal-title">取消投诉</text>
+                    <text class="complaint__modal-content"
+                        >取消后投诉流程将终止，如后续仍有纠纷可重新发起投诉。确认取消？</text
+                    >
+                    <view class="complaint__modal-btns">
+                        <view
+                            class="complaint__modal-btn complaint__modal-btn--cancel"
+                            @tap="modalShow = false"
+                            >取消</view
+                        >
+                        <view
+                            class="complaint__modal-btn complaint__modal-btn--confirm"
+                            @tap="doCancel"
+                            >确认取消</view
+                        >
+                    </view>
+                </view>
+            </view>
         </view>
     </the-root-pages>
 </template>
@@ -524,6 +540,85 @@ const goAppeal = () => {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* 确认弹层 */
+.complaint__modal-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.complaint__modal {
+    width: 560rpx;
+    background: #fff;
+    border-radius: 24rpx;
+    padding: 44rpx 36rpx 32rpx;
+    display: flex;
+    flex-direction: column;
+    animation: cd-modal-in 0.25s ease-out both;
+}
+
+.complaint__modal-title {
+    font-size: 32rpx;
+    font-weight: 600;
+    color: #1f2329;
+    text-align: center;
+}
+
+.complaint__modal-content {
+    margin-top: 20rpx;
+    font-size: 26rpx;
+    line-height: 1.7;
+    color: #46464a;
+    text-align: center;
+}
+
+.complaint__modal-btns {
+    display: flex;
+    gap: 20rpx;
+    margin-top: 36rpx;
+}
+
+.complaint__modal-btn {
+    flex: 1;
+    height: 84rpx;
+    border-radius: 42rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28rpx;
+    font-weight: 500;
+
+    &--cancel {
+        background: #f2f3f5;
+        color: #646a73;
+    }
+
+    &--confirm {
+        background: linear-gradient(135deg, #3d7eff 0%, #6fa0ff 100%);
+        color: #fff;
+        box-shadow: 0 8rpx 20rpx rgba(61, 126, 255, 0.3);
+    }
+}
+
+@keyframes cd-modal-in {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(24rpx);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }
 </style>
