@@ -19,14 +19,20 @@ export default defineUniPages({
             {
                 pagePath: 'pages/index/Index',
                 text: '首页',
+                iconPath: 'static/tabbar/home.png',
+                selectedIconPath: 'static/tabbar/home-active.png',
             },
             {
                 pagePath: 'pages/message/Index',
                 text: '消息',
+                iconPath: 'static/tabbar/message.png',
+                selectedIconPath: 'static/tabbar/message-active.png',
             },
             {
                 pagePath: 'pages/mine/Index',
                 text: '我的',
+                iconPath: 'static/tabbar/mine.png',
+                selectedIconPath: 'static/tabbar/mine-active.png',
             },
         ],
     },

@@ -60,8 +60,8 @@ const goSchool = () => {
 <template>
     <the-root-pages>
         <view class="home">
-            <hy-sticky>
-                <!-- 学校切换 -->
+            <!-- 吸顶头部：学校切换 + 搜索 + 分类（原生 sticky，小程序/H5 均可靠） -->
+            <view class="home__header">
                 <view class="home__school" @tap="goSchool">
                     <hy-icon
                         name="map-fill"
@@ -99,7 +99,7 @@ const goSchool = () => {
                     :scrollable="true"
                     @change="onTabChange"
                 ></hy-tabs>
-            </hy-sticky>
+            </view>
 
             <!-- 安全提醒（商品页强制展示） -->
             <view class="home__safety">
@@ -144,10 +144,12 @@ const goSchool = () => {
     min-height: 100vh;
     padding-bottom: 20rpx;
 
-    /* 渐变头（吸顶整体） */
-    &__top {
-        @include hy-gradient-header(160deg, 0 0 48rpx 48rpx);
-        padding-bottom: 8rpx;
+    /* 吸顶头部（原生 sticky） */
+    &__header {
+        position: sticky;
+        top: 0;
+        z-index: 99;
+        background: #ffffff;
     }
 
     &__school {

@@ -9,7 +9,9 @@ interface IProps {
 }
 
 const props = withDefaults(defineProps<IProps>(), {
-    height: '100vh',
+    // 高度默认 auto：覆盖 hy-config-provider 自带的 100vh+内部滚动，
+    // 让页面滚动回到 page 级（否则 H5 吸顶/onPageScroll 全部失效）
+    height: 'auto',
 });
 
 /** hex 颜色转 rgba 字符串（支持 #rgb / #rrggbb） */
@@ -40,6 +42,7 @@ const cssVars = computed(() => ({
         :theme="tools.darkMode"
         :theme-color="tools.themeColor"
         :height="height"
+        :custom-style="{ overflow: 'visible' }"
     >
         <view :style="cssVars">
             <slot></slot>

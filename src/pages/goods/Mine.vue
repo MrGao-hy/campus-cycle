@@ -84,13 +84,15 @@ const goPublish = () => {
                 </hy-button>
             </view>
 
-            <!-- 状态筛选 -->
-            <hy-tabs
-                :list="TABS"
-                :current="current"
-                key-name="name"
-                @change="onTabChange"
-            ></hy-tabs>
+            <!-- 状态筛选（吸顶，滚动时保持可见） -->
+            <view class="my-goods__filter">
+                <hy-tabs
+                    :list="TABS"
+                    :current="current"
+                    key-name="name"
+                    @change="onTabChange"
+                ></hy-tabs>
+            </view>
 
             <!-- 列表（已售出置灰不隐藏） -->
             <view v-if="loading" class="my-goods__loading">
@@ -142,6 +144,14 @@ const goPublish = () => {
         justify-content: space-between;
         padding: 36rpx 32rpx;
         animation: my-goods-fade-up 0.45s ease both;
+    }
+
+    &__filter {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: var(--hy-background-color, #f5f6f8);
+        padding-bottom: 4rpx;
     }
 
     &__total {

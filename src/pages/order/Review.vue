@@ -208,6 +208,7 @@ const submit = async () => {
         right: 0;
         bottom: 0;
         padding: 16rpx 24rpx;
+        padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
         background: var(--hy-background--container, #ffffff);
         box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
     }

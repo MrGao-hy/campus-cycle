@@ -88,25 +88,27 @@ const statusHint = (row: OrderRow): string => {
 <template>
     <the-root-pages>
         <view class="orders">
-            <!-- 角色切换 -->
-            <view class="orders__role">
-                <hy-subsection
-                    :list="['我买到的', '我卖出的']"
-                    :current="role === 'buyer' ? 0 : 1"
-                    mode="button"
-                    @change="onRoleChange"
-                ></hy-subsection>
-            </view>
+            <!-- 角色切换 + 状态筛选（吸顶，滚动时保持可见） -->
+            <view class="orders__filter">
+                <view class="orders__role">
+                    <hy-subsection
+                        :list="['我买到的', '我卖出的']"
+                        :current="role === 'buyer' ? 0 : 1"
+                        mode="button"
+                        @change="onRoleChange"
+                    ></hy-subsection>
+                </view>
 
-            <!-- 状态筛选 -->
-            <hy-tabs
-                :list="STATUS_TABS"
-                :current="statusIndex"
-                key-name="name"
-                :scrollable="true"
-                :is-swiper="false"
-                @change="onTabChange"
-            ></hy-tabs>
+                <!-- 状态筛选 -->
+                <hy-tabs
+                    :list="STATUS_TABS"
+                    :current="statusIndex"
+                    key-name="name"
+                    :scrollable="true"
+                    :is-swiper="false"
+                    @change="onTabChange"
+                ></hy-tabs>
+            </view>
 
             <!-- 订单列表 -->
             <view v-if="loading" class="orders__loading">
@@ -193,6 +195,14 @@ const statusHint = (row: OrderRow): string => {
 .orders {
     min-height: 100vh;
     padding-bottom: 40rpx;
+
+    &__filter {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: var(--hy-background-color, #f5f6f8);
+        padding-bottom: 4rpx;
+    }
 
     &__role {
         padding: 24rpx 24rpx 12rpx;

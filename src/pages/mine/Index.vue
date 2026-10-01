@@ -60,7 +60,7 @@ const logout = () => {
 </script>
 
 <template>
-    <the-root-pages height="100vh">
+    <the-root-pages>
         <view class="mine">
             <!-- 用户信息 -->
             <view class="mine__user">
