@@ -19,7 +19,8 @@ type _LocationUrl =
   "/pages/order/Review" |
   "/pages/profile/Index" |
   "/pages/school/Index" |
-  "/pages/security/Index";
+  "/pages/security/Index" |
+  "/pages/user/Detail";
 
 interface NavigateToOptions {
   url: _LocationUrl;

@@ -77,6 +77,12 @@ const previewImages = (index: number) => {
     if (!detail.value) return;
     uni.previewImage({ urls: detail.value.images, current: index });
 };
+
+/** 查看卖家主页（自己不跳） */
+const goSellerProfile = () => {
+    if (!detail.value || isMine.value) return;
+    uni.navigateTo({ url: `/pages/user/Detail?id=${detail.value.sellerId}` });
+};
 </script>
 
 <template>
@@ -144,8 +150,8 @@ const previewImages = (index: number) => {
                     <text>{{ detail.wantCount }} 人想要</text>
                 </view>
 
-                <!-- 卖家信息 -->
-                <view class="detail__seller">
+                <!-- 卖家信息（点击查看用户主页） -->
+                <view class="detail__seller" @tap="goSellerProfile">
                     <hy-avatar
                         :text="detail.seller.nickname.slice(0, 1)"
                         random-bg-color

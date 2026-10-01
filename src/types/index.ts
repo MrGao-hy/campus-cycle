@@ -29,11 +29,20 @@ export interface UserProfile {
     nickname: string;
     avatar?: string;
     schoolId: string;
+    /** 学校名称（后端联查填充） */
+    schoolName?: string;
     /** 信用分 */
     creditScore: number;
     /** 成功交易笔数（首笔免手续费判断依据） */
     successCount: number;
     contact: ContactInfo;
+}
+
+/** 用户主页（资料 + 在售商品 + 收到的评价） */
+export interface UserDetail {
+    profile: UserProfile;
+    onSaleGoods: Goods[];
+    reviews: GoodsReview[];
 }
 
 /** 商品状态 */

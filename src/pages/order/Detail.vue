@@ -68,6 +68,15 @@ const peerContact = computed<ContactInfo>(() =>
 );
 const peerLabel = computed(() => (isBuyer.value ? '卖家' : '买家'));
 
+/** 查看对方主页 */
+const goPeerProfile = () => {
+    const peerId = isBuyer.value
+        ? row.value?.seller.id
+        : row.value?.buyer.id;
+    if (!peerId) return;
+    uni.navigateTo({ url: `/pages/user/Detail?id=${peerId}` });
+};
+
 /** 步骤条进度 */
 const stepCurrent = computed(() => {
     switch (order.value?.status) {
@@ -303,9 +312,16 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 ></hy-icon>
             </view>
 
-            <!-- 联系方式（卖家确认后展示） -->
-            <view class="od__card">
-                <view class="od__card-title">{{ peerLabel }}联系方式</view>
+            <!-- 联系方式（卖家确认后展示，点击查看对方主页） -->
+            <view class="od__card" @tap="goPeerProfile">
+                <view class="od__card-title">
+                    {{ peerLabel }}联系方式
+                    <hy-icon
+                        name="right"
+                        color="var(--hy-info-color)"
+                        :size="14"
+                    ></hy-icon>
+                </view>
                 <template v-if="contactsVisible">
                     <view v-for="item in CONTACT_ITEMS" :key="item.key">
                         <view v-if="peerContact[item.key]" class="od__contact">
