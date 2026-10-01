@@ -28,9 +28,11 @@ const loading = ref(true);
  */
 const filterFixed = ref(false);
 const filterRect = ref({ top: 0, height: 0 });
+// getCurrentInstance 须在 setup 同步阶段调用（onReady 回调内调用会返回 null）
+const inst = getCurrentInstance();
 
 onReady(() => {
-    const q = uni.createSelectorQuery().in(getCurrentInstance()?.proxy);
+    const q = uni.createSelectorQuery().in(inst?.proxy);
     q.select('.home__filter')
         .boundingClientRect((rect) => {
             const r = Array.isArray(rect) ? rect[0] : rect;

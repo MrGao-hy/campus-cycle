@@ -16,4 +16,16 @@ if (userStore.token) {
 page {
     background-color: #f5f6f8;
 }
+
+/*
+ * 关键：覆盖 hy-config-provider 的 100vh 锁高 + 内部滚动。
+ * 该组件不处理 customStyle prop（小程序端透传失效），且滚动发生在组件容器内时
+ * onPageScroll 永不触发 → JS 吸顶/滚动监听全部失效。
+ * 组件 styleIsolation: shared + addGlobalClass: true，app.wxss 全局规则可穿透。
+ */
+.hy-config-provider {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+}
 </style>
