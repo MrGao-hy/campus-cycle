@@ -489,7 +489,10 @@ const handleLogin = async () => {
 
     /* 协议弹窗 */
     &__agreement {
-        height: 620rpx;
+        /* 内容自适应：max-height 限制弹窗内最高高度，overflow-y 内容超出时可滚动；
+           原 620rpx 固定高度导致第 5 段正文被截断成半行（看起来像乱码） */
+        max-height: 760rpx;
+        overflow-y: auto;
         text-align: left;
     }
 
