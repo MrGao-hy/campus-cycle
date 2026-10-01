@@ -187,13 +187,31 @@ const onConfirm = async () => {
                 <text>学校信息用于同校身份校验，不会对外展示你的位置</text>
             </view>
 
-            <hy-modal
-                v-model="modalShow"
-                title="确认选择学校"
-                :content="`选择「${selected?.name}」后，首页将只展示本校商品。确认选择？`"
-                show-cancel-button
-                @confirm="onConfirm"
-            ></hy-modal>
+            <!-- 确认弹窗（自定义弹层：hy-modal 组件链小程序端不渲染，改为纯 view + fixed） -->
+            <view
+                v-if="modalShow"
+                class="school__modal-mask"
+                @tap="modalShow = false"
+            >
+                <view class="school__modal" @tap.stop>
+                    <text class="school__modal-title">确认选择学校</text>
+                    <text class="school__modal-content"
+                        >选择「{{ selected?.name }}」后，首页将只展示本校商品。确认选择？</text
+                    >
+                    <view class="school__modal-btns">
+                        <view
+                            class="school__modal-btn school__modal-btn--cancel"
+                            @tap="modalShow = false"
+                            >取消</view
+                        >
+                        <view
+                            class="school__modal-btn school__modal-btn--confirm"
+                            @tap="onConfirm"
+                            >确认</view
+                        >
+                    </view>
+                </view>
+            </view>
         </view>
     </the-root-pages>
 </template>
@@ -496,6 +514,84 @@ const onConfirm = async () => {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* 确认弹层 */
+.school__modal-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.school__modal {
+    width: 560rpx;
+    background: #fff;
+    border-radius: 24rpx;
+    padding: 44rpx 36rpx 32rpx;
+    display: flex;
+    flex-direction: column;
+    animation: school-modal-in 0.25s ease-out both;
+}
+
+.school__modal-title {
+    font-size: 32rpx;
+    font-weight: 600;
+    color: #1f2329;
+    text-align: center;
+}
+
+.school__modal-content {
+    margin-top: 20rpx;
+    font-size: 26rpx;
+    line-height: 1.7;
+    color: #46464a;
+    text-align: center;
+}
+
+.school__modal-btns {
+    display: flex;
+    gap: 20rpx;
+    margin-top: 36rpx;
+}
+
+.school__modal-btn {
+    flex: 1;
+    height: 84rpx;
+    border-radius: 42rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28rpx;
+    font-weight: 500;
+
+    &--cancel {
+        background: #f2f3f5;
+        color: #646a73;
+    }
+
+    &--confirm {
+        background: linear-gradient(135deg, #3d7eff 0%, #6fa0ff 100%);
+        color: #fff;
+        box-shadow: 0 8rpx 20rpx rgba(61, 126, 255, 0.3);
+    }
+}
+
+@keyframes school-modal-in {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(24rpx);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }
 </style>
