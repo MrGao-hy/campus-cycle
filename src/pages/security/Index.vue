@@ -53,7 +53,7 @@ const callPolice = () => {
                 >
                     <view class="sec__promise-icon">
                         <hy-icon
-                            name="check-mask"
+                            name="/static/icons/check.png"
                             color="var(--hy-success, #07c160)"
                             :size="16"
                         />
@@ -114,7 +114,7 @@ const callPolice = () => {
                         <template #icon>
                             <view class="sec__entry-icon">
                                 <hy-icon
-                                    name="telephone"
+                                    name="/static/icons/telephone.png"
                                     color="var(--primary, #3d7eff)"
                                     :size="20"
                                 ></hy-icon>
@@ -131,7 +131,7 @@ const callPolice = () => {
                         <template #icon>
                             <view class="sec__entry-icon sec__entry-icon--red">
                                 <hy-icon
-                                    name="notice-fill"
+                                    name="/static/icons/notice.png"
                                     color="var(--hy-error, #f56c6c)"
                                     :size="20"
                                 ></hy-icon>

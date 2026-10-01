@@ -75,7 +75,7 @@ const goChat = () => {
                             />
                         </view>
                         <view class="ud__school">
-                            <hy-icon name="map" color="var(--hy-info-color)" :size="13" />
+                            <hy-icon name="/static/icons/map.png" color="var(--hy-info-color)" :size="13" />
                             <text>{{ detail.profile.schoolName || '未设置学校' }}</text>
                         </view>
                         <view class="ud__stats">

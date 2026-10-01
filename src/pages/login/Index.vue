@@ -221,7 +221,7 @@ const handleLogin = async () => {
                     >
                         <hy-icon
                             v-if="agreed"
-                            name="check-mask"
+                            name="/static/icons/check.png"
                             color="#fff"
                             :size="12"
                         />

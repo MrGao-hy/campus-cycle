@@ -21,10 +21,10 @@ export const CONTACT_ITEMS: Array<{
     label: string;
     icon: string;
 }> = [
-    { key: 'phone', label: '电话', icon: 'telephone' },
-    { key: 'qq', label: 'QQ', icon: 'comment' },
-    { key: 'wechat', label: '微信', icon: 'message' },
-    { key: 'email', label: '邮箱', icon: 'send' },
+    { key: 'phone', label: '电话', icon: '/static/icons/telephone.png' },
+    { key: 'qq', label: 'QQ', icon: '/static/icons/comment.png' },
+    { key: 'wechat', label: '微信', icon: '/static/icons/message.png' },
+    { key: 'email', label: '邮箱', icon: '/static/icons/send.png' },
 ];
 
 /** 用户 */

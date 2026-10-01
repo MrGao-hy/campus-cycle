@@ -155,7 +155,7 @@ const submit = async () => {
                             @tap="removeImage(i)"
                         >
                             <hy-icon
-                                name="close"
+                                name="/static/icons/close.png"
                                 color="#fff"
                                 :size="12"
                             ></hy-icon>
@@ -235,7 +235,7 @@ const submit = async () => {
             <!-- 手续费说明 -->
             <view class="publish__fee">
                 <hy-icon
-                    name="remind"
+                    name="/static/icons/remind.png"
                     color="var(--primary, #3d7eff)"
                     :size="16"
                 />

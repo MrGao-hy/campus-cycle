@@ -311,7 +311,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                     <hy-price :text="String(order.price)" :size="18" />
                 </view>
                 <hy-icon
-                    name="right"
+                    name="/static/icons/right.png"
                     color="var(--hy-text-color--3, #929295)"
                     :size="14"
                 ></hy-icon>
@@ -322,7 +322,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 <view class="od__card-title">
                     {{ peerLabel }}联系方式
                     <hy-icon
-                        name="right"
+                        name="/static/icons/right.png"
                         color="var(--hy-info-color)"
                         :size="14"
                     ></hy-icon>
@@ -364,7 +364,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 </template>
                 <view v-else class="od__contact-locked">
                     <hy-icon
-                        name="lock"
+                        name="/static/icons/lock.png"
                         color="var(--hy-text-color--3, #929295)"
                         :size="16"
                     />
@@ -448,7 +448,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                     >
                 </view>
                 <hy-icon
-                    name="right"
+                    name="/static/icons/right.png"
                     color="var(--hy-text-color--placeholder, #c0c4cc)"
                     :size="14"
                 />
@@ -547,7 +547,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 class="od__remind od__remind--warn"
             >
                 <hy-icon
-                    name="remind"
+                    name="/static/icons/remind.png"
                     color="var(--warning, #f9ae3d)"
                     :size="16"
                 />

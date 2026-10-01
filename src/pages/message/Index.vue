@@ -86,7 +86,7 @@ const goIndex = () => {
                         <text class="msg__entry-sub">进度 · 申诉提醒</text>
                     </view>
                     <hy-icon
-                        name="right"
+                        name="/static/icons/right.png"
                         color="var(--hy-text-color--4, #c0c4cc)"
                         :size="14"
                     ></hy-icon>
@@ -108,7 +108,7 @@ const goIndex = () => {
                         <text class="msg__entry-sub">守则 · 举报 · 求助</text>
                     </view>
                     <hy-icon
-                        name="right"
+                        name="/static/icons/right.png"
                         color="var(--hy-text-color--4, #c0c4cc)"
                         :size="14"
                     ></hy-icon>

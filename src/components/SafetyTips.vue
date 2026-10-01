@@ -13,7 +13,7 @@ withDefaults(defineProps<IProps>(), { compact: false });
     <view class="safety-tips">
         <view class="safety-tips__head">
             <hy-icon
-                name="warning-fill"
+                name="/static/icons/warning.png"
                 color="var(--warning, #f9ae3d)"
                 :size="18"
             />

@@ -79,7 +79,7 @@ const logout = () => {
                     </view>
                     <view class="mine__sub" @tap="goSchool">
                         <hy-icon
-                            name="map"
+                            name="/static/icons/map.png"
                             color="var(--hy-text-color--3, #929295)"
                             :size="13"
                         />
@@ -112,7 +112,7 @@ const logout = () => {
             <!-- 欠费提示 -->
             <view v-if="unpaidAmount > 0" class="mine__fee-warn" @tap="goFee">
                 <hy-icon
-                    name="warning-fill"
+                    name="/static/icons/warning.png"
                     color="var(--hy-error, #f56c6c)"
                     :size="16"
                 />

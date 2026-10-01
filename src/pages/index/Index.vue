@@ -72,7 +72,7 @@ const goSchool = () => {
                         userStore.school?.name || '选择学校'
                     }}</text>
                     <hy-icon
-                        name="down"
+                        name="/static/icons/down.png"
                         color="var(--hy-text-color--3, #929295)"
                         :size="12"
                     />

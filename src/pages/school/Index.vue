@@ -92,7 +92,7 @@ const onConfirm = async () => {
                 :hover-stay-time="120"
             >
                 <view class="school__current-check">
-                    <hy-icon name="check-mask" color="#fff" :size="12" />
+                    <hy-icon name="/static/icons/check.png" color="#fff" :size="12" />
                 </view>
                 <view class="school__current-info">
                     <text class="school__current-name">{{
@@ -163,7 +163,7 @@ const onConfirm = async () => {
                         >
                         <hy-icon
                             v-else
-                            name="right"
+                            name="/static/icons/right.png"
                             :color="
                                 school.id === currentSchoolId
                                     ? 'var(--primary, #3d7eff)'
