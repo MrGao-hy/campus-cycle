@@ -7,6 +7,7 @@ import { useToast } from '@hy-app/ui';
 import { fmtTime } from '@/utils/format';
 import { GOODS_STATUS_TEXT } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
+import { usePageShare } from '@/hooks/useShare';
 import { computed, ref } from 'vue';
 import type { IGoodsDetail } from '@/api';
 
@@ -18,6 +19,9 @@ definePage({
 
 const toast = useToast();
 const userStore = useUserStore();
+
+// 动态分享：数据加载后修改 shareConfig 实现商品分享
+const { shareConfig } = usePageShare();
 
 const detail = ref<IGoodsDetail | null>(null);
 const current = ref(0);

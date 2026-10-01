@@ -7,6 +7,7 @@ import { ensureLoginAndSchool } from '@/utils/guard';
 import { fmtTime } from '@/utils/format';
 import type { ConversationRow } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
+import { usePageShare } from '@/hooks/useShare';
 import { ref } from 'vue';
 
 definePage({
@@ -17,7 +18,7 @@ definePage({
 
 const userStore = useUserStore();
 
-// 全局分享（hy-app useShare）
+// 全局分享（hy-app useShare 封装）
 const { onShareAppMessage, onShareTimeline } = usePageShare();
 defineExpose({ onShareAppMessage, onShareTimeline });
 

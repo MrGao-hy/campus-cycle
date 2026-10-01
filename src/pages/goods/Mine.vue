@@ -6,6 +6,7 @@ import { useUserStore } from '@/store';
 import { ensureLoginAndSchool } from '@/utils/guard';
 import type { Goods } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
+import { usePageShare } from '@/hooks/useShare';
 import { computed, ref } from 'vue';
 
 definePage({
@@ -16,7 +17,7 @@ definePage({
 
 const userStore = useUserStore();
 
-// 全局分享（hy-app useShare）
+// 全局分享（hy-app useShare 封装）
 const { onShareAppMessage, onShareTimeline } = usePageShare();
 defineExpose({ onShareAppMessage, onShareTimeline });
 

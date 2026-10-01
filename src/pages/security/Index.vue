@@ -2,6 +2,7 @@
 import TheRootPages from '@/components/TheRootPages.vue';
 import SafetyTips from '@/components/SafetyTips.vue';
 import { useToast } from '@hy-app/ui';
+import { usePageShare } from '@/hooks/useShare';
 import { SAFETY_PROMISES } from '@/types';
 import { ref } from 'vue';
 
@@ -13,7 +14,7 @@ definePage({
 
 const toast = useToast();
 
-// 全局分享（hy-app useShare）
+// 全局分享（hy-app useShare 封装）
 const { onShareAppMessage, onShareTimeline } = usePageShare();
 defineExpose({ onShareAppMessage, onShareTimeline });
 

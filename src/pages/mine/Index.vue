@@ -3,6 +3,7 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import { getFeeSummaryApi } from '@/api';
 import { useUserStore } from '@/store';
 import { useToast } from '@hy-app/ui';
+import { usePageShare } from '@/hooks/useShare';
 import { onShow } from '@dcloudio/uni-app';
 import { ref } from 'vue';
 
@@ -15,7 +16,7 @@ definePage({
 const toast = useToast();
 const userStore = useUserStore();
 
-// 全局分享（hy-app useShare）
+// 全局分享（hy-app useShare 封装）
 const { onShareAppMessage, onShareTimeline } = usePageShare();
 defineExpose({ onShareAppMessage, onShareTimeline });
 

@@ -91,8 +91,6 @@ const send = async () => {
     await sendMessageApi(conversationId.value, content);
     await load();
     sending.value = false;
-    // mock：等待对方自动回复后刷新
-    setTimeout(load, 1400);
 };
 
 /** 会话内快捷发起购买申请 */

@@ -25,21 +25,22 @@ http.config = {
 http.interceptor.request((conf: UniNamespace.RequestOptions) => {
     const token = uni.getStorageSync('member_token');
     if (token) {
+        // 合并而非覆盖，避免丢失 Content-Type（POST JSON body 解析依赖它）
         conf.header = {
+            ...conf.header,
             token: token,
         };
     }
-    uni.showLoading({
-        title: '拼命加载中...',
-        mask: true,
-    });
-
+    // 注意：不在此处统一 showLoading —— 全屏 mask 遮罩会拦截点击导致"卡死"，
+    // 且会与页面自身的 loading（如登录页 toast.loading）叠加冲突。
+    // loading 由各页面自行控制。
     return conf;
 });
 
 // 响应拦截
 http.interceptor.response(
     (response: UniNamespace.RequestSuccessCallbackResult) => {
+        // 兜底关闭任何残留的原生 loading（页面自控 loading 用 toast，不受影响）
         uni.hideLoading();
         const res = response.data as Record<string, any>;
         if (res && typeof res === 'object' && response.statusCode === 200) {
@@ -65,7 +66,6 @@ http.interceptor.response(
             showCancel: false,
             success: res => {},
         });
-        console.error(error);
         return Promise.reject(error);
     }
 );

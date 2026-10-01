@@ -17,6 +17,7 @@ type _LocationUrl =
   "/pages/order/Detail" |
   "/pages/order/List" |
   "/pages/order/Review" |
+  "/pages/profile/Index" |
   "/pages/school/Index" |
   "/pages/security/Index";
 

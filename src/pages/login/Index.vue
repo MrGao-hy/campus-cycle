@@ -16,7 +16,7 @@ const toast = useToast();
 const userStore = useUserStore();
 const loading = ref(false);
 
-/** 微信一键登录（mock：真实环境走 uni.login 获取 code 换 token） */
+/** 微信一键登录：小程序端 uni.login 取真实 code；新用户登录后引导完善资料 */
 const handleLogin = async () => {
     if (loading.value) return;
     loading.value = true;
@@ -25,12 +25,15 @@ const handleLogin = async () => {
         const res = await wxLoginMockApi();
         userStore.setLogin(res.token, res.userInfo);
         toast.close();
+        uni.hideLoading();
         toast.success('登录成功');
-        // 未选择学校 → 先选择并确认学校
-        if (!userStore.hasSchool) {
-            setTimeout(() => uni.navigateTo({ url: '/pages/school/Index' }), 400);
+        // 首次登录（默认昵称且无头像）→ 引导完善资料
+        if (isDefaultProfile(res.userInfo)) {
+            setTimeout(() => uni.navigateTo({ url: '/pages/profile/Index' }), 500);
+        } else if (!userStore.hasSchool) {
+            setTimeout(() => uni.navigateTo({ url: '/pages/school/Index' }), 500);
         } else {
-            setTimeout(() => uni.switchTab({ url: '/pages/index/Index' }), 400);
+            setTimeout(() => uni.switchTab({ url: '/pages/index/Index' }), 500);
         }
     } catch (e) {
         toast.close();
@@ -38,6 +41,12 @@ const handleLogin = async () => {
     } finally {
         loading.value = false;
     }
+};
+
+/** 是否为默认资料（自动建号：昵称"同学+4位数字"且无头像；跳过过资料页则不再打扰） */
+const isDefaultProfile = (info: { nickname: string; avatar?: string }): boolean => {
+    if (uni.getStorageSync('profile_skipped')) return false;
+    return !info.avatar && /^同学\d{4}$/.test(info.nickname || '');
 };
 </script>
 
