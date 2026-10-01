@@ -284,6 +284,7 @@ const logout = () => {
     /* #endif */
 
     &__user {
+        flex-shrink: 0;
         position: relative;
         display: flex;
         align-items: center;
@@ -328,6 +329,7 @@ const logout = () => {
     }
 
     &__group-title {
+        flex-shrink: 0;
         font-size: 26rpx;
         font-weight: 600;
         color: var(--hy-text-color--3, #929295);
@@ -370,6 +372,7 @@ const logout = () => {
     }
 
     &__fee-warn {
+        flex-shrink: 0;
         display: flex;
         align-items: center;
         gap: 10rpx;
@@ -395,6 +398,7 @@ const logout = () => {
     }
 
     &__group {
+        flex-shrink: 0;
         @include hy-card(20rpx);
         overflow: hidden;
         margin-top: 24rpx;
