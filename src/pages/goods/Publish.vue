@@ -169,9 +169,8 @@ const submit = async () => {
                         @tap="chooseImage"
                     >
                         <hy-icon
-                            name="camera"
-                            color="var(--hy-text-color--3, #929295)"
-                            :size="28"
+                            name="/static/icons/camera.png"
+ :size="28"
                         ></hy-icon>
                         <text>添加图片</text>
                     </view>

@@ -168,7 +168,7 @@ const onConfirm = async () => {
 
             <!-- 底部说明 -->
             <view class="school__footer">
-                <hy-icon name="security" :color="'var(--primary)'" :size="14" />
+                <hy-icon name="/static/icons/shield.png" :size="14" />
                 <text>学校信息用于同校身份校验，不会对外展示你的位置</text>
             </view>
 

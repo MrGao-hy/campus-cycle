@@ -131,9 +131,8 @@ const submit = async () => {
                         >
                             <view class="apl__upload-add-icon">
                                 <hy-icon
-                                    name="camera"
-                                    color="var(--primary, #3d7eff)"
-                                    :size="26"
+                                    name="/static/icons/camera.png"
+ :size="26"
                                 ></hy-icon>
                             </view>
                             <text class="apl__upload-add-text"

@@ -77,8 +77,7 @@ const goIndex = () => {
                 >
                     <view class="msg__entry-icon">
                         <hy-icon
-                            name="order"
-                            color="var(--primary, #3d7eff)"
+                            name="/static/icons/order.png"
                             :size="26"
                         ></hy-icon>
                     </view>
@@ -100,8 +99,7 @@ const goIndex = () => {
                 >
                     <view class="msg__entry-icon msg__entry-icon--green">
                         <hy-icon
-                            name="security"
-                            color="var(--hy-success, #07c160)"
+                            name="/static/icons/shield.png"
                             :size="26"
                         ></hy-icon>
                     </view>
@@ -180,9 +178,8 @@ const goIndex = () => {
             <view v-else class="msg__empty">
                 <view class="msg__empty-icon">
                     <hy-icon
-                        name="message"
-                        color="var(--primary-light-2, rgba(61,126,255,0.15))"
-                        :size="48"
+                        name="/static/icons/message.png"
+                        :size="40"
                     ></hy-icon>
                 </view>
                 <text class="msg__empty-title">暂无会话</text>

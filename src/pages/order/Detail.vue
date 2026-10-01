@@ -437,9 +437,8 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
             >
                 <view class="od__rights-icon">
                     <hy-icon
-                        name="warning"
-                        color="var(--hy-error, #f56c6c)"
-                        :size="18"
+                        name="/static/icons/complaint.png"
+ :size="18"
                     />
                 </view>
                 <view class="od__rights-info">
@@ -533,9 +532,8 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 class="od__remind od__remind--primary"
             >
                 <hy-icon
-                    name="notice"
-                    color="var(--primary, #3d7eff)"
-                    :size="16"
+                    name="/static/icons/order.png"
+ :size="16"
                 />
                 <text
                     >线下交易完成后，请买家及时在平台确认订单；确认后如遇纠纷，可在

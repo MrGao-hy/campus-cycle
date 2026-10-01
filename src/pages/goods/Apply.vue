@@ -86,9 +86,8 @@ const submit = async () => {
                 <view class="apply__rule">
                     <view class="apply__rule-icon">
                         <hy-icon
-                            name="order"
-                            color="var(--primary, #3d7eff)"
-                            :size="16"
+                            name="/static/icons/order.png"
+ :size="16"
                         />
                     </view>
                     <text
@@ -108,9 +107,8 @@ const submit = async () => {
                 <view class="apply__rule">
                     <view class="apply__rule-icon apply__rule-icon--warn">
                         <hy-icon
-                            name="notice"
-                            color="var(--warning, #f9ae3d)"
-                            :size="16"
+                            name="/static/icons/order.png"
+ :size="16"
                         />
                     </view>
                     <text>平台不代收货款，请当面验货后自行付款</text>

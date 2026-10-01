@@ -112,9 +112,8 @@ const submit = async () => {
             <!-- 提示 -->
             <view class="review__tip">
                 <hy-icon
-                    name="notice"
-                    color="var(--hy-text-color--3, #929295)"
-                    :size="14"
+                    name="/static/icons/order.png"
+ :size="14"
                 />
                 <text>评价将在卖家商品详情页展示，请文明评价</text>
             </view>

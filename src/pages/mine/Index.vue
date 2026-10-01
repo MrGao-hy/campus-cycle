@@ -102,7 +102,10 @@ const logout = () => {
                     </view>
                 </view>
                 <view class="mine__user-edit" @tap="goProfile">
-                    <hy-icon name="setting" color="rgba(255,255,255,0.9)" :size="16" />
+                    <hy-icon
+                        name="/static/icons/setting-white.png"
+                        :size="18"
+                    />
                 </view>
             </view>
 
@@ -135,9 +138,8 @@ const logout = () => {
                     <template #icon>
                         <view class="mine__icon"
                             ><hy-icon
-                                name="shopping-cart"
-                                color="var(--primary, #3d7eff)"
-                                :size="20"
+                                name="/static/icons/cart.png"
+                                :size="22"
                             ></hy-icon
                         ></view>
                     </template>
@@ -152,9 +154,8 @@ const logout = () => {
                     <template #icon>
                         <view class="mine__icon mine__icon--warn"
                             ><hy-icon
-                                name="shop"
-                                color="var(--warning, #f9ae3d)"
-                                :size="20"
+                                name="/static/icons/sell.png"
+                                :size="22"
                             ></hy-icon
                         ></view>
                     </template>
@@ -169,9 +170,8 @@ const logout = () => {
                     <template #icon>
                         <view class="mine__icon mine__icon--green"
                             ><hy-icon
-                                name="picture"
-                                color="var(--hy-success, #07c160)"
-                                :size="20"
+                                name="/static/icons/picture.png"
+                                :size="22"
                             ></hy-icon
                         ></view>
                     </template>
@@ -186,9 +186,8 @@ const logout = () => {
                     <template #icon>
                         <view class="mine__icon"
                             ><hy-icon
-                                name="plus"
-                                color="var(--primary, #3d7eff)"
-                                :size="20"
+                                name="/static/icons/plus.png"
+                                :size="22"
                             ></hy-icon
                         ></view>
                     </template>
@@ -207,9 +206,8 @@ const logout = () => {
                     <template #icon>
                         <view class="mine__icon mine__icon--red"
                             ><hy-icon
-                                name="order"
-                                color="var(--hy-error, #f56c6c)"
-                                :size="20"
+                                name="/static/icons/bill.png"
+                                :size="22"
                             ></hy-icon
                         ></view>
                     </template>
@@ -229,9 +227,8 @@ const logout = () => {
                     <template #icon>
                         <view class="mine__icon mine__icon--green"
                             ><hy-icon
-                                name="security"
-                                color="var(--hy-success, #07c160)"
-                                :size="20"
+                                name="/static/icons/shield.png"
+                                :size="22"
                             ></hy-icon
                         ></view>
                     </template>
@@ -246,9 +243,8 @@ const logout = () => {
                     <template #icon>
                         <view class="mine__icon mine__icon--red"
                             ><hy-icon
-                                name="warning"
-                                color="var(--hy-error, #f56c6c)"
-                                :size="20"
+                                name="/static/icons/complaint.png"
+                                :size="22"
                             ></hy-icon
                         ></view>
                     </template>

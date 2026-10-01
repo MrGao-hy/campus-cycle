@@ -167,9 +167,8 @@ const handleLogin = async () => {
                 <view class="login__trust-item">
                     <view class="login__trust-icon">
                         <hy-icon
-                            name="security"
-                            color="var(--primary, #3d7eff)"
-                            :size="20"
+                            name="/static/icons/shield.png"
+ :size="20"
                         />
                     </view>
                     <view class="login__trust-text">
@@ -182,9 +181,8 @@ const handleLogin = async () => {
                 <view class="login__trust-item">
                     <view class="login__trust-icon">
                         <hy-icon
-                            name="order"
-                            color="var(--primary, #3d7eff)"
-                            :size="20"
+                            name="/static/icons/order.png"
+ :size="20"
                         />
                     </view>
                     <view class="login__trust-text">
@@ -197,9 +195,8 @@ const handleLogin = async () => {
                 <view class="login__trust-item">
                     <view class="login__trust-icon">
                         <hy-icon
-                            name="warning"
-                            color="var(--primary, #3d7eff)"
-                            :size="20"
+                            name="/static/icons/complaint.png"
+ :size="20"
                         />
                     </view>
                     <view class="login__trust-text">
@@ -256,9 +253,8 @@ const handleLogin = async () => {
 
                 <view class="login__safety">
                     <hy-icon
-                        name="notice"
-                        color="var(--hy-text-color--3, #929295)"
-                        :size="14"
+                        name="/static/icons/order.png"
+ :size="14"
                     />
                     <text
                         >线下交易请当面验货、保留凭证，遇到异常立即终止交易</text

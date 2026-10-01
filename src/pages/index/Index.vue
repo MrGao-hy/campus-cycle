@@ -63,8 +63,7 @@ const goSchool = () => {
             <!-- 顶部：学校切换 + 搜索（随内容滚动） -->
             <view class="home__school" @tap="goSchool">
                 <hy-icon
-                    name="map-fill"
-                    color="var(--primary, #3d7eff)"
+                    name="/static/icons/location.png"
                     :size="13"
                 />
                 <text class="home__school-name">{{

@@ -82,9 +82,8 @@ const callPolice = () => {
                         <template #icon>
                             <view class="sec__entry-icon sec__entry-icon--red">
                                 <hy-icon
-                                    name="warning"
-                                    color="var(--hy-error, #f56c6c)"
-                                    :size="20"
+                                    name="/static/icons/complaint.png"
+ :size="20"
                                 ></hy-icon>
                             </view>
                         </template>
@@ -99,9 +98,8 @@ const callPolice = () => {
                         <template #icon>
                             <view class="sec__entry-icon">
                                 <hy-icon
-                                    name="order"
-                                    color="var(--primary, #3d7eff)"
-                                    :size="20"
+                                    name="/static/icons/order.png"
+ :size="20"
                                 ></hy-icon>
                             </view>
                         </template>

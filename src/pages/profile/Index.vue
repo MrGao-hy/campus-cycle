@@ -99,7 +99,7 @@ const next = () => {
                         mode="aspectFill"
                     />
                     <view v-else class="profile__avatar-placeholder">
-                        <hy-icon name="contact" color="#fff" :size="48" />
+                        <hy-icon name="/static/icons/contact.png" :size="48" />
                         <text>选择头像</text>
                     </view>
                 </view>
