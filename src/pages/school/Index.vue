@@ -63,8 +63,9 @@ const onConfirm = async () => {
         <view class="school" :style="{ '--primary': tools.themeColor }">
             <!-- 渐变头部：标题 + 搜索 -->
             <view class="school__header">
-                <view class="school__blob school__blob--a"></view>
-                <view class="school__blob school__blob--b"></view>
+                <view class="school__ring school__ring--a"></view>
+                <view class="school__ring school__ring--b"></view>
+                <view class="school__ring school__ring--c"></view>
                 <text class="school__title">选择你的学校</text>
                 <text class="school__subtitle"
                     >确认后仅展示本校商品，同校交易更安全</text
@@ -83,7 +84,7 @@ const onConfirm = async () => {
                 </view>
             </view>
 
-            <!-- 当前学校 -->
+            <!-- 当前学校横幅 -->
             <view
                 v-if="userStore.school"
                 class="school__current"
@@ -101,11 +102,18 @@ const onConfirm = async () => {
                         >当前学校 · 首页仅展示本校商品</text
                     >
                 </view>
-                <hy-tag label="已确认" type="primary" size="mini" />
+                <view class="school__current-badge">已确认</view>
             </view>
 
             <!-- 学校列表 -->
-            <view class="school__list">
+            <view class="school__body">
+                <view class="school__group">
+                    <text class="school__group-title">全部学校</text>
+                    <text v-if="!keyword" class="school__group-count"
+                        >共 {{ list.length }} 所</text
+                    >
+                </view>
+
                 <!-- 骨架屏 -->
                 <view v-if="loading" class="school__skeleton">
                     <hy-skeleton
@@ -129,31 +137,38 @@ const onConfirm = async () => {
                         :hover-stay-time="120"
                         @tap="onTapSchool(school)"
                     >
-                        <hy-avatar
-                            :text="school.shortName.slice(0, 1)"
-                            :random-bg-color="school.id !== currentSchoolId"
-                            :name="school.shortName"
-                            shape="square"
-                            :size="44"
-                        ></hy-avatar>
+                        <view
+                            class="school__avatar"
+                            :class="{
+                                'school__avatar--active':
+                                    school.id === currentSchoolId,
+                            }"
+                        >
+                            <text class="school__avatar-text">{{
+                                school.shortName.slice(0, 1)
+                            }}</text>
+                        </view>
                         <view class="school__item-info">
                             <text class="school__item-name">{{
                                 school.name
                             }}</text>
                             <text class="school__item-sub"
-                                >在售商品 {{ school.goodsCount }} 件</text
+                                >{{ school.goodsCount }} 件在售</text
                             >
                         </view>
-                        <hy-tag
+                        <view
                             v-if="school.id === currentSchoolId"
-                            label="当前"
-                            type="success"
-                            size="mini"
-                        />
+                            class="school__badge"
+                            >当前</view
+                        >
                         <hy-icon
                             v-else
                             name="right"
-                            :color="'var(--hy-text-color--3, #929295)'"
+                            :color="
+                                school.id === currentSchoolId
+                                    ? 'var(--primary, #3d7eff)'
+                                    : 'var(--hy-text-color--3, #929295)'
+                            "
                             :size="14"
                         ></hy-icon>
                     </view>
@@ -189,43 +204,53 @@ const onConfirm = async () => {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    background: var(--hy-background, #f8f8f8);
+    background: var(--hy-background, #f5f6f8);
 
-    /* 渐变头部（跟随主题色） */
+    /* 渐变头部（深蓝质感，装饰圆环） */
     &__header {
         position: relative;
-        padding: 56rpx 40rpx 96rpx;
+        padding: 56rpx 40rpx 88rpx;
         background: linear-gradient(
-            150deg,
+            135deg,
             var(--primary, #3d7eff) 0%,
-            #6fa0ff 82%,
-            #b8d0ff 100%
+            #2d6bf0 55%,
+            #1e56c8 100%
         );
-        border-radius: 0 0 56rpx 56rpx;
+        border-radius: 0 0 48rpx 48rpx;
         overflow: hidden;
         display: flex;
         flex-direction: column;
         animation: school-fade-down 0.5s ease-out both;
     }
 
-    &__blob {
+    &__ring {
         position: absolute;
+        border: 3rpx solid rgba(255, 255, 255, 0.18);
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.12);
 
         &--a {
-            width: 280rpx;
-            height: 280rpx;
-            top: -90rpx;
-            right: -70rpx;
+            width: 320rpx;
+            height: 320rpx;
+            top: -120rpx;
+            right: -80rpx;
         }
 
         &--b {
-            width: 160rpx;
-            height: 160rpx;
-            bottom: -30rpx;
-            left: -50rpx;
-            background: rgba(255, 255, 255, 0.08);
+            width: 200rpx;
+            height: 200rpx;
+            top: -40rpx;
+            right: 140rpx;
+            border-width: 2rpx;
+            opacity: 0.7;
+        }
+
+        &--c {
+            width: 140rpx;
+            height: 140rpx;
+            bottom: -60rpx;
+            left: -40rpx;
+            border-width: 2rpx;
+            opacity: 0.6;
         }
     }
 
@@ -247,24 +272,28 @@ const onConfirm = async () => {
     /* 搜索框上提叠压渐变底缘 */
     &__search {
         position: relative;
-        margin: 36rpx -20rpx -76rpx;
+        margin: 36rpx -20rpx -72rpx;
         background: #fff;
-        border-radius: 16rpx;
-        box-shadow: 0 8rpx 24rpx rgba(20, 50, 110, 0.12);
+        border-radius: 20rpx;
+        box-shadow: 0 12rpx 32rpx rgba(14, 42, 110, 0.18);
         overflow: hidden;
     }
 
-    /* 当前学校横幅 */
+    /* 当前学校横幅（主色渐变） */
     &__current {
         position: relative;
-        margin: 108rpx 32rpx 0;
-        padding: 24rpx 28rpx;
+        margin: 100rpx 32rpx 0;
+        padding: 26rpx 28rpx;
         display: flex;
         align-items: center;
         gap: 20rpx;
-        border-radius: 20rpx;
-        border: 2rpx solid var(--primary, #3d7eff);
-        background: rgba(61, 126, 255, 0.08);
+        border-radius: 24rpx;
+        background: linear-gradient(
+            120deg,
+            var(--primary, #3d7eff) 0%,
+            #2d6bf0 100%
+        );
+        box-shadow: 0 12rpx 28rpx rgba(61, 126, 255, 0.28);
         animation: school-fade-up 0.5s ease-out 0.1s both;
     }
 
@@ -272,7 +301,7 @@ const onConfirm = async () => {
         width: 40rpx;
         height: 40rpx;
         border-radius: 50%;
-        background: var(--primary, #3d7eff);
+        background: rgba(255, 255, 255, 0.28);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -290,7 +319,7 @@ const onConfirm = async () => {
     &__current-name {
         font-size: 28rpx;
         font-weight: 600;
-        color: var(--hy-text-color, #000000);
+        color: #ffffff;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -298,66 +327,121 @@ const onConfirm = async () => {
 
     &__current-desc {
         font-size: 22rpx;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    &__current-badge {
+        flex-shrink: 0;
+        padding: 6rpx 20rpx;
+        border-radius: 999rpx;
+        background: #ffffff;
+        color: var(--primary, #3d7eff);
+        font-size: 22rpx;
+        font-weight: 600;
+    }
+
+    /* 列表区 */
+    &__body {
+        position: relative;
+        margin: 40rpx 32rpx 0;
+        flex: 1;
+    }
+
+    &__group {
+        display: flex;
+        align-items: baseline;
+        gap: 12rpx;
+        padding: 0 8rpx 20rpx;
+    }
+
+    &__group-title {
+        font-size: 28rpx;
+        font-weight: 600;
+        color: var(--hy-text-color, #000000);
+    }
+
+    &__group-count {
+        font-size: 22rpx;
         color: var(--hy-text-color--3, #929295);
     }
 
-    /* 列表 */
-    &__list {
-        position: relative;
-        margin: 24rpx 32rpx 0;
-        padding: 8rpx 28rpx;
-        background: var(--hy-background--container, #ffffff);
-        border-radius: 24rpx;
-        box-shadow: 0 8rpx 28rpx rgba(30, 60, 120, 0.06);
-    }
-
     &__skeleton {
-        padding: 24rpx 0;
+        padding: 8rpx 0;
     }
 
+    /* 独立卡片 */
     &__item {
         display: flex;
         align-items: center;
         gap: 24rpx;
-        padding: 26rpx 8rpx;
-        border-radius: 16rpx;
+        padding: 28rpx;
+        margin-bottom: 20rpx;
+        border-radius: 24rpx;
         border: 2rpx solid transparent;
+        background: var(--hy-background--container, #ffffff);
+        box-shadow: 0 6rpx 20rpx rgba(30, 60, 120, 0.05);
         transition:
             background-color 0.25s ease,
-            border-color 0.25s ease;
+            border-color 0.25s ease,
+            transform 0.25s ease;
         animation: school-fade-up 0.45s ease-out both;
 
-        & + & {
-            border-top: 1rpx solid var(--hy-text-color--4, rgba(0, 0, 0, 0.1));
-        }
-
-        /* 选中：主题色描边 + 浅底（覆盖分隔线） */
+        /* 选中：主色描边 + 浅底 */
         &--active {
             border-color: var(--primary, #3d7eff);
-            background: rgba(61, 126, 255, 0.08);
-
-            & + .school__item {
-                border-top: 1rpx solid transparent;
-            }
+            background: rgba(61, 126, 255, 0.07);
+            box-shadow: 0 8rpx 24rpx rgba(61, 126, 255, 0.14);
         }
 
         /* 按压反馈 */
         &--hover {
-            background: var(--primary-light-2, rgba(61, 126, 255, 0.15));
+            background: var(--primary-light-2, rgba(61, 126, 255, 0.12));
+            transform: scale(0.985);
         }
+    }
+
+    /* 首字渐变方块（品牌统一） */
+    &__avatar {
+        width: 84rpx;
+        height: 84rpx;
+        border-radius: 20rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        background: linear-gradient(
+            135deg,
+            var(--primary, #3d7eff) 0%,
+            #2d6bf0 100%
+        );
+        box-shadow: 0 6rpx 14rpx rgba(61, 126, 255, 0.24);
+
+        &--active {
+            background: linear-gradient(135deg, #ffffff 0%, #e8f1ff 100%);
+
+            .school__avatar-text {
+                color: var(--primary, #3d7eff);
+            }
+        }
+    }
+
+    &__avatar-text {
+        font-size: 36rpx;
+        font-weight: 700;
+        color: #ffffff;
     }
 
     &__item-info {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 6rpx;
+        gap: 8rpx;
         min-width: 0;
     }
 
     &__item-name {
         font-size: 30rpx;
-        font-weight: 500;
+        font-weight: 600;
         color: var(--hy-text-color, #000000);
         overflow: hidden;
         text-overflow: ellipsis;
@@ -367,6 +451,17 @@ const onConfirm = async () => {
     &__item-sub {
         font-size: 22rpx;
         color: var(--hy-text-color--3, #929295);
+    }
+
+    /* 当前胶囊 */
+    &__badge {
+        flex-shrink: 0;
+        padding: 6rpx 18rpx;
+        border-radius: 999rpx;
+        background: var(--primary, #3d7eff);
+        color: #ffffff;
+        font-size: 22rpx;
+        font-weight: 600;
     }
 
     /* 底部说明 */
