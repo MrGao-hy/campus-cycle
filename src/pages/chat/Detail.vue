@@ -121,7 +121,13 @@ const goGoods = () => {
     <the-root-pages>
         <view class="chat">
             <!-- 关联商品条 -->
-            <view v-if="goods" class="chat__goods" @tap="goGoods">
+            <view
+                v-if="goods"
+                class="chat__goods"
+                hover-class="chat__goods--hover"
+                :hover-stay-time="120"
+                @tap="goGoods"
+            >
                 <hy-image
                     :src="goods.images[0]"
                     width="88rpx"
@@ -152,7 +158,7 @@ const goGoods = () => {
             <view class="chat__safety">
                 <hy-icon
                     name="security"
-                    color="var(--hy-success-color)"
+                    color="var(--hy-success, #07c160)"
                     :size="14"
                 />
                 <text
@@ -207,7 +213,7 @@ const goGoods = () => {
                     border="none"
                     :custom-style="{
                         flex: 1,
-                        background: 'var(--hy-bg-grey, #f5f6f8)',
+                        background: 'var(--hy-background, #f8f8f8)',
                         borderRadius: '32rpx',
                         padding: '16rpx 24rpx',
                     }"
@@ -239,8 +245,15 @@ const goGoods = () => {
         align-items: center;
         gap: 16rpx;
         padding: 16rpx 24rpx;
-        background: var(--hy-bg-color, #fff);
-        border-bottom: 1rpx solid var(--hy-border-color, #eee);
+        background: var(--hy-background--container, #ffffff);
+        border-bottom: 1rpx solid var(--hy-text-color--4, rgba(0, 0, 0, 0.1));
+        box-shadow: 0 4rpx 16rpx rgba(30, 60, 120, 0.04);
+        animation: chat-fade-down 0.35s ease both;
+        transition: opacity 0.15s ease;
+    }
+
+    &__goods--hover {
+        opacity: 0.7;
     }
 
     &__goods-info {
@@ -250,7 +263,7 @@ const goGoods = () => {
 
     &__goods-title {
         font-size: 26rpx;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -263,8 +276,8 @@ const goGoods = () => {
         gap: 8rpx;
         padding: 12rpx 24rpx;
         font-size: 22rpx;
-        color: var(--hy-success-color, #5ac725);
-        background: var(--hy-success-light, rgba(90, 199, 37, 0.08));
+        color: var(--hy-success, #07c160);
+        background: var(--hy-success--light, rgba(7, 193, 96, 0.1));
     }
 
     &__list {
@@ -291,22 +304,25 @@ const goGoods = () => {
         word-break: break-all;
 
         &--peer {
-            background: var(--hy-bg-color, #fff);
-            color: var(--hy-main-color, #303133);
+            background: var(--hy-background--container, #ffffff);
+            color: var(--hy-text-color, #000000);
             border-top-left-radius: 4rpx;
+            box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
         }
 
         &--mine {
-            background: var(--hy-primary-color, #3d7eff);
+            background: var(--primary, #3d7eff);
             color: #fff;
             border-top-right-radius: 4rpx;
+            box-shadow: 0 4rpx 12rpx
+                var(--primary-light-2, rgba(61, 126, 255, 0.3));
         }
     }
 
     &__msg-time {
         text-align: center;
         font-size: 20rpx;
-        color: var(--hy-info-color, #c0c4cc);
+        color: var(--hy-text-color--placeholder, #c0c4cc);
     }
 
     &__list-bottom {
@@ -317,8 +333,20 @@ const goGoods = () => {
         display: flex;
         align-items: flex-end;
         padding: 16rpx 24rpx 8rpx;
-        background: var(--hy-bg-color, #fff);
-        border-top: 1rpx solid var(--hy-border-color, #eee);
+        background: var(--hy-background--container, #ffffff);
+        border-top: 1rpx solid var(--hy-text-color--4, rgba(0, 0, 0, 0.1));
+    }
+}
+
+@keyframes chat-fade-down {
+    from {
+        opacity: 0;
+        transform: translateY(-16rpx);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>

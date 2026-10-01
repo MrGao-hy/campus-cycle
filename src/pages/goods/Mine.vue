@@ -16,10 +16,6 @@ definePage({
 
 const userStore = useUserStore();
 
-// 全局分享（hy-app useShare）
-const { onShareAppMessage, onShareTimeline } = usePageShare();
-defineExpose({ onShareAppMessage, onShareTimeline });
-
 const list = ref<Goods[]>([]);
 const loading = ref(true);
 const current = ref(0);
@@ -73,10 +69,15 @@ const goPublish = () => {
                     <text class="my-goods__num">{{ list.length }}</text> 件商品
                 </view>
                 <hy-button
-                    type="primary"
                     size="small"
                     shape="circle"
-                    :icon="{ name: 'plus' }"
+                    :icon="{ name: 'plus', color: '#ffffff' }"
+                    hover-class="none"
+                    :custom-style="{
+                        background: 'rgba(255, 255, 255, 0.22)',
+                        color: '#ffffff',
+                        border: '1rpx solid rgba(255, 255, 255, 0.5)',
+                    }"
                     @click="goPublish"
                 >
                     发布商品
@@ -129,30 +130,35 @@ const goPublish = () => {
 </template>
 
 <style lang="scss" scoped>
+@use '../../styles/design.scss' as *;
 .my-goods {
     min-height: 100vh;
     padding-bottom: 40rpx;
 
     &__header {
+        @include hy-gradient-header(135deg, 0 0 32rpx 32rpx);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 24rpx 32rpx;
+        padding: 36rpx 32rpx;
+        animation: my-goods-fade-up 0.45s ease both;
     }
 
     &__total {
-        font-size: 26rpx;
-        color: var(--hy-info-color, #909193);
+        font-size: 24rpx;
+        color: rgba(255, 255, 255, 0.85);
     }
 
     &__num {
-        font-size: 32rpx;
-        font-weight: 600;
-        color: var(--hy-primary-color, #3d7eff);
+        font-size: 44rpx;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0 6rpx;
     }
 
     &__loading {
         padding: 24rpx;
+        animation: my-goods-fade-up 0.45s ease 0.06s both;
     }
 
     &__list {
@@ -160,13 +166,26 @@ const goPublish = () => {
         flex-wrap: wrap;
         justify-content: space-between;
         padding: 24rpx;
+        animation: my-goods-fade-up 0.45s ease 0.06s both;
     }
 
     &__legend {
         text-align: center;
         font-size: 22rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
         padding: 8rpx 0 24rpx;
+    }
+}
+
+@keyframes my-goods-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24rpx);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>

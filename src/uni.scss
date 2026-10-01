@@ -1,4 +1,7 @@
-@use "@hy-app/ui/index.scss" as *;
+/* uni.scss 会被自动注入到每个组件样式前面，只能包含变量声明；
+   设计系统公共 mixin 在 src/styles/design.scss，
+   需要的页面在 <style> 顶部加：@use '../../styles/design.scss' as *; */
+
 /**
  * 这里是uni-app内置的常用样式变量
  *

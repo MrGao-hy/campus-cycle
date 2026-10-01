@@ -1,30 +1,28 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import { confirmSchoolApi, getSchoolListApi } from '@/api';
-import { useUserStore } from '@/store';
+import { useToolsStore, useUserStore } from '@/store';
 import { useToast } from '@hy-app/ui';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { School } from '@/types';
-import { usePageShare } from '@/hooks/useShare';
 
 definePage({
     style: {
-        navigationBarTitleText: '选择学校'
-    }
+        navigationBarTitleText: '选择学校',
+    },
 });
 
 const toast = useToast();
 const userStore = useUserStore();
-
-// 全局分享（hy-app useShare）
-const { onShareAppMessage, onShareTimeline } = usePageShare();
-defineExpose({ onShareAppMessage, onShareTimeline });
+const tools = useToolsStore();
 
 const keyword = ref('');
 const list = ref<School[]>([]);
 const loading = ref(true);
 const modalShow = ref(false);
 const selected = ref<School | null>(null);
+
+const currentSchoolId = computed(() => userStore.school?.id);
 
 const loadList = async () => {
     loading.value = true;
@@ -40,6 +38,10 @@ const onSearch = (value: string) => {
 
 /** 选择学校 → 二次确认 */
 const onTapSchool = (school: School) => {
+    if (school.id === currentSchoolId.value) {
+        toast.info('当前已选择该学校');
+        return;
+    }
     selected.value = school;
     modalShow.value = true;
 };
@@ -50,7 +52,7 @@ const onConfirm = async () => {
     userStore.setSchool(school);
     toast.success(`已选择：${school.shortName || school.name}`);
     setTimeout(() => {
-        // 从登录流程进入时返回首页；从我的页进入时返回
+        // 从登录流程进入时进入首页；从我的页进入时返回
         uni.switchTab({ url: '/pages/index/Index' });
     }, 500);
 };
@@ -58,52 +60,117 @@ const onConfirm = async () => {
 
 <template>
     <the-root-pages>
-        <view class="school">
-            <view class="school__tip">
-                <hy-icon name="map" color="var(--hy-primary-color)" :size="16" />
-                <text>选择并确认学校后，仅展示本校商品，同校交易更安全</text>
-            </view>
-
-            <view class="school__search">
-                <hy-search
-                    v-model="keyword"
-                    placeholder="搜索学校名称"
-                    :show-action="false"
-                    @search="(_e: unknown, value: string) => onSearch(value)"
-                    @confirm="onSearch"
-                    @clear="loadList"
-                ></hy-search>
-            </view>
-
-            <hy-cell v-if="loading" :border="false"></hy-cell>
-
-            <hy-cell v-else :border="false">
-                <hy-cell-item
-                    v-for="school in list"
-                    :key="school.id"
-                    clickable
-                    :is-right-icon="false"
-                    @click="onTapSchool(school)"
+        <view class="school" :style="{ '--primary': tools.themeColor }">
+            <!-- 渐变头部：标题 + 搜索 -->
+            <view class="school__header">
+                <view class="school__blob school__blob--a"></view>
+                <view class="school__blob school__blob--b"></view>
+                <text class="school__title">选择你的学校</text>
+                <text class="school__subtitle"
+                    >确认后仅展示本校商品，同校交易更安全</text
                 >
-                    <template #icon>
-                        <hy-avatar :text="school.shortName.slice(0, 1)" random-bg-color :name="school.shortName" shape="square" :size="40"></hy-avatar>
-                    </template>
-                    <template #title>
-                        <view class="school__name-row">
-                            <text class="school__name">{{ school.name }}</text>
-                            <hy-tag v-if="userStore.school?.id === school.id" label="当前" type="success" size="mini" />
-                        </view>
-                    </template>
-                    <template #sub>
-                        <text class="school__sub">在售商品 {{ school.goodsCount }} 件</text>
-                    </template>
-                    <template #right-icon>
-                        <hy-icon name="right" color="var(--hy-info-color)" :size="14"></hy-icon>
-                    </template>
-                </hy-cell-item>
-            </hy-cell>
+                <view class="school__search">
+                    <hy-search
+                        v-model="keyword"
+                        placeholder="搜索学校名称"
+                        :show-action="false"
+                        @search="
+                            (_e: unknown, value: string) => onSearch(value)
+                        "
+                        @confirm="onSearch"
+                        @clear="loadList"
+                    ></hy-search>
+                </view>
+            </view>
 
-            <hy-empty v-if="!loading && list.length === 0" mode="search" description="未找到相关学校"></hy-empty>
+            <!-- 当前学校 -->
+            <view
+                v-if="userStore.school"
+                class="school__current"
+                hover-class="school__current--hover"
+                :hover-stay-time="120"
+            >
+                <view class="school__current-check">
+                    <hy-icon name="check-mask" color="#fff" :size="12" />
+                </view>
+                <view class="school__current-info">
+                    <text class="school__current-name">{{
+                        userStore.school.name
+                    }}</text>
+                    <text class="school__current-desc"
+                        >当前学校 · 首页仅展示本校商品</text
+                    >
+                </view>
+                <hy-tag label="已确认" type="primary" size="mini" />
+            </view>
+
+            <!-- 学校列表 -->
+            <view class="school__list">
+                <!-- 骨架屏 -->
+                <view v-if="loading" class="school__skeleton">
+                    <hy-skeleton
+                        theme="paragraph"
+                        :row-col="[3, 3]"
+                        animation="gradient"
+                    ></hy-skeleton>
+                </view>
+
+                <template v-else-if="list.length">
+                    <view
+                        v-for="(school, i) in list"
+                        :key="school.id"
+                        class="school__item"
+                        :class="{
+                            'school__item--active':
+                                school.id === currentSchoolId,
+                        }"
+                        :style="{ animationDelay: `${i * 0.06}s` }"
+                        hover-class="school__item--hover"
+                        :hover-stay-time="120"
+                        @tap="onTapSchool(school)"
+                    >
+                        <hy-avatar
+                            :text="school.shortName.slice(0, 1)"
+                            :random-bg-color="school.id !== currentSchoolId"
+                            :name="school.shortName"
+                            shape="square"
+                            :size="44"
+                        ></hy-avatar>
+                        <view class="school__item-info">
+                            <text class="school__item-name">{{
+                                school.name
+                            }}</text>
+                            <text class="school__item-sub"
+                                >在售商品 {{ school.goodsCount }} 件</text
+                            >
+                        </view>
+                        <hy-tag
+                            v-if="school.id === currentSchoolId"
+                            label="当前"
+                            type="success"
+                            size="mini"
+                        />
+                        <hy-icon
+                            v-else
+                            name="right"
+                            :color="'var(--hy-text-color--3, #929295)'"
+                            :size="14"
+                        ></hy-icon>
+                    </view>
+                </template>
+
+                <hy-empty
+                    v-else
+                    mode="search"
+                    description="未找到相关学校，换个关键词试试"
+                ></hy-empty>
+            </view>
+
+            <!-- 底部说明 -->
+            <view class="school__footer">
+                <hy-icon name="security" :color="'var(--primary)'" :size="14" />
+                <text>学校信息用于同校身份校验，不会对外展示你的位置</text>
+            </view>
 
             <hy-modal
                 v-model="modalShow"
@@ -119,37 +186,221 @@ const onConfirm = async () => {
 <style lang="scss" scoped>
 .school {
     min-height: 100vh;
-    padding: 24rpx;
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
+    background: var(--hy-background, #f8f8f8);
 
-    &__tip {
+    /* 渐变头部（跟随主题色） */
+    &__header {
+        position: relative;
+        padding: 56rpx 40rpx 96rpx;
+        background: linear-gradient(
+            150deg,
+            var(--primary, #3d7eff) 0%,
+            #6fa0ff 82%,
+            #b8d0ff 100%
+        );
+        border-radius: 0 0 56rpx 56rpx;
+        overflow: hidden;
         display: flex;
-        align-items: center;
-        gap: 10rpx;
+        flex-direction: column;
+        animation: school-fade-down 0.5s ease-out both;
+    }
+
+    &__blob {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+
+        &--a {
+            width: 280rpx;
+            height: 280rpx;
+            top: -90rpx;
+            right: -70rpx;
+        }
+
+        &--b {
+            width: 160rpx;
+            height: 160rpx;
+            bottom: -30rpx;
+            left: -50rpx;
+            background: rgba(255, 255, 255, 0.08);
+        }
+    }
+
+    &__title {
+        position: relative;
+        font-size: 44rpx;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 2rpx;
+    }
+
+    &__subtitle {
+        position: relative;
+        margin-top: 12rpx;
         font-size: 24rpx;
-        color: var(--hy-info-color, #909193);
-        margin-bottom: 20rpx;
+        color: rgba(255, 255, 255, 0.85);
     }
 
+    /* 搜索框上提叠压渐变底缘 */
     &__search {
-        margin-bottom: 20rpx;
+        position: relative;
+        margin: 36rpx -20rpx -76rpx;
+        background: #fff;
+        border-radius: 16rpx;
+        box-shadow: 0 8rpx 24rpx rgba(20, 50, 110, 0.12);
+        overflow: hidden;
     }
 
-    &__name-row {
+    /* 当前学校横幅 */
+    &__current {
+        position: relative;
+        margin: 108rpx 32rpx 0;
+        padding: 24rpx 28rpx;
         display: flex;
         align-items: center;
-        gap: 12rpx;
+        gap: 20rpx;
+        border-radius: 20rpx;
+        border: 2rpx solid var(--primary, #3d7eff);
+        background: rgba(61, 126, 255, 0.08);
+        animation: school-fade-up 0.5s ease-out 0.1s both;
     }
 
-    &__name {
+    &__current-check {
+        width: 40rpx;
+        height: 40rpx;
+        border-radius: 50%;
+        background: var(--primary, #3d7eff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    &__current-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4rpx;
+        min-width: 0;
+    }
+
+    &__current-name {
+        font-size: 28rpx;
+        font-weight: 600;
+        color: var(--hy-text-color, #000000);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__current-desc {
+        font-size: 22rpx;
+        color: var(--hy-text-color--3, #929295);
+    }
+
+    /* 列表 */
+    &__list {
+        position: relative;
+        margin: 24rpx 32rpx 0;
+        padding: 8rpx 28rpx;
+        background: var(--hy-background--container, #ffffff);
+        border-radius: 24rpx;
+        box-shadow: 0 8rpx 28rpx rgba(30, 60, 120, 0.06);
+    }
+
+    &__skeleton {
+        padding: 24rpx 0;
+    }
+
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: 24rpx;
+        padding: 26rpx 8rpx;
+        border-radius: 16rpx;
+        border: 2rpx solid transparent;
+        transition:
+            background-color 0.25s ease,
+            border-color 0.25s ease;
+        animation: school-fade-up 0.45s ease-out both;
+
+        & + & {
+            border-top: 1rpx solid var(--hy-text-color--4, rgba(0, 0, 0, 0.1));
+        }
+
+        /* 选中：主题色描边 + 浅底（覆盖分隔线） */
+        &--active {
+            border-color: var(--primary, #3d7eff);
+            background: rgba(61, 126, 255, 0.08);
+
+            & + .school__item {
+                border-top: 1rpx solid transparent;
+            }
+        }
+
+        /* 按压反馈 */
+        &--hover {
+            background: var(--primary-light-2, rgba(61, 126, 255, 0.15));
+        }
+    }
+
+    &__item-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6rpx;
+        min-width: 0;
+    }
+
+    &__item-name {
         font-size: 30rpx;
         font-weight: 500;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    &__sub {
-        font-size: 24rpx;
-        color: var(--hy-info-color, #909193);
+    &__item-sub {
+        font-size: 22rpx;
+        color: var(--hy-text-color--3, #929295);
+    }
+
+    /* 底部说明 */
+    &__footer {
+        margin-top: auto;
+        padding: 32rpx 40rpx calc(32rpx + env(safe-area-inset-bottom));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8rpx;
+        font-size: 22rpx;
+        color: var(--hy-text-color--3, #929295);
+    }
+}
+
+@keyframes school-fade-down {
+    from {
+        opacity: 0;
+        transform: translateY(-24rpx);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes school-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24rpx);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>

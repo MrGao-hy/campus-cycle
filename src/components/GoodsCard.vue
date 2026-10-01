@@ -66,7 +66,7 @@ defineOptions({
 .goods-card {
     width: calc(50% - 12rpx);
     box-sizing: border-box;
-    background: var(--hy-bg-color, #fff);
+    background: var(--hy-background--container, #ffffff);
     border-radius: 12rpx;
     overflow: hidden;
     margin-bottom: 24rpx;
@@ -92,7 +92,7 @@ defineOptions({
 
     &__title {
         font-size: 28rpx;
-        color: var(--hy-content-color, #303133);
+        color: var(--hy-text-color, #000000);
         line-height: 1.4;
         height: 78rpx;
         display: -webkit-box;
@@ -110,7 +110,7 @@ defineOptions({
 
     &__want {
         font-size: 22rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
     }
 
     &__price-row {
@@ -122,7 +122,7 @@ defineOptions({
 
     &__origin {
         font-size: 22rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
         text-decoration: line-through;
     }
 }

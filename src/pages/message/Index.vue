@@ -11,15 +11,11 @@ import { ref } from 'vue';
 
 definePage({
     style: {
-        navigationBarTitleText: '消息'
-    }
+        navigationBarTitleText: '消息',
+    },
 });
 
 const userStore = useUserStore();
-
-// 全局分享（hy-app useShare）
-const { onShareAppMessage, onShareTimeline } = usePageShare();
-defineExpose({ onShareAppMessage, onShareTimeline });
 
 const list = ref<ConversationRow[]>([]);
 const loading = ref(true);
@@ -58,14 +54,38 @@ const goSecurity = () => {
 
             <!-- 功能入口 -->
             <hy-cell :border="false" custom-class="msg__entries">
-                <hy-cell-item title="订单通知" sub="卖家确认、申诉期提醒都会在这里通知" clickable is-right-icon @click="goOrders">
+                <hy-cell-item
+                    title="订单通知"
+                    sub="卖家确认、申诉期提醒都会在这里通知"
+                    clickable
+                    is-right-icon
+                    @click="goOrders"
+                >
                     <template #icon>
-                        <hy-icon name="order" color="var(--hy-primary-color)" :size="22"></hy-icon>
+                        <view class="msg__entry-icon">
+                            <hy-icon
+                                name="order"
+                                color="var(--primary, #3d7eff)"
+                                :size="22"
+                            ></hy-icon>
+                        </view>
                     </template>
                 </hy-cell-item>
-                <hy-cell-item title="安全中心" sub="交易安全守则、举报与紧急求助" clickable is-right-icon @click="goSecurity">
+                <hy-cell-item
+                    title="安全中心"
+                    sub="交易安全守则、举报与紧急求助"
+                    clickable
+                    is-right-icon
+                    @click="goSecurity"
+                >
                     <template #icon>
-                        <hy-icon name="security" color="var(--hy-success-color)" :size="22"></hy-icon>
+                        <view class="msg__entry-icon msg__entry-icon--green">
+                            <hy-icon
+                                name="security"
+                                color="var(--hy-success, #07c160)"
+                                :size="22"
+                            ></hy-icon>
+                        </view>
                     </template>
                 </hy-cell-item>
             </hy-cell>
@@ -73,30 +93,62 @@ const goSecurity = () => {
             <!-- 会话列表 -->
             <view class="msg__title">站内会话</view>
             <view v-if="loading" class="msg__loading">
-                <hy-skeleton theme="avatar" :row-col="[1, 1, 1]" animation="gradient"></hy-skeleton>
+                <hy-skeleton
+                    theme="avatar"
+                    :row-col="[1, 1, 1]"
+                    animation="gradient"
+                ></hy-skeleton>
             </view>
             <template v-else-if="list.length">
-                <view v-for="row in list" :key="row.conversation.id" class="msg__item" @tap="goChat(row)">
+                <view
+                    v-for="(row, i) in list"
+                    :key="row.conversation.id"
+                    class="msg__item"
+                    :style="{ animationDelay: `${i * 0.06}s` }"
+                    hover-class="msg__item--hover"
+                    :hover-stay-time="120"
+                    @tap="goChat(row)"
+                >
                     <view class="msg__avatar">
-                        <hy-avatar :text="row.peer.nickname.slice(0, 1)" random-bg-color :name="row.peer.nickname" :size="40"></hy-avatar>
-                        <view v-if="row.unread" class="msg__badge">{{ row.unread > 99 ? '99+' : row.unread }}</view>
+                        <hy-avatar
+                            :text="row.peer.nickname.slice(0, 1)"
+                            random-bg-color
+                            :name="row.peer.nickname"
+                            :size="40"
+                        ></hy-avatar>
+                        <view v-if="row.unread" class="msg__badge">{{
+                            row.unread > 99 ? '99+' : row.unread
+                        }}</view>
                     </view>
                     <view class="msg__body">
                         <view class="msg__row">
-                            <text class="msg__name">{{ row.peer.nickname }}</text>
-                            <text class="msg__time">{{ fmtTime(row.conversation.lastTime) }}</text>
+                            <text class="msg__name">{{
+                                row.peer.nickname
+                            }}</text>
+                            <text class="msg__time">{{
+                                fmtTime(row.conversation.lastTime)
+                            }}</text>
                         </view>
-                        <view class="msg__goods">「{{ row.goods.title }}」</view>
-                        <view class="msg__last">{{ row.conversation.lastMessage || '开始沟通吧～' }}</view>
+                        <view class="msg__goods"
+                            >「{{ row.goods.title }}」</view
+                        >
+                        <view class="msg__last">{{
+                            row.conversation.lastMessage || '开始沟通吧～'
+                        }}</view>
                     </view>
                 </view>
             </template>
-            <hy-empty v-else mode="message" description="暂无会话，去商品页和卖家聊聊吧"></hy-empty>
+            <hy-empty
+                v-else
+                mode="message"
+                description="暂无会话，去商品页和卖家聊聊吧"
+            ></hy-empty>
         </view>
     </the-root-pages>
 </template>
 
 <style lang="scss" scoped>
+@use '../../styles/design.scss' as *;
 .msg {
     min-height: 100vh;
     padding: 24rpx;
@@ -107,15 +159,23 @@ const goSecurity = () => {
     }
 
     &__entries {
-        border-radius: 16rpx;
-        overflow: hidden;
+        @include hy-card(20rpx);
         margin-bottom: 24rpx;
+        overflow: hidden;
+    }
+
+    &__entry-icon {
+        @include hy-icon-badge(64rpx, 18rpx);
+
+        &--green {
+            background: rgba(7, 193, 96, 0.1);
+        }
     }
 
     &__title {
         font-size: 30rpx;
         font-weight: 600;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
         margin-bottom: 16rpx;
     }
 
@@ -124,12 +184,16 @@ const goSecurity = () => {
     }
 
     &__item {
+        @include hy-card(20rpx);
         display: flex;
         gap: 20rpx;
         padding: 24rpx;
-        background: var(--hy-bg-color, #fff);
-        border-radius: 16rpx;
         margin-bottom: 16rpx;
+        animation: msg-fade-up 0.45s ease-out both;
+
+        &--hover {
+            background: var(--hy-background--hover, rgba(0, 0, 0, 0.05));
+        }
     }
 
     &__avatar {
@@ -144,13 +208,14 @@ const goSecurity = () => {
         height: 32rpx;
         padding: 0 8rpx;
         border-radius: 16rpx;
-        background: var(--hy-error-color, #f56c6c);
+        background: var(--hy-error, #f56c6c);
         color: #fff;
         font-size: 20rpx;
         display: flex;
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
+        border: 2rpx solid #ffffff;
     }
 
     &__body {
@@ -167,18 +232,18 @@ const goSecurity = () => {
     &__name {
         font-size: 30rpx;
         font-weight: 600;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
     }
 
     &__time {
         font-size: 22rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
     }
 
     &__goods {
         margin-top: 6rpx;
         font-size: 22rpx;
-        color: var(--hy-primary-color, #3d7eff);
+        color: var(--primary, #3d7eff);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -187,10 +252,21 @@ const goSecurity = () => {
     &__last {
         margin-top: 6rpx;
         font-size: 25rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+}
+
+@keyframes msg-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24rpx);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>

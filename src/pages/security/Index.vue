@@ -7,38 +7,34 @@ import { ref } from 'vue';
 
 definePage({
     style: {
-        navigationBarTitleText: '安全中心'
-    }
+        navigationBarTitleText: '安全中心',
+    },
 });
 
 const toast = useToast();
 
-// 全局分享（hy-app useShare）
-const { onShareAppMessage, onShareTimeline } = usePageShare();
-defineExpose({ onShareAppMessage, onShareTimeline });
-
-/** 举报（mock） */
-const reportShow = ref(false);
-const reportTarget = ref('');
-const openReport = () => {
-    reportTarget.value = '';
-    reportShow.value = true;
+/** 跳转投诉维权页（通用举报，不带订单） */
+const goComplaint = () => {
+    uni.navigateTo({ url: '/pages/complaint/Index' });
 };
-const submitReport = () => {
-    if (!reportTarget.value.trim()) {
-        toast.warning('请简要描述举报对象或问题');
-        return;
-    }
-    reportShow.value = false;
-    toast.success('举报已提交，平台将尽快核实处理');
+
+/** 跳转投诉/申诉记录 */
+const goRecords = () => {
+    uni.navigateTo({ url: '/pages/complaint/Record' });
 };
 
 const callSecurity = () => {
     // mock：学校保卫处电话
-    uni.makePhoneCall({ phoneNumber: '027-87541110', fail: () => toast.info('当前环境无法拨打电话') });
+    uni.makePhoneCall({
+        phoneNumber: '027-87541110',
+        fail: () => toast.info('当前环境无法拨打电话'),
+    });
 };
 const callPolice = () => {
-    uni.makePhoneCall({ phoneNumber: '110', fail: () => toast.info('当前环境无法拨打电话') });
+    uni.makePhoneCall({
+        phoneNumber: '110',
+        fail: () => toast.info('当前环境无法拨打电话'),
+    });
 };
 </script>
 
@@ -47,9 +43,21 @@ const callPolice = () => {
         <view class="sec">
             <!-- 强制安全承诺（购买确认页同款） -->
             <view class="sec__card">
-                <view class="sec__card-title">交易安全承诺（购买时强制勾选）</view>
-                <view v-for="(item, i) in SAFETY_PROMISES" :key="i" class="sec__promise">
-                    <hy-icon name="check-mask" color="var(--hy-success-color)" :size="16" />
+                <view class="sec__card-title"
+                    >交易安全承诺（购买时强制勾选）</view
+                >
+                <view
+                    v-for="(item, i) in SAFETY_PROMISES"
+                    :key="i"
+                    class="sec__promise"
+                >
+                    <view class="sec__promise-icon">
+                        <hy-icon
+                            name="check-mask"
+                            color="var(--hy-success, #07c160)"
+                            :size="16"
+                        />
+                    </view>
                     <text>{{ item }}</text>
                 </view>
             </view>
@@ -64,19 +72,72 @@ const callPolice = () => {
             <view class="sec__card">
                 <view class="sec__card-title">应急处理</view>
                 <hy-cell :border="false">
-                    <hy-cell-item title="举报用户或订单" sub="遇到欺诈、违规行为，立即举报" clickable is-right-icon @click="openReport">
+                    <hy-cell-item
+                        title="投诉用户或订单"
+                        sub="遇到欺诈、违规行为，立即投诉维权"
+                        clickable
+                        is-right-icon
+                        @click="goComplaint"
+                    >
                         <template #icon>
-                            <hy-icon name="warning" color="var(--hy-error-color)" :size="20"></hy-icon>
+                            <view class="sec__entry-icon sec__entry-icon--red">
+                                <hy-icon
+                                    name="warning"
+                                    color="var(--hy-error, #f56c6c)"
+                                    :size="20"
+                                ></hy-icon>
+                            </view>
                         </template>
                     </hy-cell-item>
-                    <hy-cell-item title="联系学校保卫处" sub="027-8754-1110（mock）" clickable is-right-icon @click="callSecurity">
+                    <hy-cell-item
+                        title="投诉 / 申诉记录"
+                        sub="处理进度 · 投诉结果 · 申辩记录"
+                        clickable
+                        is-right-icon
+                        @click="goRecords"
+                    >
                         <template #icon>
-                            <hy-icon name="telephone" color="var(--hy-primary-color)" :size="20"></hy-icon>
+                            <view class="sec__entry-icon">
+                                <hy-icon
+                                    name="order"
+                                    color="var(--primary, #3d7eff)"
+                                    :size="20"
+                                ></hy-icon>
+                            </view>
                         </template>
                     </hy-cell-item>
-                    <hy-cell-item title="报警求助" sub="遇到人身安全威胁立即拨打 110" clickable is-right-icon @click="callPolice">
+                    <hy-cell-item
+                        title="联系学校保卫处"
+                        sub="027-8754-1110（mock）"
+                        clickable
+                        is-right-icon
+                        @click="callSecurity"
+                    >
                         <template #icon>
-                            <hy-icon name="notice-fill" color="var(--hy-error-color)" :size="20"></hy-icon>
+                            <view class="sec__entry-icon">
+                                <hy-icon
+                                    name="telephone"
+                                    color="var(--primary, #3d7eff)"
+                                    :size="20"
+                                ></hy-icon>
+                            </view>
+                        </template>
+                    </hy-cell-item>
+                    <hy-cell-item
+                        title="报警求助"
+                        sub="遇到人身安全威胁立即拨打 110"
+                        clickable
+                        is-right-icon
+                        @click="callPolice"
+                    >
+                        <template #icon>
+                            <view class="sec__entry-icon sec__entry-icon--red">
+                                <hy-icon
+                                    name="notice-fill"
+                                    color="var(--hy-error, #f56c6c)"
+                                    :size="20"
+                                ></hy-icon>
+                            </view>
                         </template>
                     </hy-cell-item>
                 </hy-cell>
@@ -85,51 +146,88 @@ const callPolice = () => {
             <!-- 平台机制说明 -->
             <view class="sec__card">
                 <view class="sec__card-title">平台安全保障机制</view>
-                <view class="sec__mech"><text class="sec__mech-no">1</text><text>卖家确认前不展示任何联系方式</text></view>
-                <view class="sec__mech"><text class="sec__mech-no">2</text><text>全部沟通留在站内，聊天记录可作为申诉凭证</text></view>
-                <view class="sec__mech"><text class="sec__mech-no">3</text><text>买家确认后进入 48 小时申诉期，卖家可提异议</text></view>
-                <view class="sec__mech"><text class="sec__mech-no">4</text><text>订单完成商品仅置灰不隐藏，便于溯源</text></view>
-                <view class="sec__mech"><text class="sec__mech-no">5</text><text>未结清手续费的卖家将被限制发布新商品</text></view>
+                <view class="sec__mech"
+                    ><text class="sec__mech-no">1</text
+                    ><text>卖家确认前不展示任何联系方式</text></view
+                >
+                <view class="sec__mech"
+                    ><text class="sec__mech-no">2</text
+                    ><text>全部沟通留在站内，聊天记录可作为申诉凭证</text></view
+                >
+                <view class="sec__mech"
+                    ><text class="sec__mech-no">3</text
+                    ><text
+                        >买家确认后进入 48 小时申诉期，卖家可提异议</text
+                    ></view
+                >
+                <view class="sec__mech"
+                    ><text class="sec__mech-no">4</text
+                    ><text>订单完成商品仅置灰不隐藏，便于溯源</text></view
+                >
+                <view class="sec__mech"
+                    ><text class="sec__mech-no">5</text
+                    ><text>未结清手续费的卖家将被限制发布新商品</text></view
+                >
             </view>
-
-            <!-- 举报弹窗 -->
-            <hy-modal v-model="reportShow" title="提交举报" :show-confirm-button="true" confirm-text="提交举报" show-cancel-button @confirm="submitReport">
-                <view class="sec__report">
-                    <hy-textarea v-model="reportTarget" placeholder="请描述被举报用户/订单号及问题（虚假商品、欺诈、线下违规等）" :maxlength="200" count auto-height border="surround"></hy-textarea>
-                </view>
-            </hy-modal>
         </view>
     </the-root-pages>
 </template>
 
 <style lang="scss" scoped>
+@use '../../styles/design.scss' as *;
 .sec {
     min-height: 100vh;
     padding: 24rpx;
     box-sizing: border-box;
 
     &__card {
-        background: var(--hy-bg-color, #fff);
-        border-radius: 16rpx;
+        @include hy-card(20rpx);
         padding: 24rpx;
         margin-bottom: 24rpx;
+        animation: sec-fade-up 0.45s ease both;
+
+        &:nth-child(2) {
+            animation-delay: 0.06s;
+        }
+
+        &:nth-child(3) {
+            animation-delay: 0.12s;
+        }
+
+        &:nth-child(4) {
+            animation-delay: 0.18s;
+        }
     }
 
     &__card-title {
         font-size: 29rpx;
         font-weight: 600;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
         margin-bottom: 20rpx;
     }
 
     &__promise {
         display: flex;
         align-items: flex-start;
-        gap: 12rpx;
+        gap: 14rpx;
         font-size: 26rpx;
-        color: var(--hy-content-color, #606266);
+        color: var(--hy-text-color--2, #46464a);
         line-height: 1.6;
         padding: 10rpx 0;
+    }
+
+    &__promise-icon {
+        @include hy-icon-badge(44rpx, 12rpx);
+        margin-top: 2rpx;
+        background: var(--hy-success--light, rgba(7, 193, 96, 0.1));
+    }
+
+    &__entry-icon {
+        @include hy-icon-badge(64rpx, 18rpx);
+
+        &--red {
+            background: var(--hy-error--light, rgba(245, 108, 108, 0.1));
+        }
     }
 
     &__mech {
@@ -137,7 +235,7 @@ const callPolice = () => {
         align-items: flex-start;
         gap: 14rpx;
         font-size: 25rpx;
-        color: var(--hy-content-color, #606266);
+        color: var(--hy-text-color--2, #46464a);
         line-height: 1.6;
         margin-bottom: 14rpx;
 
@@ -150,8 +248,8 @@ const callPolice = () => {
         width: 32rpx;
         height: 32rpx;
         border-radius: 50%;
-        background: var(--hy-primary-light, rgba(61, 126, 255, 0.1));
-        color: var(--hy-primary-color, #3d7eff);
+        background: var(--primary-light, rgba(61, 126, 255, 0.08));
+        color: var(--primary, #3d7eff);
         font-size: 20rpx;
         display: flex;
         align-items: center;
@@ -159,9 +257,17 @@ const callPolice = () => {
         flex-shrink: 0;
         margin-top: 4rpx;
     }
+}
 
-    &__report {
-        padding: 8rpx 24rpx 20rpx;
+@keyframes sec-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24rpx);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>
