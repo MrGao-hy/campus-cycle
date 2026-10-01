@@ -5,8 +5,8 @@ import { getGoodsListApi } from '@/api';
 import { useUserStore } from '@/store';
 import { ensureLoginAndSchool } from '@/utils/guard';
 import { GOODS_CATEGORIES, type Goods } from '@/types';
-import { onShow } from '@dcloudio/uni-app';
-import { ref } from 'vue';
+import { onShow, onReady, onPageScroll } from '@dcloudio/uni-app';
+import { ref, getCurrentInstance } from 'vue';
 
 definePage({
     style: {
@@ -21,6 +21,32 @@ const keyword = ref('');
 const category = ref(0);
 const list = ref<Goods[]>([]);
 const loading = ref(true);
+
+/**
+ * 分类栏吸顶（JS 检测 + fixed，双端可靠；不用 position: sticky——
+ * 小程序 WKWebView 下 sticky 不遮挡滚动内容，商品会穿透到分类栏上方）
+ */
+const filterFixed = ref(false);
+const filterRect = ref({ top: 0, height: 0 });
+
+onReady(() => {
+    const q = uni.createSelectorQuery().in(getCurrentInstance()?.proxy);
+    q.select('.home__filter')
+        .boundingClientRect((rect) => {
+            const r = Array.isArray(rect) ? rect[0] : rect;
+            if (r) {
+                filterRect.value = {
+                    top: r.top ?? 0,
+                    height: r.height ?? 0,
+                };
+            }
+        })
+        .exec();
+});
+
+onPageScroll((e: { scrollTop: number }) => {
+    filterFixed.value = e.scrollTop > filterRect.value.top;
+});
 
 const loadList = async () => {
     if (!userStore.school) return;
@@ -90,8 +116,11 @@ const goSchool = () => {
                 ></hy-search>
             </view>
 
-            <!-- 分类（仅此栏吸顶，滚动时保持可见） -->
-            <view class="home__filter">
+            <!-- 分类（滚动超过其位置时 fixed 吸顶，遮挡后续内容） -->
+            <view
+                class="home__filter"
+                :class="{ 'home__filter--fixed': filterFixed }"
+            >
                 <hy-tabs
                     :list="GOODS_CATEGORIES.map(name => ({ name }))"
                     :current="category"
@@ -99,6 +128,12 @@ const goSchool = () => {
                     @change="onTabChange"
                 ></hy-tabs>
             </view>
+            <!-- fixed 吸顶占位，防止内容跳动 -->
+            <view
+                v-if="filterFixed"
+                class="home__filter-ph"
+                :style="{ height: filterRect.height + 'px' }"
+            ></view>
 
             <!-- 安全提醒（商品页强制展示） -->
             <view class="home__safety">
@@ -143,14 +178,23 @@ const goSchool = () => {
     min-height: 100vh;
     padding-bottom: 20rpx;
 
-    /* 分类栏吸顶（custom 导航页，吸在状态栏下方） */
+    /* 分类栏：默认流，滚动后 fixed 吸顶（遮挡商品，双端可靠） */
     &__filter {
-        position: sticky;
-        top: var(--status-bar-height);
-        z-index: 99;
         background: #ffffff;
-        box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.04);
         margin-bottom: 8rpx;
+
+        &--fixed {
+            position: fixed;
+            top: var(--status-bar-height);
+            left: 0;
+            right: 0;
+            z-index: 999;
+            box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.04);
+        }
+    }
+
+    &__filter-ph {
+        width: 100%;
     }
 
     &__school {
