@@ -149,6 +149,8 @@ const goSchool = () => {
         top: var(--status-bar-height);
         z-index: 99;
         background: #ffffff;
+        box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.04);
+        margin-bottom: 8rpx;
     }
 
     &__school {
