@@ -148,8 +148,16 @@ const goSchool = () => {
 .home {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--window-bottom, 0px));
     box-sizing: border-box;
+
+    /* 高度：小程序 tabBar 页 100vh 含 tabBar，需用 100% 跟随 page 视口链；
+       H5 tabBar 为 fixed，减 --window-bottom */
+    /* #ifdef MP-WEIXIN */
+    height: 100%;
+    /* #endif */
+    /* #ifdef H5 */
+    height: calc(100vh - var(--window-bottom, 0px));
+    /* #endif */
 
     /* 固定头部（flex-shrink: 0，不随列表滚动） */
     &__header {

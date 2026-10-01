@@ -22,10 +22,27 @@ page {
  * 该组件不处理 customStyle prop（小程序端透传失效），且滚动发生在组件容器内时
  * onPageScroll 永不触发 → JS 吸顶/滚动监听全部失效。
  * 组件 styleIsolation: shared + addGlobalClass: true，app.wxss 全局规则可穿透。
+ *
+ * 注意：不能直接 min-height: 100vh——小程序 tabBar 页的 100vh 含 tabBar 高度，
+ * 容器恒高于可视区导致页面可滚动（我的/消息页底部空白可滚动的根因）。
+ * 小程序端改用 page 100% 链（page 高度 = 可视区，tabBar 已排除）；
+ * H5 端 tabBar 为 fixed，需减去 --window-bottom。
  */
+/* #ifdef MP-WEIXIN */
+page {
+    height: 100%;
+}
 .hy-config-provider {
     height: auto !important;
-    min-height: 100vh !important;
+    min-height: 100% !important;
     overflow: visible !important;
 }
+/* #endif */
+/* #ifdef H5 */
+.hy-config-provider {
+    height: auto !important;
+    min-height: calc(100vh - var(--window-bottom, 0px)) !important;
+    overflow: visible !important;
+}
+/* #endif */
 </style>

@@ -201,9 +201,20 @@ const goIndex = () => {
 <style lang="scss" scoped>
 @use '../../styles/design.scss' as *;
 .msg {
-    padding: 24rpx;
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
+    padding: 24rpx;
     padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+
+    /* 高度链：小程序 tabBar 页 100vh 含 tabBar，用 100% 跟随 page 视口链；
+       H5 provider 无确定高度，显式减 --window-bottom */
+    /* #ifdef MP-WEIXIN */
+    min-height: 100%;
+    /* #endif */
+    /* #ifdef H5 */
+    min-height: calc(100vh - var(--window-bottom, 0px));
+    /* #endif */
 
     &__safety {
         margin-bottom: 24rpx;
@@ -357,6 +368,7 @@ const goIndex = () => {
     }
 
     &__empty {
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
