@@ -424,7 +424,7 @@ const logout = () => {
         font-size: 26rpx;
         font-weight: 600;
         color: var(--hy-text-color--3, #929295);
-        margin: 32rpx 8rpx 4rpx;
+        margin: 20rpx 8rpx 4rpx;
     }
 
     &__user-info {
@@ -492,7 +492,7 @@ const logout = () => {
         flex-shrink: 0;
         @include hy-card(20rpx);
         overflow: hidden;
-        margin-top: 24rpx;
+        margin-top: 12rpx;
     }
 
     &__item {
