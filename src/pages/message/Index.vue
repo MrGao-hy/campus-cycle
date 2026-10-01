@@ -133,19 +133,31 @@ const goSecurity = () => {
                     </view>
                     <view class="msg__body">
                         <view class="msg__row">
-                            <text class="msg__name">{{
-                                row.peer.nickname
-                            }}</text>
+                            <text
+                                class="msg__name"
+                                :class="{ 'msg__name--unread': row.unread }"
+                                >{{ row.peer.nickname }}</text
+                            >
                             <text class="msg__time">{{
                                 fmtTime(row.conversation.lastTime)
                             }}</text>
                         </view>
-                        <view class="msg__goods"
-                            >「{{ row.goods.title }}」</view
+                        <view
+                            class="msg__goods"
+                            :class="{ 'msg__goods--unread': row.unread }"
+                            >{{ row.goods.title }}</view
                         >
                         <view class="msg__last">{{
                             row.conversation.lastMessage || '开始沟通吧～'
                         }}</view>
+                    </view>
+                    <view class="msg__thumb">
+                        <hy-image
+                            :src="row.goods.images?.[0]"
+                            width="96rpx"
+                            height="96rpx"
+                            radius="12rpx"
+                        ></hy-image>
                     </view>
                 </view>
             </template>
@@ -242,8 +254,13 @@ const goSecurity = () => {
 
     &__name {
         font-size: 30rpx;
-        font-weight: 600;
-        color: var(--hy-text-color, #000000);
+        font-weight: 400;
+        color: var(--hy-text-color--2, #46464a);
+
+        &--unread {
+            font-weight: 600;
+            color: var(--hy-text-color, #000000);
+        }
     }
 
     &__time {
@@ -254,10 +271,14 @@ const goSecurity = () => {
     &__goods {
         margin-top: 6rpx;
         font-size: 22rpx;
-        color: var(--primary, #3d7eff);
+        color: var(--hy-text-color--3, #929295);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+
+        &--unread {
+            color: var(--primary, #3d7eff);
+        }
     }
 
     &__last {
@@ -267,6 +288,11 @@ const goSecurity = () => {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    &__thumb {
+        flex-shrink: 0;
+        align-self: center;
     }
 }
 
