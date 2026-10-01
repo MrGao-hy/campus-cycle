@@ -3,6 +3,7 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import { useUserStore } from '@/store';
 import { useToast } from '@hy-app/ui';
 import { computed, ref } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 import { wxLoginMockApi, confirmSchoolApi } from '@/api';
 
 definePage({
@@ -23,6 +24,27 @@ const agreeShake = ref(false);
 /** 协议弹窗 */
 const agreementShow = ref(false);
 const agreementKey = ref<'user' | 'privacy'>('privacy');
+
+/** 微信隐私授权弹层（小程序端：拦截原生隐私弹窗，用与协议弹层一致的风格渲染） */
+const privacyShow = ref(false);
+// #ifdef MP-WEIXIN
+let privacyResolveFn: ((res: any) => void) | null = null;
+onLoad(() => {
+    if (typeof wx !== 'undefined' && (wx as any).onNeedPrivacyAuthorization) {
+        (wx as any).onNeedPrivacyAuthorization((resolve: (res: any) => void) => {
+            privacyResolveFn = resolve;
+            privacyShow.value = true;
+        });
+    }
+});
+const agreePrivacy = () => {
+    if (privacyResolveFn) {
+        privacyResolveFn({ event: 'agree', buttonId: 'privacy-agree-btn' });
+    }
+    privacyResolveFn = null;
+    privacyShow.value = false;
+};
+// #endif
 
 const AGREEMENTS = {
     user: {
@@ -325,6 +347,37 @@ const handleLogin = async () => {
                 </view>
             </view>
         </view>
+
+        <!-- 微信隐私授权弹层（自定义：拦截原生隐私弹窗，风格与协议弹层统一） -->
+        <view
+            v-if="privacyShow"
+            class="login__modal-mask"
+            @tap.stop
+        >
+            <view class="login__modal login__privacy" @tap.stop>
+                <view class="login__modal-head">
+                    <text class="login__modal-title">隐私保护指引</text>
+                </view>
+                <view class="login__privacy-body">
+                    <text class="login__privacy-text"
+                        >为完成微信登录与账号创建，我们将处理你的微信登录凭证、微信昵称与头像，以及你主动填写的学校信息。上述信息仅用于创建与识别账号、展示交易身份、保障同校交易安全，存储于境内服务器，不会向任何第三方共享。</text
+                    >
+                    <text
+                        class="login__privacy-link"
+                        @tap="openAgreement('privacy')"
+                        >查看完整《隐私保护指引》</text
+                    >
+                </view>
+                <view class="login__agreement-btn">
+                    <hy-button
+                        text="同意并继续"
+                        type="primary"
+                        shape="circle"
+                        @click="agreePrivacy"
+                    ></hy-button>
+                </view>
+            </view>
+        </view>
     </the-root-pages>
 </template>
 
@@ -539,6 +592,28 @@ const handleLogin = async () => {
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    /* 微信隐私授权弹层 */
+    &__privacy {
+        padding-bottom: 36rpx;
+    }
+
+    &__privacy-body {
+        padding: 24rpx 36rpx 0;
+    }
+
+    &__privacy-text {
+        font-size: 26rpx;
+        line-height: 1.8;
+        color: #46464a;
+    }
+
+    &__privacy-link {
+        display: inline-block;
+        margin-top: 16rpx;
+        font-size: 24rpx;
+        color: var(--primary, #3d7eff);
     }
 
     &__modal {
