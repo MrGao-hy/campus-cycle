@@ -108,6 +108,7 @@ const goSchool = () => {
                         :text="[
                             '交易安全提醒：请选择校内公共场所当面交易，勿提前转账，勿脱离平台沟通',
                         ]"
+                        direction="column"
                         color="var(--warning, #f9ae3d)"
                         bg-color="var(--warning-light, rgba(249,174,61,0.1))"
                         url="/pages/security/Index"
