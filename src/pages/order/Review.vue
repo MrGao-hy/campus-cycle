@@ -5,6 +5,7 @@ import { useUserStore } from '@/store';
 import { useToast } from '@hy-app/ui';
 import type { OrderRow } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
+import { ensureLoginAndSchool } from '@/utils/guard';
 import { computed, ref } from 'vue';
 
 definePage({
@@ -25,6 +26,7 @@ const submitting = ref(false);
 const sellerName = computed(() => row.value?.seller.nickname || '卖家');
 
 onLoad(async options => {
+    if (!ensureLoginAndSchool()) return;
     orderId.value = (options?.orderId as string) || '';
     if (orderId.value) {
         row.value = await getOrderDetailApi(orderId.value);

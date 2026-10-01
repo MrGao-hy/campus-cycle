@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import { checkPublishAllowedApi, publishGoodsApi } from '@/api';
+import { uploadImage } from '@/utils/upload';
 import { useToast } from '@hy-app/ui';
 import { GOODS_CATEGORIES, GOODS_CONDITIONS } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
+import { ensureLoginAndSchool } from '@/utils/guard';
 import { computed, ref } from 'vue';
 
 definePage({
@@ -22,7 +24,10 @@ const checkPublish = async () => {
     publishBlocked.value = !res.allowed;
     unpaidAmount.value = res.unpaidAmount;
 };
-onShow(checkPublish);
+onShow(() => {
+    if (!ensureLoginAndSchool()) return;
+    checkPublish();
+});
 
 const title = ref('');
 const price = ref('');
@@ -54,12 +59,24 @@ const canSubmit = computed(() => {
     );
 });
 
-/** 选择商品图片（mock 环境：真实环境走 uni.uploadFile） */
+/** 选择商品图片（本地选图后上传后端，images 存可访问 URL） */
 const chooseImage = () => {
+    const remain = 3 - images.value.length;
+    if (remain <= 0) return;
     uni.chooseImage({
-        count: 3 - images.value.length,
-        success: res => {
-            images.value = images.value.concat(res.tempFilePaths).slice(0, 3);
+        count: remain,
+        success: async res => {
+            uni.showLoading({ title: '上传中...', mask: true });
+            try {
+                for (const p of res.tempFilePaths) {
+                    const url = await uploadImage(p);
+                    images.value = images.value.concat(url).slice(0, 3);
+                }
+            } catch (e) {
+                toast.warning((e as Error).message || '图片上传失败');
+            } finally {
+                uni.hideLoading();
+            }
         },
     });
 };

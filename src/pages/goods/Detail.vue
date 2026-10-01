@@ -7,6 +7,7 @@ import { useToast, type SwiperVo } from '@hy-app/ui';
 import { fmtTime } from '@/utils/format';
 import { GOODS_STATUS_TEXT } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
+import { usePageShare } from '@/hooks/useShare';
 import { computed, ref } from 'vue';
 import type { IGoodsDetail } from '@/api';
 
@@ -18,6 +19,9 @@ definePage({
 
 const toast = useToast();
 const userStore = useUserStore();
+
+// 动态分享：数据加载后修改 shareConfig 实现商品分享
+const { shareConfig } = usePageShare();
 
 const detail = ref<IGoodsDetail | null>(null);
 const current = ref(0);
@@ -46,6 +50,11 @@ const goChat = async () => {
         toast.info('这是您发布的商品');
         return;
     }
+    // 未登录 → 先去登录
+    if (!userStore.hasLogin) {
+        uni.navigateTo({ url: '/pages/login/Index' });
+        return;
+    }
     const conversationId = await startConversationApi(detail.value.id);
     uni.navigateTo({ url: `/pages/chat/Detail?id=${conversationId}` });
 };
@@ -53,6 +62,10 @@ const goChat = async () => {
 /** 买家提交购买申请 */
 const goApply = () => {
     if (!detail.value) return;
+    if (!userStore.hasLogin) {
+        uni.navigateTo({ url: '/pages/login/Index' });
+        return;
+    }
     uni.navigateTo({ url: `/pages/goods/Apply?id=${detail.value.id}` });
 };
 

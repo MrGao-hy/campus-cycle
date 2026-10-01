@@ -16,6 +16,8 @@ export const useUserStore = defineStore(
         const setLogin = (tokenVal: string, userInfoVal: UserProfile) => {
             token.value = tokenVal;
             userInfo.value = userInfoVal;
+            // 请求层统一从 storage 读取 token，登录成功必须同步写入
+            uni.setStorageSync('member_token', tokenVal);
         };
 
         const setSchool = (schoolVal: School) => {
@@ -29,6 +31,7 @@ export const useUserStore = defineStore(
             token.value = '';
             userInfo.value = null;
             school.value = null;
+            uni.removeStorageSync('member_token');
         };
 
         return { token, userInfo, school, hasLogin, hasSchool, setLogin, setSchool, logout };

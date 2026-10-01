@@ -23,6 +23,7 @@ import {
     type OrderRow,
 } from '@/types';
 import { onLoad, onShow } from '@dcloudio/uni-app';
+import { ensureLoginAndSchool } from '@/utils/guard';
 import { computed, onUnmounted, ref } from 'vue';
 import dayjs from 'dayjs';
 
@@ -131,9 +132,12 @@ const load = async () => {
 };
 
 onLoad(options => {
+    if (!ensureLoginAndSchool()) return;
     orderId.value = (options?.id as string) || '';
 });
-onShow(load);
+onShow(() => {
+    if (orderId.value) load();
+});
 
 const openModal = (type: typeof modalType.value) => {
     modalType.value = type;
