@@ -3,7 +3,7 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import SafetyTips from '@/components/SafetyTips.vue';
 import { getConversationListApi } from '@/api';
 import { useUserStore } from '@/store';
-import { ensureLoginAndSchool } from '@/utils/guard';
+import { ensureLogin } from '@/utils/guard';
 import { fmtTime } from '@/utils/format';
 import type { ConversationRow } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
@@ -38,7 +38,8 @@ const loadList = async () => {
 };
 
 onShow(() => {
-    if (!ensureLoginAndSchool()) return;
+    // 未登录不拉会话（页面内显示登录引导），登录后再加载
+    if (!userStore.hasLogin) return;
     loadList();
 });
 
@@ -48,6 +49,10 @@ const goChat = (row: ConversationRow) => {
 
 const goOrders = () => {
     uni.navigateTo({ url: '/pages/order/List' });
+};
+
+const goLogin = () => {
+    uni.navigateTo({ url: '/pages/login/Index' });
 };
 
 const goSecurity = () => {
@@ -115,15 +120,36 @@ const goIndex = () => {
                 </view>
             </view>
 
-            <!-- 会话列表 -->
-            <view class="msg__title">站内会话</view>
-            <view v-if="loading" class="msg__loading">
-                <hy-skeleton
-                    theme="avatar"
-                    :row-col="[1, 1, 1]"
-                    animation="gradient"
-                ></hy-skeleton>
+            <!-- 未登录：登录引导 -->
+            <view v-if="!userStore.hasLogin" class="msg__login-guide">
+                <view class="msg__login-logo">
+                    <hy-icon
+                        name="/static/icons/message.png"
+                        :size="32"
+                    />
+                </view>
+                <text class="msg__login-title">登录后查看站内会话</text>
+                <text class="msg__login-desc"
+                    >与买家/卖家在线沟通，交易全程留痕</text
+                >
+                <hy-button
+                    text="微信一键登录"
+                    color="#07c160"
+                    shape="circle"
+                    @click="goLogin"
+                ></hy-button>
             </view>
+
+            <!-- 会话列表（登录可见） -->
+            <template v-if="userStore.hasLogin">
+                <view class="msg__title">站内会话</view>
+                <view v-if="loading" class="msg__loading">
+                    <hy-skeleton
+                        theme="avatar"
+                        :row-col="[1, 1, 1]"
+                        animation="gradient"
+                    ></hy-skeleton>
+                </view>
             <template v-else-if="list.length">
                 <view
                     v-for="(row, i) in list"
@@ -194,6 +220,7 @@ const goIndex = () => {
                     @click="goIndex"
                 ></hy-button>
             </view>
+            </template>
         </view>
     </the-root-pages>
 </template>
@@ -219,6 +246,38 @@ const goIndex = () => {
 
     &__safety {
         margin-bottom: 24rpx;
+    }
+
+    &__login-guide {
+        margin-top: 16rpx;
+        @include hy-card(20rpx);
+        padding: 64rpx 40rpx 72rpx;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20rpx;
+    }
+
+    &__login-logo {
+        width: 112rpx;
+        height: 112rpx;
+        border-radius: 32rpx;
+        background: rgba(61, 126, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8rpx;
+    }
+
+    &__login-title {
+        font-size: 32rpx;
+        font-weight: 600;
+        color: #1f2329;
+    }
+
+    &__login-desc {
+        font-size: 24rpx;
+        color: #929295;
     }
 
     &__entries {

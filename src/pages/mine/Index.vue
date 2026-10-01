@@ -19,10 +19,7 @@ const unpaidAmount = ref(0);
 const unpaidCount = ref(0);
 
 onShow(() => {
-    if (!userStore.hasLogin) {
-        uni.reLaunch({ url: '/pages/login/Index' });
-        return;
-    }
+    if (!userStore.hasLogin) return;
     if (!userStore.hasSchool) {
         uni.navigateTo({ url: '/pages/school/Index' });
         return;
@@ -44,6 +41,7 @@ const goSecurity = () => uni.navigateTo({ url: '/pages/security/Index' });
 const goRecords = () => uni.navigateTo({ url: '/pages/complaint/Record' });
 const goSchool = () => uni.navigateTo({ url: '/pages/school/Index' });
 const goProfile = () => uni.navigateTo({ url: '/pages/profile/Index' });
+const goLogin = () => uni.navigateTo({ url: '/pages/login/Index' });
 
 const logout = () => {
     uni.showModal({
@@ -62,8 +60,31 @@ const logout = () => {
 <template>
     <the-root-pages>
         <view class="mine">
+            <!-- 未登录引导 -->
+            <view v-if="!userStore.hasLogin" class="mine__login-guide">
+                <view class="mine__login-logo">
+                    <hy-icon
+                        name="/static/icons/shield.png"
+                        :size="34"
+                    />
+                </view>
+                <text class="mine__login-title">登录后开启校园二手交易</text>
+                <text class="mine__login-desc"
+                    >同校实名认证 · 平台订单保障 · 交易更放心</text
+                >
+                <hy-button
+                    text="微信一键登录"
+                    color="#07c160"
+                    shape="circle"
+                    @click="goLogin"
+                ></hy-button>
+                <text class="mine__login-link" @tap="goSchool"
+                    >先选择学校，逛逛再说</text
+                >
+            </view>
+
             <!-- 用户信息 -->
-            <view class="mine__user">
+            <view v-else class="mine__user">
                 <view class="mine__user-decor"></view>
                 <view class="mine__user-decor mine__user-decor--2"></view>
                 <hy-avatar
@@ -110,7 +131,11 @@ const logout = () => {
             </view>
 
             <!-- 欠费提示 -->
-            <view v-if="unpaidAmount > 0" class="mine__fee-warn" @tap="goFee">
+            <view
+                v-if="userStore.hasLogin && unpaidAmount > 0"
+                class="mine__fee-warn"
+                @tap="goFee"
+            >
                 <hy-icon
                     name="/static/icons/warning.png"
                     color="var(--hy-error, #f56c6c)"
@@ -125,8 +150,10 @@ const logout = () => {
                 <text class="mine__fee-link">去处理 ›</text>
             </view>
 
-            <!-- 交易入口 -->
-            <view class="mine__group-title">我的交易</view>
+            <!-- 交易/服务/退出（仅登录可见） -->
+            <template v-if="userStore.hasLogin">
+                <!-- 交易入口 -->
+                <view class="mine__group-title">我的交易</view>
             <view class="mine__group">
                 <view class="mine__item" @tap="goOrders">
                     <view class="mine__item-icon"
@@ -279,6 +306,7 @@ const logout = () => {
                     @click="logout"
                 ></hy-button>
             </view>
+            </template>
         </view>
     </the-root-pages>
 </template>
@@ -316,6 +344,47 @@ const logout = () => {
         box-shadow: 0 12rpx 32rpx rgba(30, 60, 120, 0.18);
         animation: mine-fade-up 0.45s ease-out both;
         overflow: hidden;
+    }
+
+    &__login-guide {
+        flex-shrink: 0;
+        @include hy-gradient-header(135deg, 24rpx);
+        padding: 72rpx 48rpx 64rpx;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20rpx;
+        box-shadow: 0 12rpx 32rpx rgba(30, 60, 120, 0.18);
+        animation: mine-fade-up 0.45s ease-out both;
+    }
+
+    &__login-logo {
+        width: 120rpx;
+        height: 120rpx;
+        border-radius: 36rpx;
+        background: rgba(255, 255, 255, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8rpx;
+    }
+
+    &__login-title {
+        font-size: 34rpx;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    &__login-desc {
+        font-size: 24rpx;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    &__login-link {
+        margin-top: 12rpx;
+        font-size: 24rpx;
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: underline;
     }
 
     &__user-decor {

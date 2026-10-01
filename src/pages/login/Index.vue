@@ -3,7 +3,7 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import { useUserStore } from '@/store';
 import { useToast } from '@hy-app/ui';
 import { computed, ref } from 'vue';
-import { wxLoginMockApi } from '@/api';
+import { wxLoginMockApi, confirmSchoolApi } from '@/api';
 
 definePage({
     style: {
@@ -98,6 +98,11 @@ const agreeFromModal = () => {
     agreementShow.value = false;
 };
 
+/** 暂不登录，先逛逛（未登录态浏览首页） */
+const goGuest = () => {
+    uni.switchTab({ url: '/pages/index/Index' });
+};
+
 /** 未勾选协议时引导：抖动 + 轻震动 + 提示 */
 const remindAgreement = () => {
     agreeShake.value = true;
@@ -122,6 +127,15 @@ const handleLogin = async () => {
         userStore.setLogin(res.token, res.userInfo);
         toast.close();
         toast.success('登录成功');
+        // 本地已有学校（未登录时选的）→ 同步到账号
+        if (userStore.school) {
+            try {
+                const school = await confirmSchoolApi(userStore.school.id);
+                userStore.setSchool(school);
+            } catch {
+                /* 同步失败不阻塞登录，本地学校保留 */
+            }
+        }
         // 未选择学校 → 先选择并确认学校
         if (!userStore.hasSchool) {
             setTimeout(
@@ -250,6 +264,10 @@ const handleLogin = async () => {
                     :custom-style="{ height: '96rpx', fontSize: '32rpx' }"
                     @click="handleLogin"
                 ></hy-button>
+
+                <text class="login__guest" @tap="goGuest"
+                    >暂不登录，先逛逛</text
+                >
 
                 <view class="login__safety">
                     <hy-icon
@@ -489,6 +507,14 @@ const handleLogin = async () => {
 
     &__agree-link {
         color: var(--primary, #3d7eff);
+    }
+
+    &__guest {
+        margin-top: 28rpx;
+        font-size: 26rpx;
+        color: var(--hy-text-color--3, #929295);
+        text-align: center;
+        text-decoration: underline;
     }
 
     &__safety {

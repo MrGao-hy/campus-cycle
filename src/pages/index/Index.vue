@@ -3,7 +3,7 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import GoodsCard from '@/components/GoodsCard.vue';
 import { getGoodsListApi } from '@/api';
 import { useUserStore } from '@/store';
-import { ensureLoginAndSchool } from '@/utils/guard';
+import { ensureSchool } from '@/utils/guard';
 import { GOODS_CATEGORIES, type Goods } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
 import { ref } from 'vue';
@@ -34,7 +34,8 @@ const loadList = async () => {
 };
 
 onShow(() => {
-    if (!ensureLoginAndSchool()) return;
+    // 浏览无需登录：仅需选择学校（未登录也可浏览本校商品）
+    if (!ensureSchool()) return;
     loadList();
 });
 
@@ -54,6 +55,14 @@ const goDetail = (goods: Goods) => {
 
 const goSchool = () => {
     uni.navigateTo({ url: '/pages/school/Index' });
+};
+
+const goLogin = () => {
+    uni.navigateTo({ url: '/pages/login/Index' });
+};
+
+const goProfile = () => {
+    uni.navigateTo({ url: '/pages/profile/Index' });
 };
 
 const goSecurity = () => {
@@ -80,6 +89,25 @@ const goSecurity = () => {
                         color="var(--hy-text-color--3, #929295)"
                         :size="12"
                     />
+                </view>
+
+                <!-- 用户区：已登录头像 / 未登录登录入口 -->
+                <view
+                    v-if="userStore.hasLogin"
+                    class="home__user"
+                    @tap="goProfile"
+                >
+                    <hy-avatar
+                        :text="
+                            userStore.userInfo?.nickname.slice(0, 1) || '同'
+                        "
+                        random-bg-color
+                        :name="userStore.userInfo?.nickname"
+                        :size="26"
+                    />
+                </view>
+                <view v-else class="home__user-login" @tap="goLogin">
+                    <text>登录</text>
                 </view>
 
                 <!-- 搜索 -->
@@ -209,6 +237,30 @@ const goSecurity = () => {
     &__school-name {
         font-size: 30rpx;
         font-weight: 600;
+    }
+
+    &__user {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+    }
+
+    &__user-login {
+        margin-left: auto;
+        height: 56rpx;
+        padding: 0 28rpx;
+        border-radius: 28rpx;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1rpx solid rgba(61, 126, 255, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        text {
+            font-size: 24rpx;
+            font-weight: 600;
+            color: var(--primary, #3d7eff);
+        }
     }
 
     &__search {

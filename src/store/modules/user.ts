@@ -30,7 +30,7 @@ export const useUserStore = defineStore(
         const logout = () => {
             token.value = '';
             userInfo.value = null;
-            school.value = null;
+            // 学校选择独立于登录态：退出登录后保留，重新登录时同步回账号
             uni.removeStorageSync('member_token');
         };
 

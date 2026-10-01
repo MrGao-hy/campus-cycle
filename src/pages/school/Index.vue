@@ -48,8 +48,20 @@ const onTapSchool = (school: School) => {
 
 const onConfirm = async () => {
     if (!selected.value) return;
-    const school = await confirmSchoolApi(selected.value.id);
-    userStore.setSchool(school);
+    const school = selected.value;
+    if (userStore.hasLogin) {
+        // 已登录：调接口确认并同步到账号
+        try {
+            const confirmed = await confirmSchoolApi(school.id);
+            userStore.setSchool(confirmed);
+        } catch {
+            // 接口失败不阻塞：本地学校先生效，登录页后续可重试同步
+            userStore.setSchool(school);
+        }
+    } else {
+        // 未登录：仅本地保存（学校独立于登录态），登录成功后自动同步账号
+        userStore.setSchool(school);
+    }
     toast.success(`已选择：${school.shortName || school.name}`);
     setTimeout(() => {
         // 从登录流程进入时进入首页；从我的页进入时返回
