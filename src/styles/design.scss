@@ -1,0 +1,37 @@
+/* ================= campusCycle 设计系统公共 mixin =================
+   注意：不能放 uni.scss —— uni.scss 会被注入到所有组件样式前面，
+   其中的 @mixin 会让含 @use 的组件（如 hy-search）编译报错。
+   使用方在 <style> 顶部引入：@use '../../styles/design.scss' as *;
+
+   主题变量（--primary / --primary-light / --primary-light-2 / --warning / --warning-light）
+   由 TheRootPages.vue 全局注入，跟随 store.themeColor 换肤 */
+
+/* 白卡容器 */
+@mixin hy-card($radius: 24rpx) {
+    background: var(--hy-background--container, #ffffff);
+    border-radius: $radius;
+    box-shadow: 0 8rpx 28rpx rgba(30, 60, 120, 0.06);
+}
+
+/* 主题渐变头（白化叠加，任意主题色通用） */
+@mixin hy-gradient-header($dir: 160deg, $radius: 0 0 56rpx 56rpx) {
+    background: linear-gradient($dir, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.45) 100%), var(--primary, #3d7eff);
+    border-radius: $radius;
+}
+
+/* 图标圆角底 */
+@mixin hy-icon-badge($size: 64rpx, $radius: 18rpx) {
+    width: $size;
+    height: $size;
+    border-radius: $radius;
+    background: var(--primary-light, rgba(61, 126, 255, 0.08));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* 底部安全区留白 */
+@mixin hy-safe-bottom($extra: 0rpx) {
+    padding-bottom: calc(#{$extra} + env(safe-area-inset-bottom));
+}

@@ -5,7 +5,6 @@ import { getGoodsListApi } from '@/api';
 import { useUserStore } from '@/store';
 import { ensureLoginAndSchool } from '@/utils/guard';
 import { GOODS_CATEGORIES, type Goods } from '@/types';
-import { usePageShare } from '@/hooks/useShare';
 import { onShow } from '@dcloudio/uni-app';
 import { ref } from 'vue';
 
@@ -66,15 +65,15 @@ const goSchool = () => {
                 <view class="home__school" @tap="goSchool">
                     <hy-icon
                         name="map-fill"
-                        color="var(--hy-primary-color)"
-                        :size="18"
+                        color="var(--primary, #3d7eff)"
+                        :size="13"
                     />
                     <text class="home__school-name">{{
                         userStore.school?.name || '选择学校'
                     }}</text>
                     <hy-icon
                         name="down"
-                        color="var(--hy-info-color)"
+                        color="var(--hy-text-color--3, #929295)"
                         :size="12"
                     />
                 </view>
@@ -108,8 +107,8 @@ const goSchool = () => {
                     :text="[
                         '交易安全提醒：请选择校内公共场所当面交易，勿提前转账，勿脱离平台沟通',
                     ]"
-                    color="var(--hy-warning-color, #f9ae3d)"
-                    bg-color="var(--hy-warning-light, rgba(249,174,61,0.1))"
+                    color="var(--warning, #f9ae3d)"
+                    bg-color="var(--warning-light, rgba(249,174,61,0.1))"
                     url="/pages/security/Index"
                 ></hy-notice-bar>
             </view>
@@ -140,9 +139,16 @@ const goSchool = () => {
 </template>
 
 <style lang="scss" scoped>
+@use '../../styles/design.scss' as *;
 .home {
     min-height: 100vh;
-    padding-bottom: 40rpx;
+    padding-bottom: 20rpx;
+
+    /* 渐变头（吸顶整体） */
+    &__top {
+        @include hy-gradient-header(160deg, 0 0 48rpx 48rpx);
+        padding-bottom: 8rpx;
+    }
 
     &__school {
         display: flex;
@@ -150,16 +156,19 @@ const goSchool = () => {
         gap: 8rpx;
         padding: calc(var(--status-bar-height) + 40rpx) 32rpx 0;
         height: 80rpx;
+
+        &--hover {
+            opacity: 0.8;
+        }
     }
 
     &__school-name {
         font-size: 30rpx;
         font-weight: 600;
-        color: var(--hy-main-color, #303133);
     }
 
     &__search {
-        padding: 20rpx 24rpx 0;
+        margin: 20rpx 24rpx 16rpx;
     }
 
     &__safety {

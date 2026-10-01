@@ -10,8 +10,8 @@ import { computed, ref } from 'vue';
 
 definePage({
     style: {
-        navigationBarTitleText: '评价交易'
-    }
+        navigationBarTitleText: '评价交易',
+    },
 });
 
 const toast = useToast();
@@ -44,7 +44,11 @@ const submit = async () => {
     if (submitting.value) return;
     submitting.value = true;
     try {
-        await submitReviewApi({ orderId: orderId.value, rate: rate.value, content: content.value.trim() });
+        await submitReviewApi({
+            orderId: orderId.value,
+            rate: rate.value,
+            content: content.value.trim(),
+        });
         toast.success('评价成功，感谢您的反馈');
         setTimeout(() => uni.navigateBack(), 600);
     } catch (e) {
@@ -60,10 +64,21 @@ const submit = async () => {
         <view v-if="row" class="review">
             <!-- 商品信息 -->
             <view class="review__goods">
-                <hy-image :src="row.goods.images[0]" width="120rpx" height="120rpx" radius="10rpx" />
+                <hy-image
+                    :src="row.goods.images[0]"
+                    width="120rpx"
+                    height="120rpx"
+                    radius="10rpx"
+                />
                 <view class="review__goods-info">
-                    <view class="review__goods-title">{{ row.goods.title }}</view>
-                    <text class="review__goods-sub">卖家：{{ sellerName }} · 成交价 ￥{{ row.order.price }}</text>
+                    <view class="review__goods-title">{{
+                        row.goods.title
+                    }}</view>
+                    <text class="review__goods-sub"
+                        >卖家：{{ sellerName }} · 成交价 ￥{{
+                            row.order.price
+                        }}</text
+                    >
                 </view>
             </view>
 
@@ -71,7 +86,12 @@ const submit = async () => {
             <view class="review__card">
                 <view class="review__card-title">为本次交易评分</view>
                 <view class="review__rate-row">
-                    <hy-rate v-model="rate" :size="28" active-color="#FFB300" :touchable="true"></hy-rate>
+                    <hy-rate
+                        v-model="rate"
+                        :size="28"
+                        active-color="#FFB300"
+                        :touchable="true"
+                    ></hy-rate>
                     <text class="review__rate-label">{{ rateLabel }}</text>
                 </view>
             </view>
@@ -79,12 +99,23 @@ const submit = async () => {
             <!-- 评价内容 -->
             <view class="review__card">
                 <view class="review__card-title">评价内容</view>
-                <hy-textarea v-model="content" placeholder="商品描述相符吗？卖家沟通及时吗？线下交易顺利吗？" :maxlength="200" count auto-height border="surround"></hy-textarea>
+                <hy-textarea
+                    v-model="content"
+                    placeholder="商品描述相符吗？卖家沟通及时吗？线下交易顺利吗？"
+                    :maxlength="200"
+                    count
+                    auto-height
+                    border="surround"
+                ></hy-textarea>
             </view>
 
             <!-- 提示 -->
             <view class="review__tip">
-                <hy-icon name="notice" color="var(--hy-info-color)" :size="14" />
+                <hy-icon
+                    name="notice"
+                    color="var(--hy-text-color--3, #929295)"
+                    :size="14"
+                />
                 <text>评价将在卖家商品详情页展示，请文明评价</text>
             </view>
 
@@ -104,17 +135,18 @@ const submit = async () => {
 </template>
 
 <style lang="scss" scoped>
+@use '../../styles/design.scss' as *;
 .review {
     min-height: 100vh;
     padding: 24rpx 24rpx 200rpx;
     box-sizing: border-box;
 
     &__goods {
+        @include hy-card(20rpx);
         display: flex;
         gap: 20rpx;
-        background: var(--hy-bg-color, #fff);
-        border-radius: 16rpx;
         padding: 24rpx;
+        animation: review-fade-up 0.45s ease both;
     }
 
     &__goods-info {
@@ -125,26 +157,26 @@ const submit = async () => {
     &__goods-title {
         font-size: 28rpx;
         font-weight: 500;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
         margin-bottom: 10rpx;
     }
 
     &__goods-sub {
         font-size: 24rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
     }
 
     &__card {
-        background: var(--hy-bg-color, #fff);
-        border-radius: 16rpx;
+        @include hy-card(20rpx);
         padding: 24rpx;
         margin-top: 24rpx;
+        animation: review-fade-up 0.45s ease 0.06s both;
     }
 
     &__card-title {
         font-size: 29rpx;
         font-weight: 600;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
         margin-bottom: 20rpx;
     }
 
@@ -156,7 +188,7 @@ const submit = async () => {
 
     &__rate-label {
         font-size: 28rpx;
-        color: var(--hy-warning-color, #f9ae3d);
+        color: var(--warning, #f9ae3d);
         font-weight: 500;
     }
 
@@ -166,7 +198,8 @@ const submit = async () => {
         align-items: center;
         gap: 8rpx;
         font-size: 22rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
+        animation: review-fade-up 0.45s ease 0.12s both;
     }
 
     &__footer {
@@ -175,8 +208,20 @@ const submit = async () => {
         right: 0;
         bottom: 0;
         padding: 16rpx 24rpx;
-        background: var(--hy-bg-color, #fff);
+        background: var(--hy-background--container, #ffffff);
         box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+    }
+}
+
+@keyframes review-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24rpx);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>

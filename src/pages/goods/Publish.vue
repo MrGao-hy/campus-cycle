@@ -33,9 +33,21 @@ const title = ref('');
 const price = ref('');
 const description = ref('');
 const images = ref<string[]>([]);
-const categoryIndex = ref(0);
-const conditionIndex = ref(0);
+/** 分类（单选值，默认「生活」） */
+const category = ref('生活');
+/** 成色（单选值，默认「全新」） */
+const condition = ref(GOODS_CONDITIONS[0]);
 const submitting = ref(false);
+
+/** hy-check-button 选项 */
+const categoryColumns = GOODS_CATEGORIES.slice(1).map(name => ({
+    label: name,
+    value: name,
+}));
+const conditionColumns = GOODS_CONDITIONS.map(name => ({
+    label: name,
+    value: name,
+}));
 
 const canSubmit = computed(() => {
     return (
@@ -84,11 +96,8 @@ const submit = async () => {
         await publishGoodsApi({
             title: title.value.trim(),
             price: Number(price.value),
-            category:
-                GOODS_CATEGORIES[categoryIndex.value] === '推荐'
-                    ? '生活'
-                    : GOODS_CATEGORIES[categoryIndex.value],
-            condition: GOODS_CONDITIONS[conditionIndex.value],
+            category: category.value,
+            condition: condition.value,
             description: description.value.trim(),
             images: images.value,
         });
@@ -155,11 +164,13 @@ const submit = async () => {
                     <view
                         v-if="images.length < 3"
                         class="publish__image-add"
+                        hover-class="publish__image-add--hover"
+                        :hover-stay-time="120"
                         @tap="chooseImage"
                     >
                         <hy-icon
                             name="camera"
-                            color="var(--hy-info-color)"
+                            color="var(--hy-text-color--3, #929295)"
                             :size="28"
                         ></hy-icon>
                         <text>添加图片</text>
@@ -197,40 +208,36 @@ const submit = async () => {
             <!-- 分类 -->
             <view class="publish__card">
                 <view class="publish__card-title">分类</view>
-                <view class="publish__chips">
-                    <hy-tag
-                        v-for="(name, i) in GOODS_CATEGORIES.slice(1)"
-                        :key="name"
-                        :label="name"
-                        :type="categoryIndex === i + 1 ? 'primary' : 'info'"
-                        :plain="categoryIndex !== i + 1"
-                        shape="circle"
-                        @click="categoryIndex = i + 1"
-                    ></hy-tag>
-                </view>
+                <hy-check-button
+                    v-model="category"
+                    :columns="categoryColumns"
+                    select-type="radio"
+                    type="primary"
+                    shape="circle"
+                    col="repeat(3, 1fr)"
+                    gap="16rpx"
+                ></hy-check-button>
             </view>
 
             <!-- 成色 -->
             <view class="publish__card">
                 <view class="publish__card-title">成色</view>
-                <view class="publish__chips">
-                    <hy-tag
-                        v-for="(name, i) in GOODS_CONDITIONS"
-                        :key="name"
-                        :label="name"
-                        :type="conditionIndex === i ? 'primary' : 'info'"
-                        :plain="conditionIndex !== i"
-                        shape="circle"
-                        @click="conditionIndex = i"
-                    ></hy-tag>
-                </view>
+                <hy-check-button
+                    v-model="condition"
+                    :columns="conditionColumns"
+                    select-type="radio"
+                    type="primary"
+                    shape="circle"
+                    col="repeat(2, 1fr)"
+                    gap="16rpx"
+                ></hy-check-button>
             </view>
 
             <!-- 手续费说明 -->
             <view class="publish__fee">
                 <hy-icon
                     name="remind"
-                    color="var(--hy-primary-color)"
+                    color="var(--primary, #3d7eff)"
                     :size="16"
                 />
                 <text
@@ -243,7 +250,7 @@ const submit = async () => {
                 <hy-button
                     text="发布"
                     shape="circle"
-                    color="var(--hy-primary-color)"
+                    color="var(--primary, #3d7eff)"
                     :disabled="!canSubmit"
                     :loading="submitting"
                     :custom-style="{ height: '92rpx', fontSize: '32rpx' }"
@@ -256,6 +263,7 @@ const submit = async () => {
 </template>
 
 <style lang="scss" scoped>
+@use '../../styles/design.scss' as *;
 .publish {
     min-height: 100vh;
     padding: 24rpx 24rpx 180rpx;
@@ -266,16 +274,16 @@ const submit = async () => {
     }
 
     &__card {
-        background: var(--hy-bg-color, #fff);
-        border-radius: 16rpx;
+        @include hy-card(20rpx);
         padding: 24rpx;
         margin-bottom: 24rpx;
+        animation: publish-fade-up 0.45s ease 0.06s both;
     }
 
     &__card-title {
         font-size: 28rpx;
         font-weight: 600;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
         margin-bottom: 20rpx;
     }
 
@@ -306,31 +314,35 @@ const submit = async () => {
     &__image-add {
         width: 180rpx;
         height: 180rpx;
-        border: 2rpx dashed var(--hy-border-color, #dcdfe6);
+        border: 2rpx dashed var(--primary-light-2, rgba(61, 126, 255, 0.3));
         border-radius: 12rpx;
+        background: var(--primary-light, rgba(61, 126, 255, 0.04));
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 8rpx;
         font-size: 22rpx;
-        color: var(--hy-info-color, #909193);
-    }
+        color: var(--hy-text-color--3, #929295);
+        transition: background-color 0.2s ease;
 
-    &__chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20rpx;
+        &--hover {
+            background: var(--primary-light, rgba(61, 126, 255, 0.1));
+        }
     }
 
     &__fee {
         display: flex;
         align-items: flex-start;
-        gap: 10rpx;
+        gap: 12rpx;
         font-size: 22rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--2, #46464a);
         line-height: 1.6;
-        padding: 0 8rpx;
+        padding: 20rpx 24rpx;
+        margin-bottom: 24rpx;
+        background: var(--primary-light, rgba(61, 126, 255, 0.06));
+        border-radius: 16rpx;
+        animation: publish-fade-up 0.45s ease 0.12s both;
     }
 
     &__footer {
@@ -339,8 +351,20 @@ const submit = async () => {
         right: 0;
         bottom: 0;
         padding: 16rpx 24rpx;
-        background: var(--hy-bg-color, #fff);
+        background: var(--hy-background--container, #ffffff);
         box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+    }
+}
+
+@keyframes publish-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24rpx);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>

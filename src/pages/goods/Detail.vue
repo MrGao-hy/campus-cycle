@@ -3,7 +3,7 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import SafetyTips from '@/components/SafetyTips.vue';
 import { getGoodsDetailApi, startConversationApi } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast, type SwiperVo } from '@hy-app/ui';
 import { fmtTime } from '@/utils/format';
 import { GOODS_STATUS_TEXT } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
@@ -37,13 +37,10 @@ onLoad(async options => {
     const id = options?.id as string;
     if (!id) return;
     detail.value = await getGoodsDetailApi(id);
-    // 动态分享：标题带商品与价格，路径带商品 id
-    shareConfig.title = `${detail.value.title}｜￥${detail.value.price}`;
-    shareConfig.path = `/pages/goods/Detail?id=${id}`;
 });
 
-const onSwiperChange = (e: { detail: { current: number } }) => {
-    current.value = e.detail.current;
+const onSwiperChange = (e: SwiperVo['detail']) => {
+    current.value = e.current;
 };
 
 /** 站内会话沟通 */
@@ -89,65 +86,57 @@ const goSellerProfile = () => {
     <the-root-pages>
         <view v-if="detail" class="detail">
             <!-- 图片轮播 -->
-            <swiper
-                class="detail__swiper"
-                circular
-                :indicator-dots="false"
-                @change="onSwiperChange"
-            >
-                <swiper-item
-                    v-for="(imgUrl, i) in detail.images"
-                    :key="i"
-                    @tap="previewImages(i)"
-                >
+            <view class="detail__swiper">
+                <hy-swiper
+                    :list="detail.images"
+                    height="640rpx"
+                    indicator
+                    @change="onSwiperChange"
+                ></hy-swiper>
+                <view v-if="detail.status === 'SOLD'" class="detail__sold-mask">
                     <hy-image
-                        :src="imgUrl"
-                        width="100%"
-                        height="100%"
-                        mode="aspectFill"
-                    />
-                    <view
-                        v-if="detail.status === 'SOLD'"
-                        class="detail__sold-mask"
-                    >
-                        <text>已售出</text>
-                    </view>
-                </swiper-item>
-            </swiper>
-            <view class="detail__indicator"
-                >{{ current + 1 }}/{{ detail.images.length }}</view
-            >
+                        src="/static/images/soldOut.png"
+                        width="155"
+                        height="140"
+                    ></hy-image>
+                </view>
+            </view>
 
             <view class="detail__main">
-                <!-- 价格与成色 -->
-                <view class="detail__price-row">
-                    <hy-price :text="String(detail.price)" :size="26" />
-                    <text v-if="detail.originalPrice" class="detail__origin"
-                        >原价 ￥{{ detail.originalPrice }}</text
-                    >
-                    <hy-tag
-                        :label="detail.condition"
-                        type="warning"
-                        plain
-                        size="small"
-                    />
-                    <view class="detail__flex-fill"></view>
-                    <hy-tag
-                        :label="GOODS_STATUS_TEXT[detail.status]"
-                        :type="detail.status === 'ON_SALE' ? 'success' : 'info'"
-                        size="small"
-                    />
-                </view>
+                <!-- 商品信息卡 -->
+                <view class="detail__card">
+                    <!-- 价格与成色 -->
+                    <view class="detail__price-row">
+                        <hy-price :text="String(detail.price)" :size="26" />
+                        <text v-if="detail.originalPrice" class="detail__origin"
+                            >原价 ￥{{ detail.originalPrice }}</text
+                        >
+                        <hy-tag
+                            :label="detail.condition"
+                            type="warning"
+                            plain
+                            size="small"
+                        />
+                        <view class="detail__flex-fill"></view>
+                        <hy-tag
+                            :label="GOODS_STATUS_TEXT[detail.status]"
+                            :type="
+                                detail.status === 'ON_SALE' ? 'success' : 'info'
+                            "
+                            size="small"
+                        />
+                    </view>
 
-                <!-- 标题与描述 -->
-                <view class="detail__title">{{ detail.title }}</view>
-                <view class="detail__desc">{{ detail.description }}</view>
+                    <!-- 标题与描述 -->
+                    <view class="detail__title">{{ detail.title }}</view>
+                    <view class="detail__desc">{{ detail.description }}</view>
 
-                <!-- 元信息 -->
-                <view class="detail__meta">
-                    <text>发布于 {{ fmtTime(detail.publishTime) }}</text>
-                    <text>浏览 {{ detail.views }}</text>
-                    <text>{{ detail.wantCount }} 人想要</text>
+                    <!-- 元信息 -->
+                    <view class="detail__meta">
+                        <text>发布于 {{ fmtTime(detail.publishTime) }}</text>
+                        <text>浏览 {{ detail.views }}</text>
+                        <text>{{ detail.wantCount }} 人想要</text>
+                    </view>
                 </view>
 
                 <!-- 卖家信息（点击查看用户主页） -->
@@ -239,7 +228,7 @@ const goSellerProfile = () => {
                         <hy-button
                             text="我想要"
                             shape="circle"
-                            color="var(--hy-primary-color)"
+                            color="var(--primary, #3d7eff)"
                             :custom-style="{ flex: 1 }"
                             @click="goApply"
                         ></hy-button>
@@ -249,7 +238,7 @@ const goSellerProfile = () => {
                             :name="
                                 detail.status === 'ON_SALE' ? 'mine' : 'lock'
                             "
-                            color="var(--hy-info-color)"
+                            color="var(--hy-text-color--3, #929295)"
                             :size="16"
                         />
                         <text>{{
@@ -267,6 +256,7 @@ const goSellerProfile = () => {
 </template>
 
 <style lang="scss" scoped>
+@use '../../styles/design.scss' as *;
 .detail {
     min-height: 100vh;
     padding-bottom: 160rpx;
@@ -285,25 +275,20 @@ const goSellerProfile = () => {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(0, 0, 0, 0.45);
+        background: rgba(0, 0, 0, 0.5);
         color: #fff;
         font-size: 56rpx;
         font-weight: 700;
         letter-spacing: 8rpx;
     }
 
-    &__indicator {
-        position: absolute;
-        top: 600rpx;
-        right: 32rpx;
-        background: rgba(0, 0, 0, 0.4);
-        color: #fff;
-        font-size: 22rpx;
-        padding: 4rpx 16rpx;
-        border-radius: 20rpx;
+    &__main {
+        padding: 24rpx;
+        animation: detail-fade-up 0.45s ease both;
     }
 
-    &__main {
+    &__card {
+        @include hy-card(20rpx);
         padding: 24rpx;
     }
 
@@ -319,7 +304,7 @@ const goSellerProfile = () => {
 
     &__origin {
         font-size: 24rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
         text-decoration: line-through;
     }
 
@@ -327,14 +312,14 @@ const goSellerProfile = () => {
         margin-top: 20rpx;
         font-size: 34rpx;
         font-weight: 600;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
         line-height: 1.5;
     }
 
     &__desc {
         margin-top: 16rpx;
         font-size: 28rpx;
-        color: var(--hy-content-color, #606266);
+        color: var(--hy-text-color--2, #46464a);
         line-height: 1.7;
     }
 
@@ -343,16 +328,15 @@ const goSellerProfile = () => {
         display: flex;
         gap: 32rpx;
         font-size: 24rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
     }
 
     &__seller {
-        margin-top: 32rpx;
+        @include hy-card(20rpx);
+        margin-top: 24rpx;
         display: flex;
         align-items: center;
         gap: 20rpx;
-        background: var(--hy-bg-color, #fff);
-        border-radius: 16rpx;
         padding: 24rpx;
     }
 
@@ -366,28 +350,27 @@ const goSellerProfile = () => {
         gap: 12rpx;
         font-size: 30rpx;
         font-weight: 600;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
     }
 
     &__seller-sub {
         font-size: 24rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
     }
 
     &__reviews {
-        margin-top: 32rpx;
+        margin-top: 24rpx;
     }
 
     &__section-title {
         font-size: 30rpx;
         font-weight: 600;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
         margin-bottom: 16rpx;
     }
 
     &__review {
-        background: var(--hy-bg-color, #fff);
-        border-radius: 16rpx;
+        @include hy-card(20rpx);
         padding: 24rpx;
         margin-bottom: 16rpx;
     }
@@ -401,18 +384,18 @@ const goSellerProfile = () => {
     &__review-name {
         flex: 1;
         font-size: 26rpx;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
     }
 
     &__review-content {
         margin-top: 12rpx;
         font-size: 26rpx;
-        color: var(--hy-content-color, #606266);
+        color: var(--hy-text-color--2, #46464a);
         line-height: 1.6;
     }
 
     &__safety {
-        margin-top: 32rpx;
+        margin-top: 24rpx;
     }
 
     &__footer {
@@ -420,7 +403,7 @@ const goSellerProfile = () => {
         left: 0;
         right: 0;
         bottom: 0;
-        background: var(--hy-bg-color, #fff);
+        background: var(--hy-background--container, #ffffff);
         box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
     }
 
@@ -439,8 +422,20 @@ const goSellerProfile = () => {
         justify-content: center;
         gap: 10rpx;
         font-size: 26rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
         padding: 16rpx 0;
+    }
+}
+
+@keyframes detail-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24rpx);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>

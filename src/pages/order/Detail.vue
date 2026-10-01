@@ -41,7 +41,12 @@ const row = ref<OrderRow | null>(null);
 const loading = ref(true);
 const modalShow = ref(false);
 const modalType = ref<
-    'confirm' | 'reject' | 'cancelBuyer' | 'cancelSeller' | 'objection'
+    | 'confirm'
+    | 'reject'
+    | 'cancelBuyer'
+    | 'cancelSeller'
+    | 'objection'
+    | 'buyerConfirm'
 >('confirm');
 const tick = ref(0);
 
@@ -99,10 +104,6 @@ const stepCurrent = computed(() => {
 const stepList = computed(() => [
     { title: '提交申请', docs: fmtFullTime(order.value?.applyTime) },
     { title: '卖家确认', docs: fmtFullTime(order.value?.sellerConfirmTime) },
-    {
-        title: '线下交易',
-        docs: order.value?.status === 'PENDING_OFFLINE' ? '请当面验货交易' : '',
-    },
     { title: '买家确认', docs: fmtFullTime(order.value?.buyerConfirmTime) },
     {
         title: order.value?.sellerObjection ? '平台申诉' : '申诉期(48h)',
@@ -123,7 +124,7 @@ const countdownText = computed(() => {
     if (order.value.status === 'APPEALING' && order.value.appealEndTime) {
         return order.value.sellerObjection
             ? '平台申诉处理中，请留意站内通知'
-            : `申诉期剩余 ${fmtRemain(order.value.appealEndTime)}，到期无异议自动完成`;
+            : `申诉期剩余 ${fmtRemain(order.value.appealEndTime)}，到期有异议自动完成`;
     }
     return '';
 });
@@ -179,6 +180,10 @@ const onModalConfirm = async () => {
                 await sellerObjectionApi(order.value.id);
                 toast.info('已提交异议，进入平台申诉处理');
                 break;
+            case 'buyerConfirm':
+                await buyerConfirmApi(order.value.id);
+                toast.success('已确认完成，进入 48 小时申诉期');
+                break;
         }
         load();
     } catch (e) {
@@ -186,14 +191,9 @@ const onModalConfirm = async () => {
     }
 };
 
-const doConfirmDone = async () => {
-    try {
-        await buyerConfirmApi(order.value!.id);
-        toast.success('已确认完成，进入 48 小时申诉期');
-        load();
-    } catch (e) {
-        toast.error((e as Error).message || '操作失败');
-    }
+/** 投诉与维权 */
+const goComplaint = () => {
+    uni.navigateTo({ url: `/pages/complaint/Index?orderId=${orderId.value}` });
 };
 
 const doDelivered = async () => {
@@ -294,7 +294,12 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
             </view>
 
             <!-- 商品卡片 -->
-            <view class="od__goods" @tap="goGoods">
+            <view
+                class="od__goods"
+                hover-class="od__goods--hover"
+                :hover-stay-time="120"
+                @tap="goGoods"
+            >
                 <hy-image
                     :src="goods.images[0]"
                     width="140rpx"
@@ -307,7 +312,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 </view>
                 <hy-icon
                     name="right"
-                    color="var(--hy-info-color)"
+                    color="var(--hy-text-color--3, #929295)"
                     :size="14"
                 ></hy-icon>
             </view>
@@ -325,11 +330,13 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 <template v-if="contactsVisible">
                     <view v-for="item in CONTACT_ITEMS" :key="item.key">
                         <view v-if="peerContact[item.key]" class="od__contact">
-                            <hy-icon
-                                :name="item.icon"
-                                color="var(--hy-primary-color)"
-                                :size="18"
-                            />
+                            <view class="od__contact-icon">
+                                <hy-icon
+                                    :name="item.icon"
+                                    color="var(--primary, #3d7eff)"
+                                    :size="18"
+                                />
+                            </view>
                             <text class="od__contact-label">{{
                                 item.label
                             }}</text>
@@ -358,7 +365,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 <view v-else class="od__contact-locked">
                     <hy-icon
                         name="lock"
-                        color="var(--hy-info-color)"
+                        color="var(--hy-text-color--3, #929295)"
                         :size="16"
                     />
                     <text
@@ -419,6 +426,33 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                         fmtDate(order.buyerConfirmTime)
                     }}</text>
                 </view>
+            </view>
+
+            <!-- 投诉与维权入口 -->
+            <view
+                class="od__rights"
+                hover-class="od__rights--hover"
+                :hover-stay-time="120"
+                @tap="goComplaint"
+            >
+                <view class="od__rights-icon">
+                    <hy-icon
+                        name="warning"
+                        color="var(--hy-error, #f56c6c)"
+                        :size="18"
+                    />
+                </view>
+                <view class="od__rights-info">
+                    <view class="od__rights-title">投诉与维权</view>
+                    <text class="od__rights-sub"
+                        >遇到欺诈、描述不符或线下违规，可发起投诉</text
+                    >
+                </view>
+                <hy-icon
+                    name="right"
+                    color="var(--hy-text-color--placeholder, #c0c4cc)"
+                    :size="14"
+                />
             </view>
 
             <!-- 卖家手续费账单 -->
@@ -493,6 +527,37 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 <safety-tips :compact="true"></safety-tips>
             </view>
 
+            <!-- 线下交易确认提醒 -->
+            <view
+                v-if="order.status === 'PENDING_OFFLINE'"
+                class="od__remind od__remind--primary"
+            >
+                <hy-icon
+                    name="notice"
+                    color="var(--primary, #3d7eff)"
+                    :size="16"
+                />
+                <text
+                    >线下交易完成后，请买家及时在平台确认订单；确认后如遇纠纷，可在
+                    48 小时申诉期内发起投诉维权</text
+                >
+            </view>
+
+            <!-- 交易完成打分提醒 -->
+            <view
+                v-if="isBuyer && order.status === 'COMPLETED' && !order.review"
+                class="od__remind od__remind--warn"
+            >
+                <hy-icon
+                    name="remind"
+                    color="var(--warning, #f9ae3d)"
+                    :size="16"
+                />
+                <text
+                    >交易已完成，别忘了在上方给对方打个分，你的评价能帮助更多同学放心交易</text
+                >
+            </view>
+
             <!-- 操作区 -->
             <view class="od__actions">
                 <!-- 待卖家确认 -->
@@ -558,7 +623,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                         shape="circle"
                         type="primary"
                         :custom-style="{ flex: 1 }"
-                        @click="doConfirmDone"
+                        @click="openModal('buyerConfirm')"
                     ></hy-button>
                     <hy-button
                         text="取消订单"
@@ -579,7 +644,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                         shape="circle"
                         type="primary"
                         :custom-style="{ flex: 1 }"
-                        @click="doConfirmDone"
+                        @click="openModal('buyerConfirm')"
                     ></hy-button>
                     <template v-else>
                         <hy-button
@@ -642,7 +707,9 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                         ? '提交异议'
                         : modalType === 'confirm'
                           ? '确认交易'
-                          : '取消交易'
+                          : modalType === 'buyerConfirm'
+                            ? '确认完成交易'
+                            : '取消交易'
                 "
                 :content="
                     modalType === 'confirm'
@@ -651,7 +718,12 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                           ? '拒绝后订单取消，商品继续在售。'
                           : modalType === 'objection'
                             ? '提交后订单将进入平台申诉处理，由平台客服介入核实，确认提交？'
-                            : '双方未交易成功可取消订单，商品将恢复在售。确认取消？'
+                            : modalType === 'buyerConfirm'
+                              ? '请确认已当面完成交易并验货无误。确认后订单进入 48 小时申诉期，期间如遇纠纷可发起投诉维权。'
+                              : '双方未交易成功可取消订单，商品将恢复在售。确认取消？'
+                "
+                :confirm-text="
+                    modalType === 'buyerConfirm' ? '确认完成' : '确定'
                 "
                 show-cancel-button
                 @confirm="onModalConfirm"
@@ -661,17 +733,14 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
 </template>
 
 <style lang="scss" scoped>
+@use '../../styles/design.scss' as *;
 .od {
     min-height: 100vh;
     padding-bottom: 200rpx;
 
     &__header {
-        padding: 40rpx 32rpx;
-        background: linear-gradient(
-            135deg,
-            var(--hy-primary-color, #3d7eff),
-            #6ba1ff
-        );
+        @include hy-gradient-header(135deg);
+        padding: 40rpx 32rpx 56rpx;
         color: #fff;
     }
 
@@ -713,21 +782,26 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
     }
 
     &__steps {
-        background: var(--hy-bg-color, #fff);
-        margin: -20rpx 24rpx 0;
-        border-radius: 16rpx;
+        @include hy-card(20rpx);
+        margin: -28rpx 24rpx 0;
         padding: 32rpx 12rpx;
         position: relative;
+        animation: od-fade-up 0.45s ease 0.05s both;
     }
 
     &__goods {
+        @include hy-card(20rpx);
         display: flex;
         align-items: center;
         gap: 20rpx;
-        background: var(--hy-bg-color, #fff);
-        border-radius: 16rpx;
         padding: 24rpx;
         margin: 20rpx 24rpx 0;
+        transition: transform 0.15s ease;
+        animation: od-fade-up 0.45s ease 0.1s both;
+    }
+
+    &__goods--hover {
+        transform: scale(0.98);
     }
 
     &__goods-info {
@@ -741,7 +815,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
     &__goods-title {
         font-size: 28rpx;
         font-weight: 500;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
         display: -webkit-box;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 1;
@@ -749,20 +823,21 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
     }
 
     &__card {
-        background: var(--hy-bg-color, #fff);
-        border-radius: 16rpx;
+        @include hy-card(20rpx);
         padding: 24rpx;
         margin: 20rpx 24rpx 0;
+        animation: od-fade-up 0.45s ease 0.15s both;
     }
 
     &__fee-card {
-        border: 1rpx solid var(--hy-warning-color, #f9ae3d);
+        border: 1rpx solid var(--warning, #f9ae3d);
+        background: var(--warning-light, rgba(249, 174, 61, 0.06));
     }
 
     &__card-title {
         font-size: 29rpx;
         font-weight: 600;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
         margin-bottom: 16rpx;
     }
 
@@ -770,24 +845,28 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
         display: flex;
         align-items: center;
         gap: 16rpx;
-        padding: 14rpx 0;
-        border-bottom: 1rpx solid var(--hy-border-color, #f5f5f5);
+        padding: 16rpx 0;
+        border-bottom: 1rpx solid var(--hy-text-color--4, rgba(0, 0, 0, 0.1));
 
         &:last-child {
             border-bottom: none;
         }
     }
 
+    &__contact-icon {
+        @include hy-icon-badge(56rpx, 16rpx);
+    }
+
     &__contact-label {
         font-size: 26rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
         width: 80rpx;
     }
 
     &__contact-value {
         flex: 1;
         font-size: 27rpx;
-        color: var(--hy-main-color, #303133);
+        color: var(--hy-text-color, #000000);
     }
 
     &__contact-locked {
@@ -795,7 +874,11 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
         align-items: center;
         gap: 10rpx;
         font-size: 24rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
+        background: var(--hy-background, #f8f8f8);
+        border-radius: 12rpx;
+        padding: 20rpx 24rpx;
+        line-height: 1.5;
     }
 
     &__info-row {
@@ -807,25 +890,81 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
 
     &__info-label {
         font-size: 25rpx;
-        color: var(--hy-info-color, #909193);
+        color: var(--hy-text-color--3, #929295);
         flex-shrink: 0;
     }
 
     &__info-value {
         font-size: 25rpx;
-        color: var(--hy-content-color, #606266);
+        color: var(--hy-text-color--2, #46464a);
         text-align: right;
     }
 
     &__review-content {
         margin-top: 12rpx;
         font-size: 26rpx;
-        color: var(--hy-content-color, #606266);
+        color: var(--hy-text-color--2, #46464a);
         line-height: 1.6;
     }
 
     &__safety {
         margin: 20rpx 24rpx 0;
+    }
+
+    &__remind {
+        display: flex;
+        align-items: flex-start;
+        gap: 12rpx;
+        margin: 20rpx 24rpx 0;
+        padding: 20rpx 24rpx;
+        border-radius: 16rpx;
+        font-size: 24rpx;
+        color: var(--hy-text-color--2, #46464a);
+        line-height: 1.6;
+
+        &--primary {
+            background: var(--primary-light, rgba(61, 126, 255, 0.08));
+        }
+
+        &--warn {
+            background: var(--warning-light, rgba(249, 174, 61, 0.1));
+        }
+    }
+
+    &__rights {
+        @include hy-card(20rpx);
+        display: flex;
+        align-items: center;
+        gap: 20rpx;
+        margin: 20rpx 24rpx 0;
+        padding: 24rpx;
+        transition: transform 0.15s ease;
+    }
+
+    &__rights--hover {
+        transform: scale(0.98);
+    }
+
+    &__rights-icon {
+        @include hy-icon-badge(64rpx, 18rpx);
+        background: var(--hy-error--light, rgba(245, 108, 108, 0.1));
+    }
+
+    &__rights-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__rights-title {
+        font-size: 28rpx;
+        font-weight: 600;
+        color: var(--hy-text-color, #000000);
+        margin-bottom: 4rpx;
+    }
+
+    &__rights-sub {
+        font-size: 22rpx;
+        color: var(--hy-text-color--3, #929295);
     }
 
     &__actions {
@@ -836,8 +975,21 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
         display: flex;
         gap: 20rpx;
         padding: 16rpx 24rpx;
-        background: var(--hy-bg-color, #fff);
+        @include hy-safe-bottom(16rpx);
+        background: var(--hy-background--container, #ffffff);
         box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+    }
+}
+
+@keyframes od-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24rpx);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>
