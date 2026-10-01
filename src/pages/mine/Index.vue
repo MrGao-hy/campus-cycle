@@ -127,129 +127,147 @@ const logout = () => {
 
             <!-- 交易入口 -->
             <view class="mine__group-title">我的交易</view>
-            <hy-cell :border="false" custom-class="mine__group">
-                <hy-cell-item
-                    title="我买到的"
-                    sub="购买申请与订单进度"
-                    clickable
-                    is-right-icon
-                    @click="goOrders"
-                >
-                    <template #icon>
-                        <view class="mine__icon"
-                            ><hy-icon
-                                name="/static/icons/cart.png"
-                                :size="22"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-                <hy-cell-item
-                    title="我卖出的"
-                    sub="待确认申请与手续费账单"
-                    clickable
-                    is-right-icon
-                    @click="goOrders"
-                >
-                    <template #icon>
-                        <view class="mine__icon mine__icon--warn"
-                            ><hy-icon
-                                name="/static/icons/sell.png"
-                                :size="22"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-                <hy-cell-item
-                    title="我发布的"
-                    sub="在售 / 交易中 / 已售出（置灰）"
-                    clickable
-                    is-right-icon
-                    @click="goMyGoods"
-                >
-                    <template #icon>
-                        <view class="mine__icon mine__icon--green"
-                            ><hy-icon
-                                name="/static/icons/picture.png"
-                                :size="22"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-                <hy-cell-item
-                    title="发布商品"
-                    sub="第一笔成功交易免手续费"
-                    clickable
-                    is-right-icon
-                    @click="goPublish"
-                >
-                    <template #icon>
-                        <view class="mine__icon"
-                            ><hy-icon
-                                name="/static/icons/plus.png"
-                                :size="22"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-            </hy-cell>
+            <view class="mine__group">
+                <view class="mine__item" @tap="goOrders">
+                    <view class="mine__item-icon"
+                        ><hy-icon
+                            name="/static/icons/cart.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">我买到的</text>
+                        <text class="mine__item-sub">购买申请与订单进度</text>
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+                <view class="mine__item" @tap="goOrders">
+                    <view
+                        class="mine__item-icon mine__item-icon--warn"
+                        ><hy-icon
+                            name="/static/icons/sell.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">我卖出的</text>
+                        <text class="mine__item-sub"
+                            >待确认申请与手续费账单</text
+                        >
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+                <view class="mine__item" @tap="goMyGoods">
+                    <view
+                        class="mine__item-icon mine__item-icon--green"
+                        ><hy-icon
+                            name="/static/icons/picture.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">我发布的</text>
+                        <text class="mine__item-sub"
+                            >在售 / 交易中 / 已售出（置灰）</text
+                        >
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+                <view class="mine__item" @tap="goPublish">
+                    <view class="mine__item-icon"
+                        ><hy-icon
+                            name="/static/icons/plus.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">发布商品</text>
+                        <text class="mine__item-sub"
+                            >第一笔成功交易免手续费</text
+                        >
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+            </view>
 
             <!-- 服务入口 -->
             <view class="mine__group-title">更多服务</view>
-            <hy-cell :border="false" custom-class="mine__group">
-                <hy-cell-item
-                    title="手续费账单"
-                    clickable
-                    is-right-icon
-                    @click="goFee"
-                >
-                    <template #icon>
-                        <view class="mine__icon mine__icon--red"
-                            ><hy-icon
-                                name="/static/icons/bill.png"
-                                :size="22"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                    <template #value>
-                        <text v-if="unpaidAmount > 0" class="mine__fee-amount"
-                            >待缴 ￥{{ unpaidAmount }}</text
+            <view class="mine__group">
+                <view class="mine__item" @tap="goFee">
+                    <view class="mine__item-icon mine__item-icon--red"
+                        ><hy-icon
+                            name="/static/icons/bill.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">手续费账单</text>
+                    </view>
+                    <text v-if="unpaidAmount > 0" class="mine__fee-amount"
+                        >待缴 ￥{{ unpaidAmount }}</text
+                    >
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+                <view class="mine__item" @tap="goSecurity">
+                    <view
+                        class="mine__item-icon mine__item-icon--green"
+                        ><hy-icon
+                            name="/static/icons/shield.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">安全中心</text>
+                        <text class="mine__item-sub"
+                            >交易守则 · 举报 · 紧急求助</text
                         >
-                    </template>
-                </hy-cell-item>
-                <hy-cell-item
-                    title="安全中心"
-                    sub="交易守则 · 举报 · 紧急求助"
-                    clickable
-                    is-right-icon
-                    @click="goSecurity"
-                >
-                    <template #icon>
-                        <view class="mine__icon mine__icon--green"
-                            ><hy-icon
-                                name="/static/icons/shield.png"
-                                :size="22"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-                <hy-cell-item
-                    title="投诉与申诉"
-                    sub="投诉记录 · 申诉进度 · 处理结果"
-                    clickable
-                    is-right-icon
-                    @click="goRecords"
-                >
-                    <template #icon>
-                        <view class="mine__icon mine__icon--red"
-                            ><hy-icon
-                                name="/static/icons/complaint.png"
-                                :size="22"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-            </hy-cell>
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+                <view class="mine__item" @tap="goRecords">
+                    <view class="mine__item-icon mine__item-icon--red"
+                        ><hy-icon
+                            name="/static/icons/complaint.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">投诉与申诉</text>
+                        <text class="mine__item-sub"
+                            >投诉记录 · 申诉进度 · 处理结果</text
+                        >
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+            </view>
 
             <view class="mine__logout">
                 <hy-button
@@ -404,26 +422,67 @@ const logout = () => {
         margin-top: 24rpx;
     }
 
-    &__icon {
-        @include hy-icon-badge(60rpx, 16rpx);
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: 20rpx;
+        padding: 26rpx 28rpx;
+        position: relative;
+
+        & + & {
+            border-top: 1rpx solid #f2f3f5;
+        }
+    }
+
+    &__item-icon {
+        flex-shrink: 0;
+        width: 72rpx;
+        height: 72rpx;
+        border-radius: 18rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(61, 126, 255, 0.1);
 
         &--warn {
-            background: var(--warning-light, rgba(249, 174, 61, 0.1));
+            background: rgba(249, 174, 61, 0.12);
         }
 
         &--green {
-            background: rgba(7, 193, 96, 0.1);
+            background: rgba(7, 193, 96, 0.12);
         }
 
         &--red {
-            background: var(--hy-error--light, rgba(245, 108, 108, 0.1));
+            background: rgba(245, 108, 108, 0.12);
         }
+    }
+
+    &__item-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4rpx;
+        min-height: 0;
+    }
+
+    &__item-title {
+        font-size: 28rpx;
+        font-weight: 500;
+        color: #1f2329;
+        line-height: 1.4;
+    }
+
+    &__item-sub {
+        font-size: 22rpx;
+        color: #929295;
+        line-height: 1.4;
     }
 
     &__fee-amount {
         font-size: 24rpx;
         color: var(--hy-error, #f56c6c);
         font-weight: 600;
+        flex-shrink: 0;
     }
 
     &__logout {
