@@ -55,6 +55,10 @@ const goDetail = (goods: Goods) => {
 const goSchool = () => {
     uni.navigateTo({ url: '/pages/school/Index' });
 };
+
+const goSecurity = () => {
+    uni.navigateTo({ url: '/pages/security/Index' });
+};
 </script>
 
 <template>
@@ -102,17 +106,16 @@ const goSchool = () => {
                     ></hy-tabs>
                 </view>
 
-                <!-- 安全提醒 -->
-                <view class="home__safety">
-                    <hy-notice-bar
-                        :text="[
-                            '交易安全提醒：请选择校内公共场所当面交易，勿提前转账，勿脱离平台沟通',
-                        ]"
-                        direction="column"
-                        color="var(--warning, #f9ae3d)"
-                        bg-color="var(--warning-light, rgba(249,174,61,0.1))"
-                        url="/pages/security/Index"
-                    ></hy-notice-bar>
+                <!-- 安全提醒（自定义静态播报条：hy-notice-bar row 模式滚动起点留白、
+                     column 模式小程序端单条不渲染，弃用该组件） -->
+                <view class="home__safety" @tap="goSecurity">
+                    <hy-icon
+                        name="/static/icons/warning.png"
+                        :size="16"
+                    />
+                    <text class="home__safety-text"
+                        >交易安全提醒：请选择校内公共场所当面交易，勿提前转账，勿脱离平台沟通</text
+                    >
                 </view>
             </view>
 
@@ -213,7 +216,20 @@ const goSchool = () => {
     }
 
     &__safety {
-        padding: 20rpx 24rpx 40rpx;
+        margin: 20rpx 24rpx 32rpx;
+        padding: 14rpx 20rpx;
+        display: flex;
+        align-items: center;
+        gap: 10rpx;
+        background: rgba(249, 174, 61, 0.1);
+        border-radius: 12rpx;
+
+        &-text {
+            flex: 1;
+            font-size: 22rpx;
+            line-height: 1.5;
+            color: var(--warning, #f9ae3d);
+        }
     }
 
     &__loading {
