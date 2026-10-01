@@ -5,6 +5,7 @@ import { uploadImage } from '@/utils/upload';
 import { useToast } from '@hy-app/ui';
 import { GOODS_CATEGORIES, GOODS_CONDITIONS } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
+import { ensureLoginAndSchool } from '@/utils/guard';
 import { computed, ref } from 'vue';
 
 definePage({
@@ -23,7 +24,10 @@ const checkPublish = async () => {
     publishBlocked.value = !res.allowed;
     unpaidAmount.value = res.unpaidAmount;
 };
-onShow(checkPublish);
+onShow(() => {
+    if (!ensureLoginAndSchool()) return;
+    checkPublish();
+});
 
 const title = ref('');
 const price = ref('');

@@ -70,8 +70,14 @@ const skip = () => {
     next();
 };
 
-/** 未选学校 → 选学校；否则进首页 */
+/** 未选学校 → 选学校；否则进首页；从"我的"进入则返回上一页 */
 const next = () => {
+    const pages = getCurrentPages();
+    const prev = pages[pages.length - 2];
+    if (prev && prev.route === 'pages/mine/Index') {
+        uni.navigateBack();
+        return;
+    }
     if (!userStore.hasSchool) {
         uni.navigateTo({ url: '/pages/school/Index' });
     } else {

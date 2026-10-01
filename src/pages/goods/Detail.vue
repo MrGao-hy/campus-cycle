@@ -53,6 +53,11 @@ const goChat = async () => {
         toast.info('这是您发布的商品');
         return;
     }
+    // 未登录 → 先去登录
+    if (!userStore.hasLogin) {
+        uni.navigateTo({ url: '/pages/login/Index' });
+        return;
+    }
     const conversationId = await startConversationApi(detail.value.id);
     uni.navigateTo({ url: `/pages/chat/Detail?id=${conversationId}` });
 };
@@ -60,6 +65,10 @@ const goChat = async () => {
 /** 买家提交购买申请 */
 const goApply = () => {
     if (!detail.value) return;
+    if (!userStore.hasLogin) {
+        uni.navigateTo({ url: '/pages/login/Index' });
+        return;
+    }
     uni.navigateTo({ url: `/pages/goods/Apply?id=${detail.value.id}` });
 };
 

@@ -6,6 +6,7 @@ import { fmtAmount, fmtFullTime } from '@/utils/format';
 import type { FeeSummary } from '@/types';
 import { usePageShare } from '@/hooks/useShare';
 import { onShow } from '@dcloudio/uni-app';
+import { ensureLoginAndSchool } from '@/utils/guard';
 import { ref } from 'vue';
 
 definePage({
@@ -19,6 +20,7 @@ const summary = ref<FeeSummary | null>(null);
 const payingId = ref('');
 
 const load = async () => {
+    if (!ensureLoginAndSchool()) return;
     summary.value = await getFeeSummaryApi();
 };
 onShow(load);

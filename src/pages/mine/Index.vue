@@ -47,6 +47,8 @@ const goPublish = () => uni.navigateTo({ url: '/pages/goods/Publish' });
 const goFee = () => uni.navigateTo({ url: '/pages/fee/Index' });
 const goSecurity = () => uni.navigateTo({ url: '/pages/security/Index' });
 const goSchool = () => uni.navigateTo({ url: '/pages/school/Index' });
+/** 编辑资料（头像/昵称） */
+const goProfile = () => uni.navigateTo({ url: '/pages/profile/Index' });
 
 const logout = () => {
     uni.showModal({
@@ -55,6 +57,7 @@ const logout = () => {
         success: res => {
             if (res.confirm) {
                 userStore.logout();
+                uni.removeTabBarBadge({ index: 1, fail: () => {} });
                 uni.reLaunch({ url: '/pages/login/Index' });
             }
         }
@@ -66,7 +69,7 @@ const logout = () => {
     <the-root-pages>
         <view class="mine">
             <!-- 用户信息 -->
-            <view class="mine__user">
+            <view class="mine__user" @tap="goProfile">
                 <hy-avatar :text="userStore.userInfo?.nickname.slice(0, 1) || '同'" random-bg-color :name="userStore.userInfo?.nickname" :size="56" />
                 <view class="mine__user-info">
                     <view class="mine__nickname">

@@ -4,6 +4,7 @@ import { applyBuyApi, getGoodsDetailApi } from '@/api';
 import { useToast } from '@hy-app/ui';
 import { SAFETY_PROMISES } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
+import { ensureLoginAndSchool } from '@/utils/guard';
 import { computed, ref } from 'vue';
 import type { IGoodsDetail } from '@/api';
 
@@ -25,6 +26,7 @@ const promises = ref<string[]>([]);
 const allPromised = computed(() => promises.value.length === SAFETY_PROMISES.length);
 
 onLoad(async options => {
+    if (!ensureLoginAndSchool()) return;
     goodsId.value = (options?.id as string) || '';
     if (goodsId.value) {
         detail.value = await getGoodsDetailApi(goodsId.value);

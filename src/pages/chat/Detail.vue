@@ -13,6 +13,7 @@ import { useToast } from '@hy-app/ui';
 import { fmtTime } from '@/utils/format';
 import type { ChatMessage } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
+import { ensureLoginAndSchool } from '@/utils/guard';
 import { computed, nextTick, ref } from 'vue';
 
 definePage({
@@ -53,6 +54,7 @@ const load = async () => {
 };
 
 onLoad(async options => {
+    if (!ensureLoginAndSchool()) return;
     // 商品页「聊一聊」带 goodsId 进入：先创建/复用会话
     if (options?.goodsId) {
         conversationId.value = await startConversationApi(

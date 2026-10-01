@@ -25,9 +25,20 @@ defineExpose({ onShareAppMessage, onShareTimeline });
 const list = ref<ConversationRow[]>([]);
 const loading = ref(true);
 
+/** 汇总未读数 → tabBar 角标 */
+const syncBadge = () => {
+    const total = list.value.reduce((sum, row) => sum + (row.unread || 0), 0);
+    if (total > 0) {
+        uni.setTabBarBadge({ index: 1, text: total > 99 ? '99+' : String(total) });
+    } else {
+        uni.removeTabBarBadge({ index: 1, fail: () => {} });
+    }
+};
+
 const loadList = async () => {
     loading.value = true;
     list.value = await getConversationListApi();
+    syncBadge();
     loading.value = false;
 };
 
