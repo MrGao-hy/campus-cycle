@@ -6,7 +6,7 @@ import { useUserStore } from '@/store';
 import { ensureLoginAndSchool } from '@/utils/guard';
 import { GOODS_CATEGORIES, type Goods } from '@/types';
 import { onShow, onReady, onPageScroll } from '@dcloudio/uni-app';
-import { ref, getCurrentInstance } from 'vue';
+import { ref } from 'vue';
 
 definePage({
     style: {
@@ -28,26 +28,32 @@ const loading = ref(true);
  */
 const filterFixed = ref(false);
 const filterRect = ref({ top: 0, height: 0 });
-// getCurrentInstance 须在 setup 同步阶段调用（onReady 回调内调用会返回 null）
-const inst = getCurrentInstance();
+// 测量成功前禁止吸顶：防止测量失败(top=0)导致进入页面即 fixed、盖住学校/搜索
+const filterMeasured = ref(false);
 
 onReady(() => {
-    const q = uni.createSelectorQuery().in(inst?.proxy);
+    // 页面内查询默认即当前页面上下文，无需 .in()
+    const q = uni.createSelectorQuery();
     q.select('.home__filter')
         .boundingClientRect((rect) => {
             const r = Array.isArray(rect) ? rect[0] : rect;
-            if (r) {
+            // top 低于 100px 视为测量异常（分类栏实际位置必然在状态栏+学校+搜索之下）
+            if (r && r.top != null && r.top >= 100) {
                 filterRect.value = {
-                    top: r.top ?? 0,
+                    top: r.top,
                     height: r.height ?? 0,
                 };
+                filterMeasured.value = true;
             }
         })
         .exec();
 });
 
 onPageScroll((e: { scrollTop: number }) => {
-    filterFixed.value = e.scrollTop > filterRect.value.top;
+    if (!filterMeasured.value) return;
+    // 阈值容错：滚动超过分类栏初始位置（-10px 容错）才吸顶
+    filterFixed.value =
+        e.scrollTop > Math.max(filterRect.value.top - 10, 0);
 });
 
 const loadList = async () => {
