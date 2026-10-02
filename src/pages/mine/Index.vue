@@ -20,10 +20,9 @@ const unpaidCount = ref(0);
 
 onShow(() => {
     if (!userStore.hasLogin) return;
-    if (!userStore.hasSchool) {
-        uni.navigateTo({ url: '/pages/school/Index' });
-        return;
-    }
+    // 未选学校时不强制跳转（避免返回死循环），我的页可正常使用；
+    // 费用汇总依赖学校维度，未选学校时跳过加载
+    if (!userStore.hasSchool) return;
     loadFee();
 });
 

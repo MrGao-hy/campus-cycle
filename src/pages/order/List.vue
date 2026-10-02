@@ -11,12 +11,24 @@ import {
 } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
 import { ref } from 'vue';
+import { useUserStore } from '@/store';
 
 definePage({
     style: {
         navigationBarTitleText: '我的订单',
     },
 });
+
+const userStore = useUserStore();
+
+/** 未登录/未选校引导：守卫只判断不跳转，由页面引导主动操作（避免返回死循环） */
+const goGuard = () => {
+    if (!userStore.hasLogin) {
+        uni.navigateTo({ url: '/pages/login/Index' });
+        return;
+    }
+    uni.navigateTo({ url: '/pages/school/Index' });
+};
 
 /** 我买到的 / 我卖出的 */
 const role = ref<'buyer' | 'seller'>('buyer');
@@ -88,8 +100,43 @@ const statusHint = (row: OrderRow): string => {
 <template>
     <the-root-pages>
         <view class="orders">
+            <!-- 未登录/未选校：引导态（守卫不强制跳转，避免返回死循环） -->
+            <view
+                v-if="!userStore.hasLogin || !userStore.hasSchool"
+                class="orders__guard"
+            >
+                <view class="orders__guard-logo">
+                    <hy-icon
+                        :name="
+                            userStore.hasLogin
+                                ? '/static/icons/check.png'
+                                : '/static/icons/lock.png'
+                        "
+                        color="#fff"
+                        :size="24"
+                    />
+                </view>
+                <text class="orders__guard-title">{{
+                    userStore.hasLogin ? '先选择你的学校' : '登录后查看订单'
+                }}</text>
+                <text class="orders__guard-desc">{{
+                    userStore.hasLogin
+                        ? '选择学校后可查看本校订单'
+                        : '登录后可管理你买到的和卖出的订单'
+                }}</text>
+                <view
+                    class="orders__guard-btn"
+                    hover-class="orders__guard-btn--hover"
+                    :hover-stay-time="120"
+                    @tap="goGuard"
+                    >{{ userStore.hasLogin ? '去选择' : '去登录' }}</view
+                >
+            </view>
             <!-- 角色切换 + 状态筛选（吸顶，滚动时保持可见） -->
-            <view class="orders__filter">
+            <view
+                v-else
+                class="orders__filter"
+            >
                 <view class="orders__role">
                     <hy-subsection
                         :list="['我买到的', '我卖出的']"
@@ -111,7 +158,8 @@ const statusHint = (row: OrderRow): string => {
             </view>
 
             <!-- 订单列表 -->
-            <view v-if="loading" class="orders__loading">
+            <template v-else>
+                <view v-if="loading" class="orders__loading">
                 <hy-skeleton
                     theme="paragraph"
                     :row-col="[1, 1, 1]"
@@ -186,6 +234,7 @@ const statusHint = (row: OrderRow): string => {
                 </view>
             </view>
             <hy-empty v-else mode="order" description="暂无相关订单"></hy-empty>
+            </template>
         </view>
     </the-root-pages>
 </template>
@@ -223,6 +272,59 @@ const statusHint = (row: OrderRow): string => {
         padding: 24rpx;
         margin-bottom: 20rpx;
         transition: transform 0.15s ease;
+    }
+
+    /* 未登录/未选校引导态 */
+    &__guard {
+        margin: 100rpx 48rpx 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+        &-logo {
+            width: 96rpx;
+            height: 96rpx;
+            border-radius: 28rpx;
+            background: linear-gradient(135deg, #3d7eff, #6fa8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12rpx 32rpx rgba(61, 126, 255, 0.3);
+        }
+
+        &-title {
+            margin-top: 32rpx;
+            font-size: 34rpx;
+            font-weight: 600;
+            color: #1f2329;
+        }
+
+        &-desc {
+            margin-top: 12rpx;
+            font-size: 26rpx;
+            color: #8a9099;
+            line-height: 1.6;
+        }
+
+        &-btn {
+            margin-top: 40rpx;
+            padding: 0 56rpx;
+            height: 80rpx;
+            border-radius: 40rpx;
+            background: var(--primary, #3d7eff);
+            color: #ffffff;
+            font-size: 30rpx;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10rpx 24rpx rgba(61, 126, 255, 0.28);
+
+            &--hover {
+                opacity: 0.85;
+            }
+        }
     }
 
     &__card--hover {

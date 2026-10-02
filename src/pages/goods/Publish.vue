@@ -7,6 +7,7 @@ import { GOODS_CATEGORIES, GOODS_CONDITIONS } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
 import { ensureLoginAndSchool } from '@/utils/guard';
 import { computed, ref } from 'vue';
+import { useUserStore } from '@/store';
 
 definePage({
     style: {
@@ -15,6 +16,16 @@ definePage({
 });
 
 const toast = useToast();
+const userStore = useUserStore();
+
+/** 未登录/未选校引导：守卫只判断不跳转（避免返回死循环） */
+const goGuard = () => {
+    if (!userStore.hasLogin) {
+        uni.navigateTo({ url: '/pages/login/Index' });
+        return;
+    }
+    uni.navigateTo({ url: '/pages/school/Index' });
+};
 
 /** 未结清手续费 → 禁止发布 */
 const publishBlocked = ref(false);
@@ -115,6 +126,39 @@ const submit = async () => {
 <template>
     <the-root-pages>
         <view class="publish">
+            <!-- 未登录/未选校：引导态（守卫不强制跳转，避免返回死循环） -->
+            <view
+                v-if="!userStore.hasLogin || !userStore.hasSchool"
+                class="publish__guard"
+            >
+                <view class="publish__guard-logo">
+                    <hy-icon
+                        :name="
+                            userStore.hasLogin
+                                ? '/static/icons/check.png'
+                                : '/static/icons/lock.png'
+                        "
+                        color="#fff"
+                        :size="24"
+                    />
+                </view>
+                <text class="publish__guard-title">{{
+                    userStore.hasLogin ? '先选择你的学校' : '登录后发布商品'
+                }}</text>
+                <text class="publish__guard-desc">{{
+                    userStore.hasLogin
+                        ? '选择学校后可发布商品'
+                        : '登录后即可发布你的闲置好物'
+                }}</text>
+                <view
+                    class="publish__guard-btn"
+                    hover-class="publish__guard-btn--hover"
+                    :hover-stay-time="120"
+                    @tap="goGuard"
+                    >{{ userStore.hasLogin ? '去选择' : '去登录' }}</view
+                >
+            </view>
+            <template v-else>
             <!-- 欠费拦截提示 -->
             <view v-if="publishBlocked" class="publish__blocked">
                 <hy-warn
@@ -257,6 +301,7 @@ const submit = async () => {
                 ></hy-button>
                 <hy-safe-bottom></hy-safe-bottom>
             </view>
+            </template>
         </view>
     </the-root-pages>
 </template>
@@ -353,6 +398,59 @@ const submit = async () => {
         padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
         background: var(--hy-background--container, #ffffff);
         box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+    }
+
+    /* 未登录/未选校引导态 */
+    &__guard {
+        margin: 100rpx 48rpx 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+        &-logo {
+            width: 96rpx;
+            height: 96rpx;
+            border-radius: 28rpx;
+            background: linear-gradient(135deg, #3d7eff, #6fa8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12rpx 32rpx rgba(61, 126, 255, 0.3);
+        }
+
+        &-title {
+            margin-top: 32rpx;
+            font-size: 34rpx;
+            font-weight: 600;
+            color: #1f2329;
+        }
+
+        &-desc {
+            margin-top: 12rpx;
+            font-size: 26rpx;
+            color: #8a9099;
+            line-height: 1.6;
+        }
+
+        &-btn {
+            margin-top: 40rpx;
+            padding: 0 56rpx;
+            height: 80rpx;
+            border-radius: 40rpx;
+            background: var(--primary, #3d7eff);
+            color: #ffffff;
+            font-size: 30rpx;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10rpx 24rpx rgba(61, 126, 255, 0.28);
+
+            &--hover {
+                opacity: 0.85;
+            }
+        }
     }
 }
 

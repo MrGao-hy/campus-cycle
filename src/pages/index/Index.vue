@@ -34,7 +34,8 @@ const loadList = async () => {
 };
 
 onShow(() => {
-    // 浏览无需登录：仅需选择学校（未登录也可浏览本校商品）
+    // 浏览无需登录：未选学校时不强制跳转（避免返回死循环），
+    // 顶部学校入口 + 商品区空态引导用户主动选择
     if (!ensureSchool()) return;
     loadList();
 });
@@ -166,6 +167,31 @@ const goSecurity = () => {
                         :goods="item"
                         @click="goDetail(item)"
                     ></goods-card>
+                </view>
+                <view
+                    v-else-if="!userStore.hasSchool"
+                    class="home__school-guide"
+                >
+                    <view class="home__school-guide-logo">
+                        <hy-icon
+                            name="/static/icons/check.png"
+                            color="#fff"
+                            :size="22"
+                        />
+                    </view>
+                    <text class="home__school-guide-title"
+                        >先选择你的学校</text
+                    >
+                    <text class="home__school-guide-desc"
+                        >选择后仅展示本校商品，同校交易更安全</text
+                    >
+                    <view
+                        class="home__school-guide-btn"
+                        hover-class="home__school-guide-btn--hover"
+                        :hover-stay-time="120"
+                        @tap="goSchool"
+                        >去选择</view
+                    >
                 </view>
                 <hy-empty
                     v-else
@@ -309,6 +335,59 @@ const goSecurity = () => {
         flex-wrap: wrap;
         justify-content: space-between;
         padding: 24rpx 24rpx 0;
+    }
+
+    /* 未选学校引导态（守卫不再强制跳转，由页面引导主动选择） */
+    &__school-guide {
+        margin: 120rpx 48rpx 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+        &-logo {
+            width: 96rpx;
+            height: 96rpx;
+            border-radius: 28rpx;
+            background: linear-gradient(135deg, #3d7eff, #6fa8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12rpx 32rpx rgba(61, 126, 255, 0.3);
+        }
+
+        &-title {
+            margin-top: 32rpx;
+            font-size: 34rpx;
+            font-weight: 600;
+            color: #1f2329;
+        }
+
+        &-desc {
+            margin-top: 12rpx;
+            font-size: 26rpx;
+            color: #8a9099;
+            line-height: 1.6;
+        }
+
+        &-btn {
+            margin-top: 40rpx;
+            padding: 0 56rpx;
+            height: 80rpx;
+            border-radius: 40rpx;
+            background: var(--primary, #3d7eff);
+            color: #ffffff;
+            font-size: 30rpx;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10rpx 24rpx rgba(61, 126, 255, 0.28);
+
+            &--hover {
+                opacity: 0.85;
+            }
+        }
     }
 }
 </style>

@@ -57,11 +57,53 @@ const goDetail = (goods: Goods) => {
 const goPublish = () => {
     uni.navigateTo({ url: '/pages/goods/Publish' });
 };
+
+/** 未登录/未选校引导：守卫只判断不跳转（避免返回死循环） */
+const goGuard = () => {
+    if (!userStore.hasLogin) {
+        uni.navigateTo({ url: '/pages/login/Index' });
+        return;
+    }
+    uni.navigateTo({ url: '/pages/school/Index' });
+};
 </script>
 
 <template>
     <the-root-pages>
         <view class="my-goods">
+            <!-- 未登录/未选校：引导态（守卫不强制跳转，避免返回死循环） -->
+            <view
+                v-if="!userStore.hasLogin || !userStore.hasSchool"
+                class="my-goods__guard"
+            >
+                <view class="my-goods__guard-logo">
+                    <hy-icon
+                        :name="
+                            userStore.hasLogin
+                                ? '/static/icons/check.png'
+                                : '/static/icons/lock.png'
+                        "
+                        color="#fff"
+                        :size="24"
+                    />
+                </view>
+                <text class="my-goods__guard-title">{{
+                    userStore.hasLogin ? '先选择你的学校' : '登录后查看发布'
+                }}</text>
+                <text class="my-goods__guard-desc">{{
+                    userStore.hasLogin
+                        ? '选择学校后可管理你发布的商品'
+                        : '登录后可管理你发布的商品'
+                }}</text>
+                <view
+                    class="my-goods__guard-btn"
+                    hover-class="my-goods__guard-btn--hover"
+                    :hover-stay-time="120"
+                    @tap="goGuard"
+                    >{{ userStore.hasLogin ? '去选择' : '去登录' }}</view
+                >
+            </view>
+            <template v-else>
             <!-- 顶部发布入口 -->
             <view class="my-goods__header">
                 <view class="my-goods__total">
@@ -127,6 +169,7 @@ const goPublish = () => {
                     {{ countOf('LOCKED') }} · 已售出 {{ countOf('SOLD') }}</text
                 >
             </view>
+            </template>
         </view>
     </the-root-pages>
 </template>
@@ -184,6 +227,59 @@ const goPublish = () => {
         font-size: 22rpx;
         color: var(--hy-text-color--3, #929295);
         padding: 8rpx 0 24rpx;
+    }
+
+    /* 未登录/未选校引导态 */
+    &__guard {
+        margin: 100rpx 48rpx 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+        &-logo {
+            width: 96rpx;
+            height: 96rpx;
+            border-radius: 28rpx;
+            background: linear-gradient(135deg, #3d7eff, #6fa8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12rpx 32rpx rgba(61, 126, 255, 0.3);
+        }
+
+        &-title {
+            margin-top: 32rpx;
+            font-size: 34rpx;
+            font-weight: 600;
+            color: #1f2329;
+        }
+
+        &-desc {
+            margin-top: 12rpx;
+            font-size: 26rpx;
+            color: #8a9099;
+            line-height: 1.6;
+        }
+
+        &-btn {
+            margin-top: 40rpx;
+            padding: 0 56rpx;
+            height: 80rpx;
+            border-radius: 40rpx;
+            background: var(--primary, #3d7eff);
+            color: #ffffff;
+            font-size: 30rpx;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10rpx 24rpx rgba(61, 126, 255, 0.28);
+
+            &--hover {
+                opacity: 0.85;
+            }
+        }
     }
 }
 

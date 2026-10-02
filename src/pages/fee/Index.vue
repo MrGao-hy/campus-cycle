@@ -7,6 +7,7 @@ import type { FeeSummary } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
 import { ensureLoginAndSchool } from '@/utils/guard';
 import { ref } from 'vue';
+import { useUserStore } from '@/store';
 
 definePage({
     style: {
@@ -15,8 +16,18 @@ definePage({
 });
 
 const toast = useToast();
+const userStore = useUserStore();
 const summary = ref<FeeSummary | null>(null);
 const payingId = ref('');
+
+/** 未登录/未选校引导：守卫只判断不跳转（避免返回死循环） */
+const goGuard = () => {
+    if (!userStore.hasLogin) {
+        uni.navigateTo({ url: '/pages/login/Index' });
+        return;
+    }
+    uni.navigateTo({ url: '/pages/school/Index' });
+};
 
 const load = async () => {
     if (!ensureLoginAndSchool()) return;
@@ -40,7 +51,39 @@ const pay = async (billId: string) => {
 
 <template>
     <the-root-pages>
-        <view v-if="summary" class="fee">
+        <!-- 未登录/未选校：引导态 -->
+        <view
+            v-if="!userStore.hasLogin || !userStore.hasSchool"
+            class="fee__guard"
+        >
+            <view class="fee__guard-logo">
+                <hy-icon
+                    :name="
+                        userStore.hasLogin
+                            ? '/static/icons/check.png'
+                            : '/static/icons/lock.png'
+                    "
+                    color="#fff"
+                    :size="24"
+                />
+            </view>
+            <text class="fee__guard-title">{{
+                userStore.hasLogin ? '先选择你的学校' : '登录后查看账单'
+            }}</text>
+            <text class="fee__guard-desc">{{
+                userStore.hasLogin
+                    ? '选择学校后可查看本校手续费账单'
+                    : '登录后可查看待缴手续费并在线支付'
+            }}</text>
+            <view
+                class="fee__guard-btn"
+                hover-class="fee__guard-btn--hover"
+                :hover-stay-time="120"
+                @tap="goGuard"
+                >{{ userStore.hasLogin ? '去选择' : '去登录' }}</view
+            >
+        </view>
+        <view v-else-if="summary" class="fee">
             <!-- 未缴汇总 -->
             <view
                 class="fee__summary"
@@ -314,6 +357,62 @@ const pay = async (billId: string) => {
         font-weight: 400;
         color: var(--hy-success, #07c160);
         margin-left: 8rpx;
+    }
+
+    /* 未登录/未选校引导态 */
+    &__guard {
+        min-height: 100vh;
+        padding: 24rpx;
+        box-sizing: border-box;
+        margin: 100rpx 48rpx 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+        &-logo {
+            width: 96rpx;
+            height: 96rpx;
+            border-radius: 28rpx;
+            background: linear-gradient(135deg, #3d7eff, #6fa8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12rpx 32rpx rgba(61, 126, 255, 0.3);
+        }
+
+        &-title {
+            margin-top: 32rpx;
+            font-size: 34rpx;
+            font-weight: 600;
+            color: #1f2329;
+        }
+
+        &-desc {
+            margin-top: 12rpx;
+            font-size: 26rpx;
+            color: #8a9099;
+            line-height: 1.6;
+        }
+
+        &-btn {
+            margin-top: 40rpx;
+            padding: 0 56rpx;
+            height: 80rpx;
+            border-radius: 40rpx;
+            background: var(--primary, #3d7eff);
+            color: #ffffff;
+            font-size: 30rpx;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10rpx 24rpx rgba(61, 126, 255, 0.28);
+
+            &--hover {
+                opacity: 0.85;
+            }
+        }
     }
 }
 
