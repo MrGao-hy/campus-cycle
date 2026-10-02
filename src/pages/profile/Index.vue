@@ -17,20 +17,23 @@ const userStore = useUserStore();
 
 const avatar = ref(userStore.userInfo?.avatar || '');
 const nickname = ref(userStore.userInfo?.nickname || '');
-const avatarUploading = ref(false);
 const saving = ref(false);
 
 /** 选择微信头像：微信无 chooseAvatar API，须用 <button open-type="chooseAvatar">
- * 触发 @chooseavatar（e.detail.avatarUrl 为临时路径）→ 上传 → 换为正式 URL */
+ * 触发 @chooseavatar（e.detail.avatarUrl 为临时路径）。
+ * 流程：先本地预览（临时路径可直接用于 image）→ 上传换正式 URL；
+ * 失败不阻塞、不锁状态，随时可再次点击重选 */
 const onChooseAvatar = async (e: { detail: { avatarUrl: string } }) => {
-    if (avatarUploading.value) return;
-    avatarUploading.value = true;
+    const tempPath = e.detail?.avatarUrl;
+    if (!tempPath) return;
+    avatar.value = tempPath;
     try {
-        avatar.value = await uploadImage(e.detail.avatarUrl);
-    } catch {
-        toast.warning('头像上传失败');
-    } finally {
-        avatarUploading.value = false;
+        const url = await uploadImage(tempPath);
+        avatar.value = url;
+        toast.success('头像上传成功');
+    } catch (err) {
+        const msg = (err as Error)?.message || '头像上传失败';
+        toast.warning(`头像上传失败：${msg}`);
     }
 };
 

@@ -14,13 +14,13 @@ export const uploadImage = (tempPath: string): Promise<string> => {
             success: res => {
                 try {
                     const data = JSON.parse(res.data) as { code: number; message: string; data?: string };
-                    if (data.code === 200 && data.data) {
+                    if (res.statusCode === 200 && data.code === 200 && data.data) {
                         resolve(data.data);
                     } else {
-                        reject(new Error(data.message || '上传失败'));
+                        reject(new Error(data.message || `上传失败(${res.statusCode})`));
                     }
                 } catch {
-                    reject(new Error('上传失败，请重试'));
+                    reject(new Error(`上传失败(${res.statusCode})`));
                 }
             },
             fail: err => reject(new Error(err.errMsg || '上传失败')),
