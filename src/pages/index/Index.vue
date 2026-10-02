@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import GoodsCard from '@/components/GoodsCard.vue';
-import { getGoodsListApi } from '@/api';
+import { getGoodsListApi, confirmSchoolApi } from '@/api';
 import { useUserStore } from '@/store';
+import { useToast } from '@hy-app/ui';
 import { ensureSchool } from '@/utils/guard';
 import { GOODS_CATEGORIES, type Goods } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
@@ -16,6 +17,7 @@ definePage({
 });
 
 const userStore = useUserStore();
+const toast = useToast();
 
 const keyword = ref('');
 const category = ref(0);
@@ -25,15 +27,31 @@ const loading = ref(true);
 const loadList = async () => {
     if (!userStore.school) return;
     loading.value = true;
-    list.value = await getGoodsListApi({
-        schoolId: userStore.school.id,
-        keyword: keyword.value,
-        category: GOODS_CATEGORIES[category.value],
-    });
-    loading.value = false;
+    try {
+        list.value = await getGoodsListApi({
+            schoolId: userStore.school.id,
+            keyword: keyword.value,
+            category: GOODS_CATEGORIES[category.value],
+        });
+    } catch {
+        list.value = [];
+        toast.error('商品加载失败，请稍后重试');
+    } finally {
+        loading.value = false;
+    }
 };
 
-onShow(() => {
+onShow(async () => {
+    // 冷启动兜底：token/账号已绑定学校（userInfo.schoolId 有值）但 school 实体丢失
+    // （清缓存/storage 异常/旧版本）时，自动恢复学校实体，避免首页一直停在引导态
+    if (!userStore.school && userStore.userInfo?.schoolId) {
+        try {
+            const school = await confirmSchoolApi(userStore.userInfo.schoolId);
+            userStore.setSchool(school);
+        } catch {
+            /* 恢复失败不阻塞，页面保留引导态，用户可手动选择 */
+        }
+    }
     // 浏览无需登录：未选学校时不强制跳转（避免返回死循环），
     // 顶部学校入口 + 商品区空态引导用户主动选择
     if (!ensureSchool()) return;

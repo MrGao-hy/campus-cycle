@@ -149,10 +149,13 @@ const handleLogin = async () => {
         userStore.setLogin(res.token, res.userInfo);
         toast.close();
         toast.success('登录成功');
-        // 本地已有学校（未登录时选的）→ 同步到账号
-        if (userStore.school) {
+        // 同步学校：优先本地已选（未登录时选的），其次账号已绑定（userInfo.schoolId，
+        // 后端登录/建号时已写库）——否则清缓存后重新登录会因 school 实体为空
+        // 而被误判「未选校」，首页数据永不加载
+        const schoolId = userStore.school?.id || res.userInfo.schoolId;
+        if (schoolId) {
             try {
-                const school = await confirmSchoolApi(userStore.school.id);
+                const school = await confirmSchoolApi(schoolId);
                 userStore.setSchool(school);
             } catch {
                 /* 同步失败不阻塞登录，本地学校保留 */
