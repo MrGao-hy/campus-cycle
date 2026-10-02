@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import TheRootPages from '@/components/TheRootPages.vue';
 import GoodsCard from '@/components/GoodsCard.vue';
 import { getGoodsListApi, confirmSchoolApi, GOODS_PAGE_SIZE } from '@/api';
 import { useUserStore } from '@/store';
@@ -155,7 +154,7 @@ const onProbeTap = (e: any) => {
 </script>
 
 <template>
-    <the-root-pages>
+    <view class="home-page">
         <!-- 临时排查探针（确认后删除） -->
         <view class="home__probe">
             TS={{ probe.ts }} / TAP={{ probe.tap }} / id={{ probe.last }}
@@ -320,7 +319,7 @@ const onProbeTap = (e: any) => {
                 ></hy-empty>
             </scroll-view>
         </view>
-    </the-root-pages>
+    </view>
 </template>
 
 <style lang="scss" scoped>
