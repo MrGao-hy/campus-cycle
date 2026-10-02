@@ -22,7 +22,9 @@ const toast = useToast();
 const keyword = ref('');
 const category = ref(0);
 const list = ref<Goods[]>([]);
-const loading = ref(true);
+// loading 初始必须为 false：未选校时 onShow 直接 return 不调 loadList，
+// 若初始 true 骨架屏会永远转且挡住引导态；loadList 内部会置 true
+const loading = ref(false);
 
 const loadList = async () => {
     if (!userStore.school) return;
@@ -171,12 +173,16 @@ const goSecurity = () => {
 
             <!-- 商品列表（scroll-view 原生滚动，内容从头部下方开始） -->
             <scroll-view class="home__scroll" scroll-y>
-                <view v-if="loading" class="home__loading">
-                    <hy-skeleton
-                        theme="paragraph"
-                        :row-col="[1, 2, 2]"
-                        animation="gradient"
-                    ></hy-skeleton>
+                <view v-if="loading" class="home__skeleton">
+                    <view
+                        v-for="i in 4"
+                        :key="i"
+                        class="home__skeleton-card"
+                    >
+                        <view class="home__skeleton-img"></view>
+                        <view class="home__skeleton-title"></view>
+                        <view class="home__skeleton-price"></view>
+                    </view>
                 </view>
                 <view v-else-if="list.length" class="home__list">
                     <goods-card
@@ -346,6 +352,77 @@ const goSecurity = () => {
 
     &__loading {
         padding: 24rpx;
+    }
+
+    /* 商品卡骨架屏（自绘：与 GoodsCard 同尺寸同间距，蓝主题淡色呼吸动画；
+       弃用 hy-skeleton 段落式——与商品列表形态不符，且第三方组件在 MP 端渲染不可控） */
+    &__skeleton {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: 24rpx 24rpx 0;
+
+        &-card {
+            width: calc(50% - 10rpx);
+            margin-bottom: 20rpx;
+            background: #ffffff;
+            border-radius: 16rpx;
+            padding: 20rpx;
+            box-sizing: border-box;
+        }
+
+        &-img {
+            width: 100%;
+            height: 340rpx;
+            border-radius: 12rpx;
+            background: linear-gradient(
+                90deg,
+                #f0f2f6 25%,
+                #e6e9f2 37%,
+                #f0f2f6 63%
+            );
+            background-size: 400% 100%;
+            animation: home-skeleton-shimmer 1.4s ease infinite;
+        }
+
+        &-title {
+            margin-top: 16rpx;
+            height: 28rpx;
+            width: 76%;
+            border-radius: 8rpx;
+            background: linear-gradient(
+                90deg,
+                #f0f2f6 25%,
+                #e6e9f2 37%,
+                #f0f2f6 63%
+            );
+            background-size: 400% 100%;
+            animation: home-skeleton-shimmer 1.4s ease infinite;
+        }
+
+        &-price {
+            margin-top: 14rpx;
+            height: 30rpx;
+            width: 42%;
+            border-radius: 8rpx;
+            background: linear-gradient(
+                90deg,
+                #f0f2f6 25%,
+                #e6e9f2 37%,
+                #f0f2f6 63%
+            );
+            background-size: 400% 100%;
+            animation: home-skeleton-shimmer 1.4s ease infinite 0.15s;
+        }
+    }
+
+    @keyframes home-skeleton-shimmer {
+        0% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0 50%;
+        }
     }
 
     &__list {

@@ -17,7 +17,8 @@ definePage({
 const userStore = useUserStore();
 
 const list = ref<Goods[]>([]);
-const loading = ref(true);
+// 初始 false：未登录/未选校时 onShow 直接 return，若初始 true 骨架屏永远转
+const loading = ref(false);
 const current = ref(0);
 
 const TABS = [

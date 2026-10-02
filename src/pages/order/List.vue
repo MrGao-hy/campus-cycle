@@ -34,7 +34,8 @@ const goGuard = () => {
 const role = ref<'buyer' | 'seller'>('buyer');
 const statusIndex = ref(0);
 const list = ref<OrderRow[]>([]);
-const loading = ref(true);
+// 初始 false：未登录/未选校时 onShow 直接 return，若初始 true 骨架屏永远转
+const loading = ref(false);
 
 const STATUS_TABS: Array<{ name: string; value: OrderStatus | 'ALL' }> = [
     { name: '全部', value: 'ALL' },
