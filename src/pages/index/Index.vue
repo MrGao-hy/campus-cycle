@@ -135,11 +135,36 @@ const goProfile = () => {
 const goSecurity = () => {
     uni.navigateTo({ url: '/pages/security/Index' });
 };
+
+/* ------------------------------------------------------------------ *
+ * 临时排查探针（定位「页面内点击全部无反应」用，确认后删除）
+ * 页面根节点同时监听 touchstart / tap（tap 会冒泡，点任何子元素都会到这），
+ * 顶部红色条实时显示计数，用来区分三种情况：
+ *   ① TS 和 TAP 都不涨  → 触摸被上层吞掉（存在覆盖层）
+ *   ② TS 涨、TAP 不涨   → 手势被识别成滚动，click 未生成
+ *   ③ TS/TAP 都涨       → 事件到达页面，问题在 handler 绑定
+ * ------------------------------------------------------------------ */
+const probe = ref({ ts: 0, tap: 0, last: '' });
+const onProbeTouch = () => {
+    probe.value.ts += 1;
+};
+const onProbeTap = (e: any) => {
+    probe.value.tap += 1;
+    probe.value.last = e?.target?.id || e?.currentTarget?.id || '-';
+};
 </script>
 
 <template>
     <the-root-pages>
-        <view class="home">
+        <!-- 临时排查探针（确认后删除） -->
+        <view class="home__probe">
+            TS={{ probe.ts }} / TAP={{ probe.tap }} / id={{ probe.last }}
+        </view>
+        <view
+            class="home"
+            @touchstart="onProbeTouch"
+            @tap="onProbeTap"
+        >
             <!-- 固定头部：学校 + 搜索 + 分类 + 安全提醒（不随列表滚动，
                  天然"吸顶"，彻底规避小程序 WKWebView sticky/fixed 穿透） -->
             <view class="home__header">
@@ -300,6 +325,22 @@ const goSecurity = () => {
 
 <style lang="scss" scoped>
 @use '../../styles/design.scss' as *;
+
+/* 临时排查探针（确认后删除）：绝对定位 + pointer-events:none，不吞点击 */
+.home__probe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    pointer-events: none;
+    background: rgba(255, 0, 0, 0.85);
+    color: #fff;
+    font-size: 20rpx;
+    line-height: 40rpx;
+    text-align: center;
+}
+
 .home {
     display: flex;
     flex-direction: column;
