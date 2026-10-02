@@ -42,6 +42,29 @@ const goSchool = () => uni.navigateTo({ url: '/pages/school/Index' });
 const goProfile = () => uni.navigateTo({ url: '/pages/profile/Index' });
 const goLogin = () => uni.navigateTo({ url: '/pages/login/Index' });
 
+/**
+ * 需登录的菜单项：未登录时弹确认框引导登录（用原生 showModal —— hy-modal 在小程序端不渲染）
+ * 列表本身始终展示（与主流小程序一致：不登录也能看到完整菜单，用到时再引导登录）
+ */
+const requireLogin = (action: () => void) => {
+    if (userStore.hasLogin) {
+        action();
+        return;
+    }
+    uni.showModal({
+        title: '需要登录',
+        content: '该功能需要登录后使用，是否前往登录？',
+        confirmText: '去登录',
+        cancelText: '再逛逛',
+        success: res => {
+            if (res.confirm) goLogin();
+        },
+    });
+};
+
+/** 顶部头像 / 昵称 / 设置图标：已登录进资料页，未登录进登录页 */
+const onUserTap = () => (userStore.hasLogin ? goProfile() : goLogin());
+
 const logout = () => {
     uni.showModal({
         title: '退出登录',
@@ -59,53 +82,43 @@ const logout = () => {
 <template>
     <the-root-pages>
         <view class="mine">
-            <!-- 未登录引导 -->
-            <view v-if="!userStore.hasLogin" class="mine__login-guide">
-                <view class="mine__login-logo">
-                    <hy-icon
-                        name="/static/icons/shield.png"
-                        :size="34"
-                    />
-                </view>
-                <text class="mine__login-title">登录后开启校园二手交易</text>
-                <text class="mine__login-desc"
-                    >同校实名认证 · 平台订单保障 · 交易更放心</text
-                >
-                <hy-button
-                    text="微信一键登录"
-                    color="#07c160"
-                    shape="circle"
-                    @click="goLogin"
-                ></hy-button>
-                <text class="mine__login-link" @tap="goSchool"
-                    >先选择学校，逛逛再说</text
-                >
-            </view>
-
-            <!-- 用户信息 -->
-            <view v-else class="mine__user">
+            <!-- 用户信息（未登录也保持常规菜单样式：默认头像 + 登录/注册入口，
+                 不再用整块登录面板占满页面——参考主流小程序「我的」页） -->
+            <view class="mine__user">
                 <view class="mine__user-decor"></view>
                 <view class="mine__user-decor mine__user-decor--2"></view>
-                <!-- 头像：已设置头像显示图片；未设置显示默认灰人形图标；
-                     点击进入资料编辑（微信 chooseAvatar 换头像 + 上传） -->
+                <!-- 头像：已登录且已设置头像显示图片；否则显示默认灰人形图标。
+                     未登录点击直接进登录页 -->
                 <image
-                    v-if="userStore.userInfo?.avatar"
+                    v-if="userStore.hasLogin && userStore.userInfo?.avatar"
                     :src="userStore.userInfo.avatar"
                     class="mine__avatar"
                     mode="aspectFill"
-                    @tap="goProfile"
+                    @tap="onUserTap"
                 />
                 <image
                     v-else
                     src="/static/icons/user.png"
                     class="mine__avatar"
                     mode="aspectFill"
-                    @tap="goProfile"
+                    @tap="onUserTap"
                 />
                 <view class="mine__user-info">
-                    <view class="mine__nickname">
-                        {{ userStore.userInfo?.nickname || '未登录' }}
+                    <view
+                        v-if="userStore.hasLogin"
+                        class="mine__nickname"
+                        @tap="onUserTap"
+                    >
+                        {{ userStore.userInfo?.nickname || '校园用户' }}
                         <hy-tag label="已认证" type="success" size="mini" />
+                    </view>
+                    <view v-else class="mine__nickname" @tap="onUserTap">
+                        登录 / 注册
+                        <hy-icon
+                            name="/static/icons/right.png"
+                            color="#ffffff"
+                            :size="14"
+                        />
                     </view>
                     <view class="mine__sub" @tap="goSchool">
                         <hy-icon
@@ -119,7 +132,7 @@ const logout = () => {
                             }}（点击切换）</text
                         >
                     </view>
-                    <view class="mine__stats">
+                    <view v-if="userStore.hasLogin" class="mine__stats">
                         <text
                             >信用分
                             {{ userStore.userInfo?.creditScore ?? '-' }}</text
@@ -130,8 +143,11 @@ const logout = () => {
                             {{ userStore.userInfo?.successCount ?? 0 }} 单</text
                         >
                     </view>
+                    <view v-else class="mine__stats"
+                        >登录后可发布商品、管理订单</view
+                    >
                 </view>
-                <view class="mine__user-edit" @tap="goProfile">
+                <view class="mine__user-edit" @tap="onUserTap">
                     <hy-icon
                         name="/static/icons/setting-white.png"
                         :size="18"
@@ -159,12 +175,10 @@ const logout = () => {
                 <text class="mine__fee-link">去处理 ›</text>
             </view>
 
-            <!-- 交易/服务/退出（仅登录可见） -->
-            <template v-if="userStore.hasLogin">
-                <!-- 交易入口 -->
-                <view class="mine__group-title">我的交易</view>
+            <!-- 交易入口（未登录也展示，点击时引导登录） -->
+            <view class="mine__group-title">我的交易</view>
             <view class="mine__group">
-                <view class="mine__item" @tap="goOrders">
+                <view class="mine__item" @tap="requireLogin(goOrders)">
                     <view class="mine__item-icon"
                         ><hy-icon
                             name="/static/icons/cart.png"
@@ -181,9 +195,8 @@ const logout = () => {
                         :size="14"
                     ></hy-icon>
                 </view>
-                <view class="mine__item" @tap="goOrders">
-                    <view
-                        class="mine__item-icon mine__item-icon--warn"
+                <view class="mine__item" @tap="requireLogin(goOrders)">
+                    <view class="mine__item-icon mine__item-icon--warn"
                         ><hy-icon
                             name="/static/icons/sell.png"
                             :size="22"
@@ -201,9 +214,8 @@ const logout = () => {
                         :size="14"
                     ></hy-icon>
                 </view>
-                <view class="mine__item" @tap="goMyGoods">
-                    <view
-                        class="mine__item-icon mine__item-icon--green"
+                <view class="mine__item" @tap="requireLogin(goMyGoods)">
+                    <view class="mine__item-icon mine__item-icon--green"
                         ><hy-icon
                             name="/static/icons/picture.png"
                             :size="22"
@@ -221,7 +233,7 @@ const logout = () => {
                         :size="14"
                     ></hy-icon>
                 </view>
-                <view class="mine__item" @tap="goPublish">
+                <view class="mine__item" @tap="requireLogin(goPublish)">
                     <view class="mine__item-icon"
                         ><hy-icon
                             name="/static/icons/plus.png"
@@ -245,7 +257,7 @@ const logout = () => {
             <!-- 服务入口 -->
             <view class="mine__group-title">更多服务</view>
             <view class="mine__group">
-                <view class="mine__item" @tap="goFee">
+                <view class="mine__item" @tap="requireLogin(goFee)">
                     <view class="mine__item-icon mine__item-icon--red"
                         ><hy-icon
                             name="/static/icons/bill.png"
@@ -265,8 +277,7 @@ const logout = () => {
                     ></hy-icon>
                 </view>
                 <view class="mine__item" @tap="goSecurity">
-                    <view
-                        class="mine__item-icon mine__item-icon--green"
+                    <view class="mine__item-icon mine__item-icon--green"
                         ><hy-icon
                             name="/static/icons/shield.png"
                             :size="22"
@@ -284,7 +295,7 @@ const logout = () => {
                         :size="14"
                     ></hy-icon>
                 </view>
-                <view class="mine__item" @tap="goRecords">
+                <view class="mine__item" @tap="requireLogin(goRecords)">
                     <view class="mine__item-icon mine__item-icon--red"
                         ><hy-icon
                             name="/static/icons/complaint.png"
@@ -305,7 +316,8 @@ const logout = () => {
                 </view>
             </view>
 
-            <view class="mine__logout">
+            <!-- 已登录：退出登录；未登录：登录 / 注册 -->
+            <view v-if="userStore.hasLogin" class="mine__logout">
                 <hy-button
                     text="退出登录"
                     plain
@@ -315,7 +327,15 @@ const logout = () => {
                     @click="logout"
                 ></hy-button>
             </view>
-            </template>
+            <view v-else class="mine__logout">
+                <hy-button
+                    text="登录 / 注册"
+                    type="primary"
+                    shape="circle"
+                    :custom-style="{ height: '88rpx' }"
+                    @click="goLogin"
+                ></hy-button>
+            </view>
         </view>
     </the-root-pages>
 </template>
@@ -365,47 +385,8 @@ const logout = () => {
         box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
     }
 
-    &__login-guide {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        @include hy-gradient-header(135deg, 24rpx);
-        padding: 72rpx 48rpx 64rpx;
-        gap: 20rpx;
-        box-shadow: 0 12rpx 32rpx rgba(30, 60, 120, 0.18);
-        animation: mine-fade-up 0.45s ease-out both;
-    }
-
-    &__login-logo {
-        width: 120rpx;
-        height: 120rpx;
-        border-radius: 36rpx;
-        background: rgba(255, 255, 255, 0.18);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 8rpx;
-    }
-
-    &__login-title {
-        font-size: 34rpx;
-        font-weight: 600;
-        color: #fff;
-    }
-
-    &__login-desc {
-        font-size: 24rpx;
-        color: rgba(255, 255, 255, 0.75);
-    }
-
-    &__login-link {
-        margin-top: 12rpx;
-        font-size: 24rpx;
-        color: rgba(255, 255, 255, 0.85);
-        text-decoration: underline;
-    }
+    /* 未登录不再用整块登录面板（__login-guide 已移除），
+       与已登录共用同一张用户卡片，保持常规菜单样式 */
 
     &__user-decor {
         position: absolute;
