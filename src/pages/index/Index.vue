@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TheRootPages from '@/components/TheRootPages.vue';
 import GoodsCard from '@/components/GoodsCard.vue';
 import { getGoodsListApi, confirmSchoolApi, GOODS_PAGE_SIZE } from '@/api';
 import { useUserStore } from '@/store';
@@ -85,8 +86,6 @@ const onScrollToLower = () => {
 };
 
 onShow(async () => {
-    // 临时排查（确认后删除）：验证页面级 JS 是否执行
-    uni.showToast({ title: 'PAGE JS OK', icon: 'none', duration: 3000 });
     // 冷启动兜底：token/账号已绑定学校（userInfo.schoolId 有值）但 school 实体丢失
     // （清缓存/storage 异常/旧版本）时，自动恢复学校实体，避免首页一直停在引导态
     if (!userStore.school && userStore.userInfo?.schoolId) {
@@ -118,8 +117,6 @@ const goDetail = (goods: Goods) => {
 };
 
 const goSchool = () => {
-    // 点击可见反馈：能区分「点击没触发」与「跳转被拒」
-    uni.showToast({ title: '正在打开…', icon: 'none', duration: 800 });
     uni.navigateTo({
         url: '/pages/school/Index',
         fail: err => {
@@ -137,67 +134,11 @@ const goSecurity = () => {
     uni.navigateTo({ url: '/pages/security/Index' });
 };
 
-/* ------------------------------------------------------------------ *
- * 临时排查探针（定位「页面内点击全部无反应」用，确认后删除）
- * 页面根节点同时监听 touchstart / tap（tap 会冒泡，点任何子元素都会到这），
- * 顶部红色条实时显示计数，用来区分三种情况：
- *   ① TS 和 TAP 都不涨  → 触摸被上层吞掉（存在覆盖层）
- *   ② TS 涨、TAP 不涨   → 手势被识别成滚动，click 未生成
- *   ③ TS/TAP 都涨       → 事件到达页面，问题在 handler 绑定
- * ------------------------------------------------------------------ */
-const probe = ref({ ts: 0, tap: 0, btn: '' });
-const onProbeTouch = () => {
-    probe.value.ts += 1;
-};
-const onProbeTap = () => {
-    probe.value.tap += 1;
-};
-
-/**
- * 心跳计数：每秒 +1 并驱动视图更新。
- * 数字在跳 ⇒ JS 已执行、渲染链路正常；数字不动 ⇒ JS 压根没跑。
- * 用它把「JS 没执行」和「点击没派发到 JS」两种情况彻底分开。
- */
-const tick = ref(0);
-setInterval(() => {
-    tick.value += 1;
-}, 1000);
-// 三个纯 view 测试按钮：不依赖任何组件/布局，只验证「点击能否到达 JS」
-const onTestA = () => {
-    probe.value.btn = 'A';
-    uni.showToast({ title: 'A 被点了', icon: 'none', duration: 1500 });
-};
-const onTestB = () => {
-    probe.value.btn = 'B';
-    uni.showToast({ title: 'B 被点了', icon: 'none', duration: 1500 });
-};
-const onTestC = () => {
-    probe.value.btn = 'C';
-    uni.showToast({ title: 'C 被点了', icon: 'none', duration: 1500 });
-};
 </script>
 
 <template>
-    <view class="home-page">
-        <!-- 临时排查探针（确认后删除） -->
-        <view class="home__probe">
-            <view class="home__probe-title">
-                DEBUG v5 · TICK={{ tick }}（每秒+1）
-            </view>
-            <view class="home__probe-line">
-                TS={{ probe.ts }} / TAP={{ probe.tap }} / BTN={{ probe.btn }}
-            </view>
-            <view class="home__probe-btns">
-                <view class="home__probe-btn" @tap="onTestA">A</view>
-                <view class="home__probe-btn" @tap="onTestB">B</view>
-                <view class="home__probe-btn" @tap="onTestC">C</view>
-            </view>
-        </view>
-        <view
-            class="home"
-            @touchstart="onProbeTouch"
-            @tap="onProbeTap"
-        >
+    <the-root-pages>
+        <view class="home">
             <!-- 固定头部：学校 + 搜索 + 分类 + 安全提醒（不随列表滚动，
                  天然"吸顶"，彻底规避小程序 WKWebView sticky/fixed 穿透） -->
             <view class="home__header">
@@ -353,53 +294,11 @@ const onTestC = () => {
                 ></hy-empty>
             </scroll-view>
         </view>
-    </view>
+    </the-root-pages>
 </template>
 
 <style lang="scss" scoped>
 @use '../../styles/design.scss' as *;
-
-/* 临时排查探针（确认后删除）：绝对定位置顶，自带三个测试按钮 */
-.home__probe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 99999;
-    background: #ff0000;
-    color: #fff;
-    padding: 8rpx 0 12rpx;
-    text-align: center;
-
-    &-title {
-        font-size: 26rpx;
-        font-weight: bold;
-        line-height: 36rpx;
-    }
-
-    &-line {
-        font-size: 22rpx;
-        line-height: 32rpx;
-    }
-
-    &-btns {
-        display: flex;
-        justify-content: center;
-        gap: 20rpx;
-        margin-top: 8rpx;
-    }
-
-    &-btn {
-        width: 100rpx;
-        height: 56rpx;
-        line-height: 56rpx;
-        background: #ffff00;
-        color: #000;
-        font-size: 26rpx;
-        font-weight: bold;
-        border-radius: 8rpx;
-    }
-}
 
 .home {
     display: flex;

@@ -47,16 +47,17 @@ const config: IConfig = {
     },
     // #endif
     // #ifndef H5 || APP_PLUS
-    // 开发版（微信开发者工具：本机回环地址即可；真机预览请改为局域网 IP，如 http://192.168.3.10:8080）
+    // 开发版：真机预览/真机调试必须走局域网 IP（手机上的 127.0.0.1 是手机自己，
+    // 连不到 Mac 上的后端 → 报「网络错误」）。换网络后改这里；模拟器同样可用。
     develop: {
-        baseUrl: 'http://127.0.0.1:8080',
+        baseUrl: 'http://192.168.3.10:8080',
         decoBaseUrl: 'https://xryy.hfykcloud.com:99/pamirs', // 装修接口地址
         // 已配置真实小程序 AppID/AppSecret（wx1d337ce3ce3bae15），走真实 code2session
         wxMock: false,
     },
     // 体验版
     trial: {
-        baseUrl: 'http://127.0.0.1:8080',
+        baseUrl: 'http://192.168.3.10:8080',
         decoBaseUrl: 'https://xryy.hfykcloud.com:99/pamirs',
         wxMock: false,
     },

@@ -9,9 +9,6 @@ const userStore = useUserStore();
 if (userStore.token) {
     uni.setStorageSync('member_token', userStore.token);
 }
-
-// 临时排查（确认后删除）：验证 App 级 JS 是否执行
-uni.showToast({ title: 'APP JS OK', icon: 'none', duration: 3000 });
 </script>
 
 <style lang="scss">
