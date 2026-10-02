@@ -316,7 +316,9 @@ const logout = () => {
                 </view>
             </view>
 
-            <!-- 已登录：退出登录；未登录：登录 / 注册 -->
+            <!-- 仅已登录显示「退出登录」；未登录不显示底部按钮 ——
+                 顶部卡片的「登录 / 注册」入口已承担引导，底部再放一个主按钮
+                 既重复又会占据页面底部空间（与主流小程序一致） -->
             <view v-if="userStore.hasLogin" class="mine__logout">
                 <hy-button
                     text="退出登录"
@@ -325,15 +327,6 @@ const logout = () => {
                     shape="circle"
                     :custom-style="{ height: '88rpx' }"
                     @click="logout"
-                ></hy-button>
-            </view>
-            <view v-else class="mine__logout">
-                <hy-button
-                    text="登录 / 注册"
-                    type="primary"
-                    shape="circle"
-                    :custom-style="{ height: '88rpx' }"
-                    @click="goLogin"
                 ></hy-button>
             </view>
         </view>
