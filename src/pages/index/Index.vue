@@ -78,8 +78,8 @@ const goSecurity = () => {
             <view class="home__header">
                 <view class="home__school" @tap="goSchool">
                     <hy-icon
-                        name="/static/icons/location.png"
-                        :size="13"
+                        name="/static/icons/school-cap.png"
+                        :size="16"
                     />
                     <text class="home__school-name">{{
                         userStore.school?.name || '选择学校'

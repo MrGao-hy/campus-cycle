@@ -100,9 +100,9 @@ const logout = () => {
                     </view>
                     <view class="mine__sub" @tap="goSchool">
                         <hy-icon
-                            name="/static/icons/map.png"
+                            name="/static/icons/school-cap.png"
                             color="var(--hy-text-color--3, #929295)"
-                            :size="13"
+                            :size="16"
                         />
                         <text
                             >{{
