@@ -347,12 +347,13 @@ const logout = () => {
     }
 
     &__login-guide {
-        flex-shrink: 0;
-        @include hy-gradient-header(135deg, 24rpx);
-        padding: 72rpx 48rpx 64rpx;
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
+        @include hy-gradient-header(135deg, 24rpx);
+        padding: 72rpx 48rpx 64rpx;
         gap: 20rpx;
         box-shadow: 0 12rpx 32rpx rgba(30, 60, 120, 0.18);
         animation: mine-fade-up 0.45s ease-out both;

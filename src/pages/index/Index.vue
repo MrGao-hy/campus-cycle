@@ -77,10 +77,9 @@ const goSecurity = () => {
                  天然"吸顶"，彻底规避小程序 WKWebView sticky/fixed 穿透） -->
             <view class="home__header">
                 <view class="home__school" @tap="goSchool">
-                    <hy-icon
-                        name="/static/icons/school-cap.png"
-                        :size="16"
-                    />
+                    <view class="home__school-logo">{{
+                        userStore.school?.shortName?.slice(0, 1) || '校'
+                    }}</view>
                     <text class="home__school-name">{{
                         userStore.school?.name || '选择学校'
                     }}</text>
@@ -239,6 +238,22 @@ const goSecurity = () => {
     &__school-name {
         font-size: 30rpx;
         font-weight: 600;
+    }
+
+    /* 学校首字 Logo：每校首字不同（不重复），品牌渐变圆标 */
+    &__school-logo {
+        width: 44rpx;
+        height: 44rpx;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3d7eff, #6fa8ff);
+        color: #ffffff;
+        font-size: 22rpx;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4rpx 10rpx rgba(61, 126, 255, 0.3);
     }
 
     &__user {

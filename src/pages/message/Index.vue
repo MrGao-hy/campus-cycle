@@ -249,12 +249,14 @@ const goIndex = () => {
     }
 
     &__login-guide {
-        margin-top: 16rpx;
-        @include hy-card(20rpx);
-        padding: 64rpx 40rpx 72rpx;
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
+        margin-top: 16rpx;
+        @include hy-card(20rpx);
+        padding: 64rpx 40rpx 72rpx;
         gap: 20rpx;
     }
 
@@ -432,7 +434,8 @@ const goIndex = () => {
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 100rpx 0 60rpx;
+        justify-content: center;
+        padding: 40rpx 0 40rpx;
 
         &-icon {
             width: 120rpx;
