@@ -9,7 +9,7 @@ import {
 } from '@/api';
 import { getGoodsDetailApi, applyBuyApi, type IGoodsDetail } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { fmtTime } from '@/utils/format';
 import type { ChatMessage } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';

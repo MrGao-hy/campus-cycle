@@ -3,7 +3,7 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import GoodsCard from '@/components/GoodsCard.vue';
 import { getGoodsListApi, confirmSchoolApi, GOODS_PAGE_SIZE } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { ensureSchool } from '@/utils/guard';
 import { GOODS_CATEGORIES, type Goods } from '@/types';
 import { onShow } from '@dcloudio/uni-app';

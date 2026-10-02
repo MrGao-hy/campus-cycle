@@ -2,7 +2,7 @@
 import TheRootPages from '@/components/TheRootPages.vue';
 import { getOrderDetailApi, submitComplaintApi } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import {
     COMPLAINT_TYPES,
     ORDER_STATUS_TAG,

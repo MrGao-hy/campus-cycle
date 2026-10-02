@@ -2,7 +2,7 @@
 import TheRootPages from '@/components/TheRootPages.vue';
 import { getOrderDetailApi, submitReviewApi } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import type { OrderRow } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
 import { ensureLoginAndSchool } from '@/utils/guard';

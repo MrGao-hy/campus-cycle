@@ -2,7 +2,7 @@
 import TheRootPages from '@/components/TheRootPages.vue';
 import { getFeeSummaryApi } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { onShow } from '@dcloudio/uni-app';
 import { ref } from 'vue';
 

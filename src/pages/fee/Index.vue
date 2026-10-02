@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import { getFeeSummaryApi, payFeeBillApi } from '@/api';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { fmtAmount, fmtFullTime } from '@/utils/format';
 import type { FeeSummary } from '@/types';
 import { onShow } from '@dcloudio/uni-app';

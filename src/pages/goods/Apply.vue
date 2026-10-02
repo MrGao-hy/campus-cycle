@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import { applyBuyApi, getGoodsDetailApi } from '@/api';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { SAFETY_PROMISES } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
 import { ensureLoginAndSchool } from '@/utils/guard';

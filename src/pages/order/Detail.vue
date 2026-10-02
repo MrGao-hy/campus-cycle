@@ -13,7 +13,7 @@ import {
     submitReviewApi,
 } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { fmtAmount, fmtFullTime, fmtRemain } from '@/utils/format';
 import {
     CONTACT_ITEMS,

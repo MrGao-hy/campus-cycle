@@ -7,7 +7,7 @@ export function createApp() {
     const app = createSSRApp(App);
     app.mixin(
         useShare({
-            title: '华玥组件库',
+            title: '校园循环',
         })
     );
 

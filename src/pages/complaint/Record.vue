@@ -5,7 +5,7 @@ import {
     getMyAppealsApi,
     getMyComplaintsApi,
 } from '@/api';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import {
     APPEAL_STATUS_TAG,
     APPEAL_STATUS_TEXT,

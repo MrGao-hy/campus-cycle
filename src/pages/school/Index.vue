@@ -2,7 +2,7 @@
 import TheRootPages from '@/components/TheRootPages.vue';
 import { confirmSchoolApi, getSchoolListApi } from '@/api';
 import { useToolsStore, useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { computed, ref } from 'vue';
 import type { School } from '@/types';
 

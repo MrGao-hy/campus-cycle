@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import { getComplaintDetailApi, submitAppealApi } from '@/api';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { fmtFullTime } from '@/utils/format';
 import type { ComplaintRow } from '@/types';
 import type {

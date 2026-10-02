@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import SafetyTips from '@/components/SafetyTips.vue';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { SAFETY_PROMISES } from '@/types';
 import { ref } from 'vue';
 

@@ -2,7 +2,7 @@
 import TheRootPages from '@/components/TheRootPages.vue';
 import { cancelComplaintApi, getComplaintDetailApi } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { fmtFullTime } from '@/utils/format';
 import {
     APPEAL_STATUS_TAG,

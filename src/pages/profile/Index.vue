@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { ref } from 'vue';
 import { updateProfileApi } from '@/api';
 import { uploadImage } from '@/utils/upload';

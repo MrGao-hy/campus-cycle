@@ -2,7 +2,7 @@
 import TheRootPages from '@/components/TheRootPages.vue';
 import { checkPublishAllowedApi, publishGoodsApi } from '@/api';
 import { uploadImage } from '@/utils/upload';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { GOODS_CATEGORIES, GOODS_CONDITIONS } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
 import { ensureLoginAndSchool } from '@/utils/guard';
