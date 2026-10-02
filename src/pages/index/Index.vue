@@ -203,33 +203,53 @@ const goSecurity = () => {
                 <!-- 安全提醒（自定义静态播报条：hy-notice-bar row 模式滚动起点留白、
                      column 模式小程序端单条不渲染，弃用该组件） -->
                 <view class="home__safety" @tap="goSecurity">
-                    <hy-icon
-                        name="/static/icons/warning.png"
-                        :size="16"
-                    />
+                    <hy-icon name="/static/icons/warning.png" :size="16" />
                     <text class="home__safety-text"
                         >交易安全提醒：请选择校内公共场所当面交易，勿提前转账，勿脱离平台沟通</text
                     >
                 </view>
             </view>
 
+            <!-- 未选学校引导：必须放在 scroll-view 之外。
+                 小程序端 scroll-view 是手势识别器，开启下拉刷新后内容不足一屏时，
+                 下拉手势判定会吞掉内部子元素的 tap（表现为按钮点不动），
+                 引导态本身也不需要滚动，独立展示即可 -->
+            <view v-if="!userStore.hasSchool" class="home__school-guide">
+                <view class="home__school-guide-logo">
+                    <hy-icon
+                        name="/static/icons/check.png"
+                        color="#fff"
+                        :size="22"
+                    />
+                </view>
+                <text class="home__school-guide-title">先选择你的学校</text>
+                <text class="home__school-guide-desc"
+                    >选择后仅展示本校商品，同校交易更安全</text
+                >
+                <view
+                    class="home__school-guide-btn"
+                    hover-class="home__school-guide-btn--hover"
+                    :hover-stay-time="120"
+                    @tap="goSchool"
+                    >去选择</view
+                >
+            </view>
+
             <!-- 商品列表（scroll-view 原生滚动，内容从头部下方开始；
-                 开启原生下拉刷新与触底加载，分页由 pageNum/hasMore 驱动） -->
+                 下拉刷新与触底加载由 pageNum/hasMore 驱动。
+                 refresher 仅在有数据时开启：空态下开启会让下拉手势抢占点击） -->
             <scroll-view
+                v-else
                 class="home__scroll"
                 scroll-y
-                :refresher-enabled="true"
+                :refresher-enabled="list.length > 0"
                 :refresher-triggered="refreshing"
                 refresher-background="#f5f6f8"
                 @refresherrefresh="onRefresh"
                 @scrolltolower="onScrollToLower"
             >
                 <view v-if="loading" class="home__skeleton">
-                    <view
-                        v-for="i in 4"
-                        :key="i"
-                        class="home__skeleton-card"
-                    >
+                    <view v-for="i in 4" :key="i" class="home__skeleton-card">
                         <view class="home__skeleton-img"></view>
                         <view class="home__skeleton-title"></view>
                         <view class="home__skeleton-price"></view>
@@ -254,31 +274,6 @@ const goSecurity = () => {
                         >
                         <text v-else class="home__footer-text">没有更多了</text>
                     </view>
-                </view>
-                <view
-                    v-else-if="!userStore.hasSchool"
-                    class="home__school-guide"
-                >
-                    <view class="home__school-guide-logo">
-                        <hy-icon
-                            name="/static/icons/check.png"
-                            color="#fff"
-                            :size="22"
-                        />
-                    </view>
-                    <text class="home__school-guide-title"
-                        >先选择你的学校</text
-                    >
-                    <text class="home__school-guide-desc"
-                        >选择后仅展示本校商品，同校交易更安全</text
-                    >
-                    <view
-                        class="home__school-guide-btn"
-                        hover-class="home__school-guide-btn--hover"
-                        :hover-stay-time="120"
-                        @tap="goSchool"
-                        >去选择</view
-                    >
                 </view>
                 <hy-empty
                     v-else
