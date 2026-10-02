@@ -51,13 +51,14 @@ const config: IConfig = {
     develop: {
         baseUrl: 'http://127.0.0.1:8080',
         decoBaseUrl: 'https://xryy.hfykcloud.com:99/pamirs', // 装修接口地址
-        wxMock: true,
+        // 已配置真实小程序 AppID/AppSecret（wx1d337ce3ce3bae15），走真实 code2session
+        wxMock: false,
     },
     // 体验版
     trial: {
         baseUrl: 'http://127.0.0.1:8080',
         decoBaseUrl: 'https://xryy.hfykcloud.com:99/pamirs',
-        wxMock: true,
+        wxMock: false,
     },
     // 正式版（上线时替换为已备案域名，并置 wxMock: false）
     release: {
