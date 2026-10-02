@@ -132,11 +132,9 @@ const statusHint = (row: OrderRow): string => {
                     >{{ userStore.hasLogin ? '去选择' : '去登录' }}</view
                 >
             </view>
+            <template v-else>
             <!-- 角色切换 + 状态筛选（吸顶，滚动时保持可见） -->
-            <view
-                v-else
-                class="orders__filter"
-            >
+            <view class="orders__filter">
                 <view class="orders__role">
                     <hy-subsection
                         :list="['我买到的', '我卖出的']"
@@ -158,8 +156,7 @@ const statusHint = (row: OrderRow): string => {
             </view>
 
             <!-- 订单列表 -->
-            <template v-else>
-                <view v-if="loading" class="orders__loading">
+            <view v-if="loading" class="orders__loading">
                 <hy-skeleton
                     theme="paragraph"
                     :row-col="[1, 1, 1]"
