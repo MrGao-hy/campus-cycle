@@ -72,35 +72,45 @@ const goSecurity = () => {
             <!-- 固定头部：学校 + 搜索 + 分类 + 安全提醒（不随列表滚动，
                  天然"吸顶"，彻底规避小程序 WKWebView sticky/fixed 穿透） -->
             <view class="home__header">
-                <view class="home__school" @tap="goSchool">
-                    <view class="home__school-logo">{{
-                        userStore.school?.shortName?.slice(0, 1) || '校'
-                    }}</view>
-                    <text class="home__school-name">{{
-                        userStore.school?.name || '选择学校'
-                    }}</text>
-                    <hy-icon
-                        name="/static/icons/down.png"
-                        color="var(--hy-text-color--3, #929295)"
-                        :size="12"
-                    />
-                </view>
+                <!-- 顶行：学校（左）+ 已登录头像（右，同排不单独占行，
+                     与学校首字圆标明显区分） -->
+                <view class="home__top">
+                    <view class="home__school" @tap="goSchool">
+                        <view class="home__school-logo">{{
+                            userStore.school?.shortName?.slice(0, 1) || '校'
+                        }}</view>
+                        <text class="home__school-name">{{
+                            userStore.school?.name || '选择学校'
+                        }}</text>
+                        <hy-icon
+                            name="/static/icons/down.png"
+                            color="var(--hy-text-color--3, #929295)"
+                            :size="12"
+                        />
+                    </view>
 
-                <!-- 用户区：已登录显示头像（未登录不常驻登录按钮，保持顶部干净；
-                     登录入口在"我的"页引导卡，浏览中触发登录操作时再引导） -->
-                <view
-                    v-if="userStore.hasLogin"
-                    class="home__user"
-                    @tap="goProfile"
-                >
-                    <hy-avatar
-                        :text="
-                            userStore.userInfo?.nickname.slice(0, 1) || '同'
-                        "
-                        random-bg-color
-                        :name="userStore.userInfo?.nickname"
-                        :size="26"
-                    />
+                    <!-- 用户区：已登录显示头像（未登录不常驻登录按钮，保持顶部干净；
+                         登录入口在"我的"页引导卡，浏览中触发登录操作时再引导）
+                         头像统一为图标/图片，不用首字圆标——与学校 logo（渐变首字）
+                         视觉区分，避免误认为两个学校 logo -->
+                    <view
+                        v-if="userStore.hasLogin"
+                        class="home__user"
+                        @tap="goProfile"
+                    >
+                        <image
+                            v-if="userStore.userInfo?.avatar"
+                            :src="userStore.userInfo.avatar"
+                            class="home__avatar"
+                            mode="aspectFill"
+                        />
+                        <image
+                            v-else
+                            src="/static/icons/user.png"
+                            class="home__avatar"
+                            mode="aspectFill"
+                        />
+                    </view>
                 </view>
 
                 <!-- 搜索 -->
@@ -218,11 +228,16 @@ const goSecurity = () => {
         margin-bottom: 8rpx;
     }
 
+    &__top {
+        display: flex;
+        align-items: center;
+        padding: calc(var(--status-bar-height) + 40rpx) 32rpx 0;
+    }
+
     &__school {
         display: flex;
         align-items: center;
         gap: 8rpx;
-        padding: calc(var(--status-bar-height) + 40rpx) 32rpx 0;
         height: 80rpx;
 
         &--hover {
@@ -257,22 +272,11 @@ const goSecurity = () => {
         align-items: center;
     }
 
-    &__user-login {
-        margin-left: auto;
+    &__avatar {
+        width: 56rpx;
         height: 56rpx;
-        padding: 0 28rpx;
-        border-radius: 28rpx;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1rpx solid rgba(61, 126, 255, 0.35);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        text {
-            font-size: 24rpx;
-            font-weight: 600;
-            color: var(--primary, #3d7eff);
-        }
+        border-radius: 50%;
+        background: #f2f3f5;
     }
 
     &__search {
