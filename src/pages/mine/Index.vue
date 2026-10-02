@@ -323,10 +323,11 @@ const logout = () => {
     /* 高度链：小程序 tabBar 页 provider 高度 auto（min-height:100%），
        子级任何百分比高度（height/min-height:100%）都会解析为 auto，
        导致 logout margin-top:auto 无剩余空间（底部 110px 空白）；
-       改用视口计算：100vh 含 tabBar，减 tabBar 高（100rpx + 安全区）= 可视区高度，
+       改用视口计算：100vh 含 tabBar，减 tabBar 实际高（--window-bottom，
+       uni 在 MP 端注入，含安全区，比 100rpx+safe 估算精确）= 可视区高度，
        overflow-y 兜底内容超高时内部滚动（page 已禁页面滚动） */
     /* #ifdef MP-WEIXIN */
-    height: calc(100vh - 100rpx - env(safe-area-inset-bottom));
+    height: calc(100vh - var(--window-bottom, 0px));
     overflow-y: auto;
     /* #endif */
     /* #ifdef H5 */

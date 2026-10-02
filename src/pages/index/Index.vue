@@ -57,10 +57,6 @@ const goSchool = () => {
     uni.navigateTo({ url: '/pages/school/Index' });
 };
 
-const goLogin = () => {
-    uni.navigateTo({ url: '/pages/login/Index' });
-};
-
 const goProfile = () => {
     uni.navigateTo({ url: '/pages/profile/Index' });
 };
@@ -90,7 +86,8 @@ const goSecurity = () => {
                     />
                 </view>
 
-                <!-- 用户区：已登录头像 / 未登录登录入口 -->
+                <!-- 用户区：已登录显示头像（未登录不常驻登录按钮，保持顶部干净；
+                     登录入口在"我的"页引导卡，浏览中触发登录操作时再引导） -->
                 <view
                     v-if="userStore.hasLogin"
                     class="home__user"
@@ -104,9 +101,6 @@ const goSecurity = () => {
                         :name="userStore.userInfo?.nickname"
                         :size="26"
                     />
-                </view>
-                <view v-else class="home__user-login" @tap="goLogin">
-                    <text>登录</text>
                 </view>
 
                 <!-- 搜索 -->
@@ -182,10 +176,11 @@ const goSecurity = () => {
 
     /* 高度：小程序 tabBar 页 page 高度链不可靠（page 默认随内容自适应，
        height:100% 会解析为 auto → 内容超高时整页含 header 一起滚动）；
-       改用视口计算：100vh 含 tabBar，减 tabBar 高（100rpx + 安全区）固定高度，
+       改用视口计算：100vh 含 tabBar，减 tabBar 实际高（--window-bottom，
+       uni 在 MP 端注入，含安全区，比 100rpx+safe 估算精确）固定高度，
        scroll-view 在 flex 剩余空间内滚动，header 天然吸顶 */
     /* #ifdef MP-WEIXIN */
-    height: calc(100vh - 100rpx - env(safe-area-inset-bottom));
+    height: calc(100vh - var(--window-bottom, 0px));
     /* #endif */
     /* #ifdef H5 */
     height: calc(100vh - var(--window-bottom, 0px));

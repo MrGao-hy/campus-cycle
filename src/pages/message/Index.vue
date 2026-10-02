@@ -235,9 +235,10 @@ const goIndex = () => {
     padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
 
     /* 高度链：小程序 tabBar 页 provider 高度 auto（min-height:100%），
-       子级百分比高度解析为 auto；用视口计算（100vh 减 tabBar 高+安全区=可视区） */
+       子级百分比高度解析为 auto；用视口计算（100vh 减 tabBar 实际高
+       --window-bottom，uni 在 MP 端注入，含安全区）= 可视区 */
     /* #ifdef MP-WEIXIN */
-    height: calc(100vh - 100rpx - env(safe-area-inset-bottom));
+    height: calc(100vh - var(--window-bottom, 0px));
     overflow-y: auto;
     /* #endif */
     /* #ifdef H5 */
