@@ -117,7 +117,15 @@ const goDetail = (goods: Goods) => {
 };
 
 const goSchool = () => {
-    uni.navigateTo({ url: '/pages/school/Index' });
+    // 点击可见反馈：能区分「点击没触发」与「跳转被拒」
+    uni.showToast({ title: '正在打开…', icon: 'none', duration: 800 });
+    uni.navigateTo({
+        url: '/pages/school/Index',
+        fail: err => {
+            console.error('[home] navigateTo /pages/school/Index 失败', err);
+            toast.error(`打开失败：${err.errMsg || '未知错误'}`);
+        },
+    });
 };
 
 const goProfile = () => {
@@ -138,7 +146,12 @@ const goSecurity = () => {
                 <!-- 顶行：学校（左）+ 已登录头像（右，同排不单独占行，
                      与学校首字圆标明显区分） -->
                 <view class="home__top">
-                    <view class="home__school" @tap="goSchool">
+                    <view
+                        class="home__school"
+                        hover-class="home__school--hover"
+                        :hover-stay-time="120"
+                        @tap="goSchool"
+                    >
                         <view class="home__school-logo">{{
                             userStore.school?.shortName?.slice(0, 1) || '校'
                         }}</view>
