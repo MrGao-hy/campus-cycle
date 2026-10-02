@@ -143,13 +143,25 @@ const goSecurity = () => {
  *   ② TS 涨、TAP 不涨   → 手势被识别成滚动，click 未生成
  *   ③ TS/TAP 都涨       → 事件到达页面，问题在 handler 绑定
  * ------------------------------------------------------------------ */
-const probe = ref({ ts: 0, tap: 0, last: '' });
+const probe = ref({ ts: 0, tap: 0, btn: '' });
 const onProbeTouch = () => {
     probe.value.ts += 1;
 };
-const onProbeTap = (e: any) => {
+const onProbeTap = () => {
     probe.value.tap += 1;
-    probe.value.last = e?.target?.id || e?.currentTarget?.id || '-';
+};
+// 三个纯 view 测试按钮：不依赖任何组件/布局，只验证「点击能否到达 JS」
+const onTestA = () => {
+    probe.value.btn = 'A';
+    uni.showToast({ title: 'A 被点了', icon: 'none', duration: 1500 });
+};
+const onTestB = () => {
+    probe.value.btn = 'B';
+    uni.showToast({ title: 'B 被点了', icon: 'none', duration: 1500 });
+};
+const onTestC = () => {
+    probe.value.btn = 'C';
+    uni.showToast({ title: 'C 被点了', icon: 'none', duration: 1500 });
 };
 </script>
 
@@ -157,7 +169,15 @@ const onProbeTap = (e: any) => {
     <view class="home-page">
         <!-- 临时排查探针（确认后删除） -->
         <view class="home__probe">
-            TS={{ probe.ts }} / TAP={{ probe.tap }} / id={{ probe.last }}
+            <view class="home__probe-title">DEBUG v4 17:20</view>
+            <view class="home__probe-line">
+                TS={{ probe.ts }} / TAP={{ probe.tap }} / BTN={{ probe.btn }}
+            </view>
+            <view class="home__probe-btns">
+                <view class="home__probe-btn" @tap="onTestA">A</view>
+                <view class="home__probe-btn" @tap="onTestB">B</view>
+                <view class="home__probe-btn" @tap="onTestC">C</view>
+            </view>
         </view>
         <view
             class="home"
@@ -325,19 +345,46 @@ const onProbeTap = (e: any) => {
 <style lang="scss" scoped>
 @use '../../styles/design.scss' as *;
 
-/* 临时排查探针（确认后删除）：绝对定位 + pointer-events:none，不吞点击 */
+/* 临时排查探针（确认后删除）：绝对定位置顶，自带三个测试按钮 */
 .home__probe {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 9999;
-    pointer-events: none;
-    background: rgba(255, 0, 0, 0.85);
+    z-index: 99999;
+    background: #ff0000;
     color: #fff;
-    font-size: 20rpx;
-    line-height: 40rpx;
+    padding: 8rpx 0 12rpx;
     text-align: center;
+
+    &-title {
+        font-size: 26rpx;
+        font-weight: bold;
+        line-height: 36rpx;
+    }
+
+    &-line {
+        font-size: 22rpx;
+        line-height: 32rpx;
+    }
+
+    &-btns {
+        display: flex;
+        justify-content: center;
+        gap: 20rpx;
+        margin-top: 8rpx;
+    }
+
+    &-btn {
+        width: 100rpx;
+        height: 56rpx;
+        line-height: 56rpx;
+        background: #ffff00;
+        color: #000;
+        font-size: 26rpx;
+        font-weight: bold;
+        border-radius: 8rpx;
+    }
 }
 
 .home {
