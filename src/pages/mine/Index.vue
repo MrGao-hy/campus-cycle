@@ -87,11 +87,21 @@ const logout = () => {
             <view v-else class="mine__user">
                 <view class="mine__user-decor"></view>
                 <view class="mine__user-decor mine__user-decor--2"></view>
-                <hy-avatar
-                    :text="userStore.userInfo?.nickname.slice(0, 1) || '同'"
-                    random-bg-color
-                    :name="userStore.userInfo?.nickname"
-                    :size="56"
+                <!-- 头像：已设置头像显示图片；未设置显示默认灰人形图标；
+                     点击进入资料编辑（微信 chooseAvatar 换头像 + 上传） -->
+                <image
+                    v-if="userStore.userInfo?.avatar"
+                    :src="userStore.userInfo.avatar"
+                    class="mine__avatar"
+                    mode="aspectFill"
+                    @tap="goProfile"
+                />
+                <image
+                    v-else
+                    src="/static/icons/user.png"
+                    class="mine__avatar"
+                    mode="aspectFill"
+                    @tap="goProfile"
                 />
                 <view class="mine__user-info">
                     <view class="mine__nickname">
@@ -345,6 +355,15 @@ const logout = () => {
         box-shadow: 0 12rpx 32rpx rgba(30, 60, 120, 0.18);
         animation: mine-fade-up 0.45s ease-out both;
         overflow: hidden;
+    }
+
+    &__avatar {
+        flex-shrink: 0;
+        width: 112rpx;
+        height: 112rpx;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
     }
 
     &__login-guide {

@@ -20,25 +20,18 @@ const nickname = ref(userStore.userInfo?.nickname || '');
 const avatarUploading = ref(false);
 const saving = ref(false);
 
-/** 选择微信头像（chooseAvatar → 上传 → URL） */
-const chooseAvatar = () => {
-    const api = (uni as any).chooseAvatar;
-    if (typeof api !== 'function') return;
+/** 选择微信头像：微信无 chooseAvatar API，须用 <button open-type="chooseAvatar">
+ * 触发 @chooseavatar（e.detail.avatarUrl 为临时路径）→ 上传 → 换为正式 URL */
+const onChooseAvatar = async (e: { detail: { avatarUrl: string } }) => {
+    if (avatarUploading.value) return;
     avatarUploading.value = true;
-    api({
-        success: async (res: { avatarUrl: string }) => {
-            try {
-                avatar.value = await uploadImage(res.avatarUrl);
-            } catch {
-                toast.warning('头像上传失败');
-            } finally {
-                avatarUploading.value = false;
-            }
-        },
-        fail: () => {
-            avatarUploading.value = false;
-        },
-    });
+    try {
+        avatar.value = await uploadImage(e.detail.avatarUrl);
+    } catch {
+        toast.warning('头像上传失败');
+    } finally {
+        avatarUploading.value = false;
+    }
 };
 
 const finish = async () => {
@@ -91,7 +84,11 @@ const next = () => {
         <view class="profile">
             <view class="profile__hero">
                 <!-- #ifdef MP-WEIXIN -->
-                <view class="profile__avatar" @click="chooseAvatar">
+                <button
+                    class="profile__avatar-btn"
+                    open-type="chooseAvatar"
+                    @chooseavatar="onChooseAvatar"
+                >
                     <image
                         v-if="avatar"
                         class="profile__avatar-img"
@@ -102,7 +99,7 @@ const next = () => {
                         <hy-icon name="/static/icons/contact.png" :size="48" />
                         <text>选择头像</text>
                     </view>
-                </view>
+                </button>
                 <!-- #endif -->
                 <text class="profile__title">完善资料</text>
                 <text class="profile__desc">设置你的头像和昵称，让同学更容易认出你</text>
@@ -150,9 +147,11 @@ const next = () => {
         align-items: center;
     }
 
-    &__avatar {
+    /* button open-type="chooseAvatar" 需重置微信 button 默认样式 */
+    &__avatar-btn {
         width: 160rpx;
         height: 160rpx;
+        padding: 0;
         border-radius: 50%;
         overflow: hidden;
         background: #d8d8d8;
@@ -160,6 +159,12 @@ const next = () => {
         align-items: center;
         justify-content: center;
         margin-bottom: 32rpx;
+        line-height: 1.4;
+        border: none;
+
+        &::after {
+            border: none;
+        }
     }
 
     &__avatar-img {
