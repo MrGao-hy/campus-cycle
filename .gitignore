@@ -19,3 +19,7 @@ dist
 *.njsproj
 *.sln
 *.sw?
+
+# vite 编译临时产物（每次 build/dev 都会生成 vite.config.ts.timestamp-*.mjs）
+vite.config.ts.timestamp-*
+src/pages.json.lock

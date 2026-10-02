@@ -77,6 +77,18 @@ export interface Goods {
     wantCount: number;
 }
 
+/** 统一分页结果（与后端 PageResult 对齐） */
+export interface PageResult<T> {
+    list: T[];
+    total: number;
+    /** 当前页码（从 1 开始） */
+    pageNum: number;
+    pageSize: number;
+    pages: number;
+    /** 是否还有下一页（触底加载据此判断） */
+    hasMore: boolean;
+}
+
 /** 商品评价 */
 export interface GoodsReview {
     id: string;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import GoodsCard from '@/components/GoodsCard.vue';
-import { getGoodsListApi, confirmSchoolApi } from '@/api';
+import { getGoodsListApi, confirmSchoolApi, GOODS_PAGE_SIZE } from '@/api';
 import { useUserStore } from '@/store';
 import { useToast } from '@hy-app/ui';
 import { ensureSchool } from '@/utils/guard';
@@ -25,22 +25,64 @@ const list = ref<Goods[]>([]);
 // loading 初始必须为 false：未选校时 onShow 直接 return 不调 loadList，
 // 若初始 true 骨架屏会永远转且挡住引导态；loadList 内部会置 true
 const loading = ref(false);
+// 触底加载中（与首屏 loading 分开：底部显示"加载中"，不遮挡已有列表）
+const loadingMore = ref(false);
+// 下拉刷新中（驱动 scroll-view 的 refresher-triggered）
+const refreshing = ref(false);
+const pageNum = ref(1);
+const hasMore = ref(false);
 
-const loadList = async () => {
+/**
+ * 加载商品
+ * @param append true=触底追加（pageNum 已由调用方 +1）；false=重置为第一页
+ */
+const loadList = async (append = false) => {
     if (!userStore.school) return;
-    loading.value = true;
+    // 触底加载去重：首屏加载中 / 上一次触底未结束 / 已无更多数据 时直接忽略
+    if (append && (loading.value || loadingMore.value || !hasMore.value)) {
+        return;
+    }
+    if (append) {
+        loadingMore.value = true;
+    } else {
+        loading.value = true;
+        pageNum.value = 1;
+    }
     try {
-        list.value = await getGoodsListApi({
+        const res = await getGoodsListApi({
             schoolId: userStore.school.id,
             keyword: keyword.value,
             category: GOODS_CATEGORIES[category.value],
+            pageNum: pageNum.value,
+            pageSize: GOODS_PAGE_SIZE,
         });
+        list.value = append ? list.value.concat(res.list) : res.list;
+        hasMore.value = res.hasMore;
     } catch {
-        list.value = [];
+        // 追加失败保留已加载数据；整页刷新失败才清空
+        if (!append) {
+            list.value = [];
+        }
+        hasMore.value = false;
         toast.error('商品加载失败，请稍后重试');
     } finally {
         loading.value = false;
+        loadingMore.value = false;
+        refreshing.value = false;
     }
+};
+
+/** 下拉刷新：重置分页拉第一页 */
+const onRefresh = () => {
+    refreshing.value = true;
+    loadList(false);
+};
+
+/** 触底加载下一页 */
+const onScrollToLower = () => {
+    if (!hasMore.value) return;
+    pageNum.value += 1;
+    loadList(true);
 };
 
 onShow(async () => {
@@ -171,8 +213,17 @@ const goSecurity = () => {
                 </view>
             </view>
 
-            <!-- 商品列表（scroll-view 原生滚动，内容从头部下方开始） -->
-            <scroll-view class="home__scroll" scroll-y>
+            <!-- 商品列表（scroll-view 原生滚动，内容从头部下方开始；
+                 开启原生下拉刷新与触底加载，分页由 pageNum/hasMore 驱动） -->
+            <scroll-view
+                class="home__scroll"
+                scroll-y
+                :refresher-enabled="true"
+                :refresher-triggered="refreshing"
+                refresher-background="#f5f6f8"
+                @refresherrefresh="onRefresh"
+                @scrolltolower="onScrollToLower"
+            >
                 <view v-if="loading" class="home__skeleton">
                     <view
                         v-for="i in 4"
@@ -184,13 +235,25 @@ const goSecurity = () => {
                         <view class="home__skeleton-price"></view>
                     </view>
                 </view>
-                <view v-else-if="list.length" class="home__list">
-                    <goods-card
-                        v-for="item in list"
-                        :key="item.id"
-                        :goods="item"
-                        @click="goDetail(item)"
-                    ></goods-card>
+                <view v-else-if="list.length" class="home__list-wrap">
+                    <view class="home__list">
+                        <goods-card
+                            v-for="item in list"
+                            :key="item.id"
+                            :goods="item"
+                            @click="goDetail(item)"
+                        ></goods-card>
+                    </view>
+                    <!-- 分页尾部：加载中 / 上拉提示 / 没有更多 -->
+                    <view class="home__footer">
+                        <text v-if="loadingMore" class="home__footer-text"
+                            >加载中…</text
+                        >
+                        <text v-else-if="hasMore" class="home__footer-text"
+                            >上拉加载更多</text
+                        >
+                        <text v-else class="home__footer-text">没有更多了</text>
+                    </view>
                 </view>
                 <view
                     v-else-if="!userStore.hasSchool"
@@ -430,6 +493,19 @@ const goSecurity = () => {
         flex-wrap: wrap;
         justify-content: space-between;
         padding: 24rpx 24rpx 0;
+    }
+
+    /* 分页尾部提示（加载中 / 上拉加载更多 / 没有更多了） */
+    &__footer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20rpx 0 4rpx;
+    }
+
+    &__footer-text {
+        font-size: 24rpx;
+        color: #9aa0a6;
     }
 
     /* 未选学校引导态（守卫不再强制跳转，由页面引导主动选择） */
