@@ -56,8 +56,16 @@ const loadList = async (append = false) => {
             pageNum: pageNum.value,
             pageSize: GOODS_PAGE_SIZE,
         });
-        list.value = append ? list.value.concat(res.list) : res.list;
-        hasMore.value = res.hasMore;
+        // 兼容后端返回数组（未升级分页接口时）：统一归一成 {list, hasMore}
+        // 否则 res.list 为 undefined → list.value 变 undefined → 模板 list.length
+        // 抛错 → 渲染中断 → 页面永远停在骨架屏（表现为"一直在 loading"）
+        const rows = Array.isArray(res)
+            ? (res as unknown as Goods[])
+            : (res?.list ?? []);
+        list.value = append ? list.value.concat(rows) : rows;
+        hasMore.value = Array.isArray(res)
+            ? false
+            : (res?.hasMore ?? false);
     } catch {
         // 追加失败保留已加载数据；整页刷新失败才清空
         if (!append) {
