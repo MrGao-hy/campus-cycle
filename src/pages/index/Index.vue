@@ -181,10 +181,12 @@ const goSecurity = () => {
     flex-direction: column;
     box-sizing: border-box;
 
-    /* 高度：小程序 tabBar 页 100vh 含 tabBar，需用 100% 跟随 page 视口链；
-       H5 tabBar 为 fixed，减 --window-bottom */
+    /* 高度：小程序 tabBar 页 page 高度链不可靠（page 默认随内容自适应，
+       height:100% 会解析为 auto → 内容超高时整页含 header 一起滚动）；
+       改用视口计算：100vh 含 tabBar，减 tabBar 高（100rpx + 安全区）固定高度，
+       scroll-view 在 flex 剩余空间内滚动，header 天然吸顶 */
     /* #ifdef MP-WEIXIN */
-    height: 100%;
+    height: calc(100vh - 100rpx - env(safe-area-inset-bottom));
     /* #endif */
     /* #ifdef H5 */
     height: calc(100vh - var(--window-bottom, 0px));
