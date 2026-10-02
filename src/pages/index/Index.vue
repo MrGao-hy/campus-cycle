@@ -85,6 +85,8 @@ const onScrollToLower = () => {
 };
 
 onShow(async () => {
+    // 临时排查（确认后删除）：验证页面级 JS 是否执行
+    uni.showToast({ title: 'PAGE JS OK', icon: 'none', duration: 3000 });
     // 冷启动兜底：token/账号已绑定学校（userInfo.schoolId 有值）但 school 实体丢失
     // （清缓存/storage 异常/旧版本）时，自动恢复学校实体，避免首页一直停在引导态
     if (!userStore.school && userStore.userInfo?.schoolId) {
@@ -150,6 +152,16 @@ const onProbeTouch = () => {
 const onProbeTap = () => {
     probe.value.tap += 1;
 };
+
+/**
+ * 心跳计数：每秒 +1 并驱动视图更新。
+ * 数字在跳 ⇒ JS 已执行、渲染链路正常；数字不动 ⇒ JS 压根没跑。
+ * 用它把「JS 没执行」和「点击没派发到 JS」两种情况彻底分开。
+ */
+const tick = ref(0);
+setInterval(() => {
+    tick.value += 1;
+}, 1000);
 // 三个纯 view 测试按钮：不依赖任何组件/布局，只验证「点击能否到达 JS」
 const onTestA = () => {
     probe.value.btn = 'A';
@@ -169,7 +181,9 @@ const onTestC = () => {
     <view class="home-page">
         <!-- 临时排查探针（确认后删除） -->
         <view class="home__probe">
-            <view class="home__probe-title">DEBUG v4 17:20</view>
+            <view class="home__probe-title">
+                DEBUG v5 · TICK={{ tick }}（每秒+1）
+            </view>
             <view class="home__probe-line">
                 TS={{ probe.ts }} / TAP={{ probe.tap }} / BTN={{ probe.btn }}
             </view>
