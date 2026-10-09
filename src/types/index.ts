@@ -45,8 +45,6 @@ export interface UserProfile {
     contact: ContactInfo;
 }
 
-<<<<<<< HEAD
-=======
 /** 用户主页（资料 + 在售商品 + 收到的评价） */
 export interface UserDetail {
     profile: UserProfile;
@@ -55,9 +53,8 @@ export interface UserDetail {
 }
 
 /** 商品状态 */
-export type GoodsStatus = 'ON_SALE' | 'LOCKED' | 'SOLD';
+export type GoodsStatus = 'ON_SALE' | 'LOCKED' | 'SOLD' | 'OFF_SHELF';
 
->>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
 export const GOODS_STATUS_TEXT: Record<GoodsStatus, string> = {
     ON_SALE: '在售',
     LOCKED: '交易进行中',
@@ -65,8 +62,6 @@ export const GOODS_STATUS_TEXT: Record<GoodsStatus, string> = {
     OFF_SHELF: '已下架',
 };
 
-<<<<<<< HEAD
-=======
 /** 商品 */
 export interface Goods {
     id: string;
@@ -98,7 +93,6 @@ export interface PageResult<T> {
     hasMore: boolean;
 }
 
->>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
 /** 商品评价 */
 export interface GoodsReview {
     id: string;

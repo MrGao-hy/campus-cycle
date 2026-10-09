@@ -3,12 +3,8 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import SafetyTips from '@/components/SafetyTips.vue';
 import { getGoodsDetailApi, startConversationApi } from '@/api';
 import { useUserStore } from '@/store';
-<<<<<<< HEAD
-import { useToast, useMessage, type SwiperVo } from '@hy-app/ui';
-=======
-import { type SwiperVo } from '@hy-app/ui';
+import { useMessage, type SwiperVo } from '@hy-app/ui';
 import { useToast } from '@/utils/toast';
->>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
 import { fmtTime } from '@/utils/format';
 import { GOODS_STATUS_TEXT } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';

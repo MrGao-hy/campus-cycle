@@ -151,8 +151,6 @@
             }
         },
         {
-<<<<<<< HEAD
-=======
             "path": "pages/user/Detail",
             "type": "page",
             "style": {
@@ -160,7 +158,6 @@
             }
         },
         {
->>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
             "path": "pages/profile/Index",
             "type": "page",
             "style": {

@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
-import { getFeeSummaryApi, updateProfileApi } from '@/api';
-import { uploadImage } from '@/utils/upload';
+import { getFeeSummaryApi } from '@/api';
 import { useUserStore } from '@/store';
 import { useToast } from '@/utils/toast';
 import { onShow } from '@dcloudio/uni-app';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 definePage({
     style: {
@@ -20,22 +19,10 @@ const unpaidAmount = ref(0);
 const unpaidCount = ref(0);
 
 onShow(() => {
-<<<<<<< HEAD
-    if (!userStore.hasLogin) {
-        uni.reLaunch({ url: '/pages/login/Index' });
-        return;
-    }
-    if (!userStore.hasSchool) {
-        uni.navigateTo({ url: '/pages/school/Index' });
-        return;
-    }
-    syncNicknameDraft();
-=======
     if (!userStore.hasLogin) return;
     // 未选学校时不强制跳转（避免返回死循环），我的页可正常使用；
     // 费用汇总依赖学校维度，未选学校时跳过加载
     if (!userStore.hasSchool) return;
->>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
     loadFee();
 });
 
@@ -78,83 +65,6 @@ const requireLogin = (action: () => void) => {
 /** 顶部头像 / 昵称 / 设置图标：已登录进资料页，未登录进登录页 */
 const onUserTap = () => (userStore.hasLogin ? goProfile() : goLogin());
 
-/** 直接编辑资料：点头像用微信官方 open-type 换头像；昵称点击进入编辑态 */
-const nicknameEditing = ref(false);
-const nicknameDraft = ref('');
-
-/** 输入框草稿与登录态同步 */
-const syncNicknameDraft = () => {
-    nicknameDraft.value = userStore.userInfo?.nickname || '';
-};
-
-/** 输入框宽度随内容自适应：中文按 1em、半角按 0.6em 估算 */
-const nicknameInputWidth = computed(() => {
-    let units = 0;
-    for (const ch of nicknameDraft.value) {
-        units += /[\u0000-\u00ff]/.test(ch) ? 0.6 : 1;
-    }
-    const em = Math.max(units, 6); // 空值时给 placeholder 留足宽度
-    return `${Math.ceil(em * 34) + 8}rpx`;
-});
-
-/** 更新资料并同步本地登录态（提交值合并进返回值，避免后端回包缺字段导致界面不刷新） */
-const saveProfile = async (data: { nickname?: string; avatar?: string }) => {
-    const profile = await updateProfileApi({
-        nickname: data.nickname ?? userStore.userInfo?.nickname,
-        avatar: data.avatar ?? userStore.userInfo?.avatar,
-    });
-    userStore.setLogin(userStore.token, {
-        ...profile,
-        nickname: data.nickname ?? profile.nickname,
-        avatar: data.avatar ?? profile.avatar,
-    });
-};
-
-/** 微信官方 open-type=chooseAvatar 回调：avatarUrl 为本地临时路径 */
-const onChooseAvatar = (e: { detail?: { avatarUrl?: string } }) => {
-    const url = e?.detail?.avatarUrl;
-    if (url) uploadAvatar(url);
-};
-
-const uploadAvatar = async (tempPath: string) => {
-    uni.showLoading({ title: '上传中...', mask: true });
-    try {
-        const url = await uploadImage(tempPath);
-        await saveProfile({ avatar: url });
-        toast.success('头像已更新');
-    } catch (e) {
-        toast.warning((e as Error).message || '头像更新失败');
-    } finally {
-        uni.hideLoading();
-    }
-};
-
-let nicknameSaving = false;
-
-const editNickname = () => {
-    syncNicknameDraft();
-    nicknameEditing.value = true;
-};
-
-/** 失焦 / 键盘确认时保存。先读事件回传的权威值（快捷填入结果），
- *  再退出编辑态卸载输入框；confirm 与 blur 连续触发用 saving 标记去重 */
-const confirmNickname = async (e?: { detail?: { value?: string } }) => {
-    if (nicknameSaving) return;
-    const name = String(e?.detail?.value ?? nicknameDraft.value).trim();
-    nicknameEditing.value = false;
-    if (!name || name === userStore.userInfo?.nickname) return;
-    nicknameSaving = true;
-    try {
-        await saveProfile({ nickname: name });
-        toast.success('昵称已更新');
-    } catch (err) {
-        toast.error((err as Error).message || '昵称更新失败');
-    } finally {
-        nicknameSaving = false;
-        syncNicknameDraft();
-    }
-};
-
 const logout = () => {
     uni.showModal({
         title: '退出登录',
@@ -175,63 +85,6 @@ const logout = () => {
             <!-- 用户信息（未登录也保持常规菜单样式：默认头像 + 登录/注册入口，
                  不再用整块登录面板占满页面——参考主流小程序「我的」页） -->
             <view class="mine__user">
-<<<<<<< HEAD
-                <!-- 微信官方头像填写：open-type=chooseAvatar -->
-                <button
-                    class="mine__avatar-btn"
-                    open-type="chooseAvatar"
-                    @chooseavatar="onChooseAvatar"
-                >
-                    <!-- 有头像 URL 时显示图片（hy-avatar 的 text 优先级高于 src，二者互斥） -->
-                    <hy-avatar
-                        v-if="userStore.userInfo?.avatar"
-                        :src="userStore.userInfo.avatar"
-                        :size="56"
-                        mode="aspectFill"
-                    />
-                    <hy-avatar
-                        v-else
-                        :text="userStore.userInfo?.nickname.slice(0, 1) || '同'"
-                        random-bg-color
-                        :size="56"
-                    />
-                    <view class="mine__avatar-badge">
-                        <hy-icon name="camera" color="#fff" :size="12" />
-                    </view>
-                </button>
-                <view class="mine__user-info">
-                    <view class="mine__nickname">
-                        <!-- 平时显示纯文字，点击进入编辑态（type=nickname 支持微信快捷填入，失焦自动保存） -->
-                        <input
-                            v-if="nicknameEditing"
-                            class="mine__nickname-input"
-                            type="nickname"
-                            :maxlength="20"
-                            :focus="true"
-                            confirm-type="done"
-                            placeholder="点击填写昵称"
-                            placeholder-style="color: rgba(255,255,255,0.6)"
-                            :style="{ width: nicknameInputWidth }"
-                            @input="nicknameDraft = $event.detail.value"
-                            @blur="confirmNickname"
-                            @confirm="confirmNickname"
-                        />
-                        <template v-else>
-                            <text @tap="editNickname">{{
-                                userStore.userInfo?.nickname || '未登录'
-                            }}</text>
-                            <view
-                                class="mine__nickname-edit"
-                                @tap="editNickname"
-                            >
-                                <hy-icon
-                                    name="edit"
-                                    color="rgba(255, 255, 255, 0.85)"
-                                    :size="14"
-                                />
-                            </view>
-                        </template>
-=======
                 <view class="mine__user-decor"></view>
                 <view class="mine__user-decor mine__user-decor--2"></view>
                 <!-- 头像：已登录且已设置头像显示图片；否则显示默认灰人形图标。
@@ -257,7 +110,6 @@ const logout = () => {
                         @tap="onUserTap"
                     >
                         {{ userStore.userInfo?.nickname || '校园用户' }}
->>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
                         <hy-tag label="已认证" type="success" size="mini" />
                     </view>
                     <view v-else class="mine__nickname" @tap="onUserTap">

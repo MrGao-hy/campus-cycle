@@ -3,16 +3,10 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import GoodsCard from '@/components/GoodsCard.vue';
 import { getGoodsListApi, confirmSchoolApi, GOODS_PAGE_SIZE } from '@/api';
 import { useUserStore } from '@/store';
-<<<<<<< HEAD
-import { ensureLoginAndSchool } from '@/utils/guard';
-import { GOODS_CATEGORIES, type IGoods } from '@/types';
-import { onReachBottom, onShow } from '@dcloudio/uni-app';
-=======
 import { useToast } from '@/utils/toast';
-import { ensureSchool } from '@/utils/guard';
+import { ensureLoginAndSchool } from '@/utils/guard';
 import { GOODS_CATEGORIES, type Goods } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
->>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
 import { ref } from 'vue';
 
 definePage({
@@ -27,62 +21,8 @@ const toast = useToast();
 
 const keyword = ref('');
 const category = ref(0);
-<<<<<<< HEAD
-const list = ref<IGoods[]>([]);
-const loading = ref(true);
-const loadingMore = ref(false);
-const hasMore = ref(false);
-const pageNum = ref(1);
-const PAGE_SIZE = 10;
-
-const fetchList = async (page: number) => {
-    const res = await getGoodsListApi({
-        pageNum: String(page),
-        pageSize: String(PAGE_SIZE),
-        schoolId: userStore.school.id,
-        keyword: keyword.value,
-        category: GOODS_CATEGORIES[category.value],
-    });
-    hasMore.value = res.hasMore;
-    return res.list;
-};
-
-/** 首屏/筛选变化：重置到第一页 */
-const loadList = async () => {
-    if (!userStore.school) return;
-    loading.value = true;
-    pageNum.value = 1;
-    list.value = await fetchList(1);
-    loading.value = false;
-};
-
-/** 上拉加载下一页 */
-const loadMore = async () => {
-    if (
-        !userStore.school ||
-        loading.value ||
-        loadingMore.value ||
-        !hasMore.value
-    )
-        return;
-    loadingMore.value = true;
-    pageNum.value += 1;
-    try {
-        list.value.push(...(await fetchList(pageNum.value)));
-    } finally {
-        loadingMore.value = false;
-    }
-};
-
-onReachBottom(() => {
-    loadMore();
-});
-
-onShow(() => {
-    if (!ensureLoginAndSchool()) return;
-=======
 const list = ref<Goods[]>([]);
-// loading 初始必须为 false：未选校时 onShow 直接 return 不调 loadList，
+// loading 初始必须为 false：未登录/未选校时 onShow 直接 return 不调 loadList，
 // 若初始 true 骨架屏会永远转且挡住引导态；loadList 内部会置 true
 const loading = ref(false);
 // 触底加载中（与首屏 loading 分开：底部显示"加载中"，不遮挡已有列表）
@@ -93,7 +33,7 @@ const pageNum = ref(1);
 const hasMore = ref(false);
 
 /**
- * 加载商品
+ * 加载商品（schoolId 不传：后端从登录用户绑定的学校取）
  * @param append true=触底追加（pageNum 已由调用方 +1）；false=重置为第一页
  */
 const loadList = async (append = false) => {
@@ -110,7 +50,6 @@ const loadList = async (append = false) => {
     }
     try {
         const res = await getGoodsListApi({
-            schoolId: userStore.school.id,
             keyword: keyword.value,
             category: GOODS_CATEGORIES[category.value],
             pageNum: pageNum.value,
@@ -164,10 +103,9 @@ onShow(async () => {
             /* 恢复失败不阻塞，页面保留引导态，用户可手动选择 */
         }
     }
-    // 浏览无需登录：未选学校时不强制跳转（避免返回死循环），
-    // 顶部学校入口 + 商品区空态引导用户主动选择
-    if (!ensureSchool()) return;
->>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
+    // 商品列表依赖登录用户绑定的学校：未登录/未选校时不强制跳转（避免返回死循环），
+    // 商品区引导登录/选择学校
+    if (!ensureLoginAndSchool()) return;
     loadList();
 });
 
@@ -193,6 +131,15 @@ const goSchool = () => {
             toast.error(`打开失败：${err.errMsg || '未知错误'}`);
         },
     });
+};
+
+/** 未登录/未选校引导：守卫只判断不跳转，由按钮主动引导 */
+const goGuard = () => {
+    if (!userStore.hasLogin) {
+        uni.navigateTo({ url: '/pages/login/Index' });
+        return;
+    }
+    goSchool();
 };
 
 const goProfile = () => {
@@ -281,17 +228,6 @@ const goSecurity = () => {
                     ></hy-tabs>
                 </view>
 
-<<<<<<< HEAD
-            <!-- 安全提醒（商品页强制展示） -->
-            <view class="home__safety">
-                <hy-notice-bar
-                    :text="[
-                        '交易安全提醒：请选择校内公共场所当面交易，勿提前转账，勿脱离平台沟通',
-                    ]"
-                    mode="link"
-                    url="/pages/security/Index"
-                ></hy-notice-bar>
-=======
                 <!-- 安全提醒（自定义静态播报条：hy-notice-bar row 模式滚动起点留白、
                      column 模式小程序端单条不渲染，弃用该组件） -->
                 <view class="home__safety" @tap="goSecurity">
@@ -300,43 +236,43 @@ const goSecurity = () => {
                         >交易安全提醒：请选择校内公共场所当面交易，勿提前转账，勿脱离平台沟通</text
                     >
                 </view>
->>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
             </view>
 
-            <!-- 未选学校引导：必须放在 scroll-view 之外。
+            <!-- 未登录/未选校引导：必须放在 scroll-view 之外。
                  小程序端 scroll-view 是手势识别器，开启下拉刷新后内容不足一屏时，
                  下拉手势判定会吞掉内部子元素的 tap（表现为按钮点不动），
                  引导态本身也不需要滚动，独立展示即可 -->
-            <view v-if="!userStore.hasSchool" class="home__school-guide">
+            <view
+                v-if="!userStore.hasLogin || !userStore.hasSchool"
+                class="home__school-guide"
+            >
                 <view class="home__school-guide-logo">
                     <hy-icon
-                        name="/static/icons/check.png"
+                        :name="
+                            userStore.hasLogin
+                                ? '/static/icons/check.png'
+                                : '/static/icons/lock.png'
+                        "
                         color="#fff"
                         :size="22"
                     />
                 </view>
-                <text class="home__school-guide-title">先选择你的学校</text>
-                <text class="home__school-guide-desc"
-                    >选择后仅展示本校商品，同校交易更安全</text
-                >
+                <text class="home__school-guide-title">{{
+                    userStore.hasLogin ? '先选择你的学校' : '登录后查看本校好物'
+                }}</text>
+                <text class="home__school-guide-desc">{{
+                    userStore.hasLogin
+                        ? '选择后仅展示本校商品，同校交易更安全'
+                        : '登录并选择学校后，浏览同校二手好物'
+                }}</text>
                 <view
                     class="home__school-guide-btn"
                     hover-class="home__school-guide-btn--hover"
                     :hover-stay-time="120"
-                    @tap="goSchool"
-                    >去选择</view
+                    @tap="goGuard"
+                    >{{ userStore.hasLogin ? '去选择' : '去登录' }}</view
                 >
             </view>
-<<<<<<< HEAD
-            <template v-else>
-                <view v-if="list.length" class="home__list">
-                    <goods-card
-                        v-for="item in list"
-                        :key="item.id"
-                        :goods="item"
-                        @click="goDetail(item)"
-                    ></goods-card>
-=======
 
             <!-- 商品列表（scroll-view 原生滚动，内容从头部下方开始；
                  下拉刷新与触底加载由 pageNum/hasMore 驱动。
@@ -377,28 +313,13 @@ const goSecurity = () => {
                         >
                         <text v-else class="home__footer-text">没有更多了</text>
                     </view>
->>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
                 </view>
                 <hy-empty
                     v-else
                     mode="shop"
                     description="本校暂无相关商品，去发布一件吧"
                 ></hy-empty>
-<<<<<<< HEAD
-                <!-- 加载更多状态 -->
-                <view v-if="list.length" class="home__more">
-                    <text class="home__more-text">{{
-                        loadingMore
-                            ? '加载中...'
-                            : hasMore
-                              ? '上拉加载更多'
-                              : '— 没有更多了 —'
-                    }}</text>
-                </view>
-            </template>
-=======
             </scroll-view>
->>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
         </view>
     </the-root-pages>
 </template>

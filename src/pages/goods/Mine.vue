@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import GoodsCard from '@/components/GoodsCard.vue';
-import { getMyGoodsApi } from '@/api';
+import {
+    getMyGoodsApi,
+    offShelfGoodsApi,
+    onShelfGoodsApi,
+    deleteGoodsApi,
+} from '@/api';
 import { useUserStore } from '@/store';
+import { useToast } from '@/utils/toast';
 import { ensureLoginAndSchool } from '@/utils/guard';
 import type { Goods } from '@/types';
 import { onShow } from '@dcloudio/uni-app';
@@ -15,6 +21,7 @@ definePage({
 });
 
 const userStore = useUserStore();
+const toast = useToast();
 
 const list = ref<Goods[]>([]);
 // 初始 false：未登录/未选校时 onShow 直接 return，若初始 true 骨架屏永远转
@@ -26,6 +33,7 @@ const TABS = [
     { name: '在售', status: 'ON_SALE' },
     { name: '交易中', status: 'LOCKED' },
     { name: '已售出', status: 'SOLD' },
+    { name: '已下架', status: 'OFF_SHELF' },
 ];
 
 const filtered = computed(() => {
@@ -53,6 +61,58 @@ const onTabChange = (_item: { name: string }, index: number) => {
 
 const goDetail = (goods: Goods) => {
     uni.navigateTo({ url: `/pages/goods/Detail?id=${goods.id}` });
+};
+
+/**
+ * 下架 / 重新上架：仅 ON_SALE / OFF_SHELF 可操作（交易中、已售出不展示操作条）。
+ * 二次确认后调接口并刷新列表。
+ */
+const onToggleShelf = (goods: Goods) => {
+    const isOff = goods.status === 'OFF_SHELF';
+    uni.showModal({
+        title: isOff ? '重新上架' : '下架商品',
+        content: isOff
+            ? '确认将商品重新上架展示吗？'
+            : '下架后买家将不可见，可随时重新上架',
+        confirmText: isOff ? '重新上架' : '下架',
+        cancelText: '再想想',
+        success: async res => {
+            if (!res.confirm) return;
+            try {
+                if (isOff) {
+                    await onShelfGoodsApi(goods.id);
+                    toast.success('已重新上架');
+                } else {
+                    await offShelfGoodsApi(goods.id);
+                    toast.success('已下架');
+                }
+                await load();
+            } catch (e) {
+                toast.error((e as Error).message || '操作失败，请重试');
+            }
+        },
+    });
+};
+
+/** 删除商品：二次确认（不可恢复）后调接口并刷新列表 */
+const onDelete = (goods: Goods) => {
+    uni.showModal({
+        title: '删除商品',
+        content: '删除后不可恢复，确认删除该商品吗？',
+        confirmText: '删除',
+        cancelText: '再想想',
+        confirmColor: '#f53f3f',
+        success: async res => {
+            if (!res.confirm) return;
+            try {
+                await deleteGoodsApi(goods.id);
+                toast.success('已删除');
+                await load();
+            } catch (e) {
+                toast.error((e as Error).message || '删除失败，请重试');
+            }
+        },
+    });
 };
 
 const goPublish = () => {
@@ -137,7 +197,7 @@ const goGuard = () => {
                 ></hy-tabs>
             </view>
 
-            <!-- 列表（已售出置灰不隐藏） -->
+            <!-- 列表（已售出置灰不隐藏；在售/已下架卡片下方显示操作条） -->
             <view v-if="loading" class="my-goods__loading">
                 <hy-skeleton
                     theme="paragraph"
@@ -146,12 +206,44 @@ const goGuard = () => {
                 ></hy-skeleton>
             </view>
             <view v-else-if="filtered.length" class="my-goods__list">
-                <goods-card
+                <view
                     v-for="item in filtered"
                     :key="item.id"
-                    :goods="item"
-                    @click="goDetail(item)"
-                ></goods-card>
+                    class="my-goods__cell"
+                >
+                    <goods-card
+                        :goods="item"
+                        @click="goDetail(item)"
+                    ></goods-card>
+                    <!-- 操作条：仅可操作状态展示（在售可下架/删除，已下架可重新上架/删除） -->
+                    <view
+                        v-if="
+                            item.status === 'ON_SALE' ||
+                            item.status === 'OFF_SHELF'
+                        "
+                        class="my-goods__ops"
+                        @tap.stop
+                    >
+                        <view
+                            class="my-goods__op"
+                            hover-class="my-goods__op--hover"
+                            @tap="onToggleShelf(item)"
+                        >
+                            <text>{{
+                                item.status === 'OFF_SHELF'
+                                    ? '重新上架'
+                                    : '下架'
+                            }}</text>
+                        </view>
+                        <view
+                            class="my-goods__op my-goods__op--danger"
+                            hover-class="my-goods__op--hover"
+                            @tap="onDelete(item)"
+                        >
+                            <text>删除</text>
+                        </view>
+                    </view>
+                </view>
             </view>
             <hy-empty
                 v-else
@@ -167,7 +259,8 @@ const goGuard = () => {
             <view v-if="!loading && list.length" class="my-goods__legend">
                 <text
                     >在售 {{ countOf('ON_SALE') }} · 交易中
-                    {{ countOf('LOCKED') }} · 已售出 {{ countOf('SOLD') }}</text
+                    {{ countOf('LOCKED') }} · 已售出 {{ countOf('SOLD') }} ·
+                    已下架 {{ countOf('OFF_SHELF') }}</text
                 >
             </view>
             </template>
@@ -221,6 +314,46 @@ const goGuard = () => {
         justify-content: space-between;
         padding: 24rpx;
         animation: my-goods-fade-up 0.45s ease 0.06s both;
+    }
+
+    /* 商品单元：卡片 + 操作条（宽度与 GoodsCard 对齐：calc(50% - 10rpx)） */
+    &__cell {
+        width: calc(50% - 10rpx);
+        margin-bottom: 24rpx;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* 操作条：白底圆角，下架/删除两按钮左右均分 */
+    &__ops {
+        display: flex;
+        margin-top: 12rpx;
+        background: #ffffff;
+        border-radius: 14rpx;
+        padding: 8rpx;
+        gap: 8rpx;
+    }
+
+    &__op {
+        flex: 1;
+        height: 60rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10rpx;
+        background: var(--primary-light, rgba(61, 126, 255, 0.08));
+        font-size: 24rpx;
+        font-weight: 500;
+        color: var(--primary, #3d7eff);
+
+        &--danger {
+            background: rgba(245, 63, 63, 0.08);
+            color: #f53f3f;
+        }
+
+        &--hover {
+            opacity: 0.75;
+        }
     }
 
     &__legend {
