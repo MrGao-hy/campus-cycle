@@ -3,6 +3,7 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import { useUserStore } from '@/store';
 import { useToast } from '@/utils/toast';
 import { computed, ref } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 import { wxLoginApi } from '@/api';
 
 definePage({
