@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { IGoods } from '@/types';
+import type { Goods } from '@/types';
 
 interface IProps {
-    goods: IGoods;
+    goods: Goods;
 }
 
 defineProps<IProps>();
