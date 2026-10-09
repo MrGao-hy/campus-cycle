@@ -33,7 +33,13 @@ defineOptions({
             />
             <view v-if="goods.status !== 'ON_SALE'" class="goods-card__mask">
                 <hy-tag
-                    :label="goods.status === 'SOLD' ? '已售出' : '交易中'"
+                    :label="
+                        goods.status === 'SOLD'
+                            ? '已售出'
+                            : goods.status === 'OFF_SHELF'
+                              ? '已下架'
+                              : '交易中'
+                    "
                     type="info"
                     bg-color="rgba(0,0,0,0.35)"
                 />

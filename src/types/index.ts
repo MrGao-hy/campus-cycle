@@ -1,3 +1,6 @@
+export * from './modules/api';
+export * from './modules/goods';
+
 /** 学校 */
 export interface School {
     id: string;
@@ -40,33 +43,12 @@ export interface UserProfile {
     contact: ContactInfo;
 }
 
-/** 商品状态 */
-export type GoodsStatus = 'ON_SALE' | 'LOCKED' | 'SOLD';
-
 export const GOODS_STATUS_TEXT: Record<GoodsStatus, string> = {
     ON_SALE: '在售',
     LOCKED: '交易进行中',
     SOLD: '已售出',
+    OFF_SHELF: '已下架',
 };
-
-/** 商品 */
-export interface Goods {
-    id: string;
-    title: string;
-    price: number;
-    originalPrice?: number;
-    images: string[];
-    category: string;
-    /** 成色 */
-    condition: string;
-    description: string;
-    status: GoodsStatus;
-    sellerId: string;
-    schoolId: string;
-    publishTime: number;
-    views: number;
-    wantCount: number;
-}
 
 /** 商品评价 */
 export interface GoodsReview {
@@ -355,6 +337,7 @@ export const GOODS_CATEGORIES = [
     '运动',
     '生活',
     '户外',
+    '其他',
 ];
 
 /** 成色 */

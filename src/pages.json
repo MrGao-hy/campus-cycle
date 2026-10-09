@@ -149,6 +149,13 @@
             "style": {
                 "navigationBarTitleText": "提交申诉"
             }
+        },
+        {
+            "path": "pages/profile/Index",
+            "type": "page",
+            "style": {
+                "navigationBarTitleText": "完善资料"
+            }
         }
     ],
     "subPackages": [],

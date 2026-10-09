@@ -4,8 +4,8 @@ import GoodsCard from '@/components/GoodsCard.vue';
 import { getGoodsListApi } from '@/api';
 import { useUserStore } from '@/store';
 import { ensureLoginAndSchool } from '@/utils/guard';
-import { GOODS_CATEGORIES, type Goods } from '@/types';
-import { onShow } from '@dcloudio/uni-app';
+import { GOODS_CATEGORIES, type IGoods } from '@/types';
+import { onReachBottom, onShow } from '@dcloudio/uni-app';
 import { ref } from 'vue';
 
 definePage({
@@ -19,19 +19,55 @@ const userStore = useUserStore();
 
 const keyword = ref('');
 const category = ref(0);
-const list = ref<Goods[]>([]);
+const list = ref<IGoods[]>([]);
 const loading = ref(true);
+const loadingMore = ref(false);
+const hasMore = ref(false);
+const pageNum = ref(1);
+const PAGE_SIZE = 10;
 
-const loadList = async () => {
-    if (!userStore.school) return;
-    loading.value = true;
-    list.value = await getGoodsListApi({
+const fetchList = async (page: number) => {
+    const res = await getGoodsListApi({
+        pageNum: String(page),
+        pageSize: String(PAGE_SIZE),
         schoolId: userStore.school.id,
         keyword: keyword.value,
         category: GOODS_CATEGORIES[category.value],
     });
+    hasMore.value = res.hasMore;
+    return res.list;
+};
+
+/** 首屏/筛选变化：重置到第一页 */
+const loadList = async () => {
+    if (!userStore.school) return;
+    loading.value = true;
+    pageNum.value = 1;
+    list.value = await fetchList(1);
     loading.value = false;
 };
+
+/** 上拉加载下一页 */
+const loadMore = async () => {
+    if (
+        !userStore.school ||
+        loading.value ||
+        loadingMore.value ||
+        !hasMore.value
+    )
+        return;
+    loadingMore.value = true;
+    pageNum.value += 1;
+    try {
+        list.value.push(...(await fetchList(pageNum.value)));
+    } finally {
+        loadingMore.value = false;
+    }
+};
+
+onReachBottom(() => {
+    loadMore();
+});
 
 onShow(() => {
     if (!ensureLoginAndSchool()) return;
@@ -107,8 +143,7 @@ const goSchool = () => {
                     :text="[
                         '交易安全提醒：请选择校内公共场所当面交易，勿提前转账，勿脱离平台沟通',
                     ]"
-                    color="var(--warning, #f9ae3d)"
-                    bg-color="var(--warning-light, rgba(249,174,61,0.1))"
+                    mode="link"
                     url="/pages/security/Index"
                 ></hy-notice-bar>
             </view>
@@ -121,19 +156,31 @@ const goSchool = () => {
                     animation="gradient"
                 ></hy-skeleton>
             </view>
-            <view v-else-if="list.length" class="home__list">
-                <goods-card
-                    v-for="item in list"
-                    :key="item.id"
-                    :goods="item"
-                    @click="goDetail(item)"
-                ></goods-card>
-            </view>
-            <hy-empty
-                v-else
-                mode="shop"
-                description="本校暂无相关商品，去发布一件吧"
-            ></hy-empty>
+            <template v-else>
+                <view v-if="list.length" class="home__list">
+                    <goods-card
+                        v-for="item in list"
+                        :key="item.id"
+                        :goods="item"
+                        @click="goDetail(item)"
+                    ></goods-card>
+                </view>
+                <hy-empty
+                    v-else
+                    mode="shop"
+                    description="本校暂无相关商品，去发布一件吧"
+                ></hy-empty>
+                <!-- 加载更多状态 -->
+                <view v-if="list.length" class="home__more">
+                    <text class="home__more-text">{{
+                        loadingMore
+                            ? '加载中...'
+                            : hasMore
+                              ? '上拉加载更多'
+                              : '— 没有更多了 —'
+                    }}</text>
+                </view>
+            </template>
         </view>
     </the-root-pages>
 </template>
@@ -184,6 +231,16 @@ const goSchool = () => {
         flex-wrap: wrap;
         justify-content: space-between;
         padding: 24rpx;
+    }
+
+    &__more {
+        padding: 8rpx 0 24rpx;
+        text-align: center;
+
+        &-text {
+            font-size: 24rpx;
+            color: var(--hy-text-color--3, #929295);
+        }
     }
 }
 </style>

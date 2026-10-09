@@ -3,7 +3,7 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import { useUserStore } from '@/store';
 import { useToast } from '@hy-app/ui';
 import { computed, ref } from 'vue';
-import { wxLoginMockApi } from '@/api';
+import { wxLoginApi } from '@/api';
 
 definePage({
     style: {
@@ -108,7 +108,7 @@ const remindAgreement = () => {
     toast.warning('请先阅读并勾选同意协议');
 };
 
-/** 微信一键登录（mock：真实环境走 uni.login 获取 code 换 token） */
+/** 微信一键登录：uni.login 取 code，后端 code2session 解析 openid 并换 token */
 const handleLogin = async () => {
     if (loading.value) return;
     if (!agreed.value) {
@@ -118,7 +118,9 @@ const handleLogin = async () => {
     loading.value = true;
     toast.loading('登录中...');
     try {
-        const res = await wxLoginMockApi();
+        const { code } = await uni.login({ provider: 'weixin' });
+        if (!code) throw new Error('未获取到微信登录 code');
+        const res = await wxLoginApi(code);
         userStore.setLogin(res.token, res.userInfo);
         toast.close();
         toast.success('登录成功');

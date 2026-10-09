@@ -31,6 +31,8 @@ onShow(() => {
 
 const title = ref('');
 const price = ref('');
+/** 原价（选填，展示划线价） */
+const originalPrice = ref('');
 const description = ref('');
 const images = ref<string[]>([]);
 /** 分类（单选值，默认「生活」） */
@@ -54,8 +56,7 @@ const canSubmit = computed(() => {
         !publishBlocked.value &&
         title.value.trim() &&
         Number(price.value) > 0 &&
-        description.value.trim() &&
-        images.value.length > 0
+        description.value.trim()
     );
 });
 
@@ -96,6 +97,10 @@ const submit = async () => {
         await publishGoodsApi({
             title: title.value.trim(),
             price: Number(price.value),
+            originalPrice:
+                Number(originalPrice.value) > 0
+                    ? Number(originalPrice.value)
+                    : undefined,
             category: category.value,
             condition: condition.value,
             description: description.value.trim(),
@@ -185,23 +190,26 @@ const submit = async () => {
                     v-model="title"
                     placeholder="商品标题（品牌型号 + 成色）"
                     :maxlength="30"
-                    border="surround"
                     :custom-style="{ marginBottom: '20rpx' }"
                 ></hy-input>
                 <hy-input
                     v-model="price"
                     type="digit"
                     placeholder="出售价格（元）"
-                    border="surround"
+                    :custom-style="{ marginBottom: '20rpx' }"
+                ></hy-input>
+                <hy-input
+                    v-model="originalPrice"
+                    type="digit"
+                    placeholder="原价（选填，用于展示划线价）"
                     :custom-style="{ marginBottom: '20rpx' }"
                 ></hy-input>
                 <hy-textarea
                     v-model="description"
                     placeholder="描述一下商品的购买时间、使用情况、瑕疵问题等，如实描述更容易卖出"
                     :maxlength="300"
+                    confirmType="return"
                     count
-                    auto-height
-                    border="surround"
                 ></hy-textarea>
             </view>
 

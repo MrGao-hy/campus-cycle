@@ -47,21 +47,22 @@ const config: IConfig = {
     },
     // #endif
     // #ifndef H5 || APP_PLUS
-    // 开发版（微信开发者工具：本机回环地址即可；真机预览请改为局域网 IP，如 http://192.168.3.10:8080）
+    // 开发版（微信开发者工具：本机回环地址即可；真机预览请改为局域网 IP，如 http://192.168.3.10:9000）
+    // 注意：后端端口是 9000，8080 已被 Nacos 控制台占用，勿改回 8080
     develop: {
-        baseUrl: 'http://127.0.0.1:8080',
+        baseUrl: 'http://127.0.0.1:9000',
         decoBaseUrl: 'https://xryy.hfykcloud.com:99/pamirs', // 装修接口地址
         wxMock: true,
     },
     // 体验版
     trial: {
-        baseUrl: 'http://127.0.0.1:8080',
+        baseUrl: 'http://127.0.0.1:9000',
         decoBaseUrl: 'https://xryy.hfykcloud.com:99/pamirs',
         wxMock: true,
     },
     // 正式版（上线时替换为已备案域名，并置 wxMock: false）
     release: {
-        baseUrl: 'http://127.0.0.1:8080',
+        baseUrl: 'http://127.0.0.1:9000',
         decoBaseUrl: 'https://xryy.hfykcloud.com:99/pamirs',
         wxMock: false,
     },

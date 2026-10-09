@@ -3,11 +3,10 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import SafetyTips from '@/components/SafetyTips.vue';
 import { getGoodsDetailApi, startConversationApi } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast, type SwiperVo } from '@hy-app/ui';
+import { useToast, useMessage, type SwiperVo } from '@hy-app/ui';
 import { fmtTime } from '@/utils/format';
 import { GOODS_STATUS_TEXT } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
-import { usePageShare } from '@/hooks/useShare';
 import { computed, ref } from 'vue';
 import type { IGoodsDetail } from '@/api';
 
@@ -18,10 +17,8 @@ definePage({
 });
 
 const toast = useToast();
+const message = useMessage();
 const userStore = useUserStore();
-
-// 动态分享：数据加载后修改 shareConfig 实现商品分享
-const { shareConfig } = usePageShare();
 
 const detail = ref<IGoodsDetail | null>(null);
 const current = ref(0);
@@ -31,6 +28,14 @@ const isMine = computed(
 );
 const canBuy = computed(
     () => detail.value && detail.value.status === 'ON_SALE' && !isMine.value
+);
+/** 自己发布的商品：在售状态下可下架 */
+const canOffShelf = computed(
+    () => isMine.value && detail.value?.status === 'ON_SALE'
+);
+/** 自己发布的商品：未售出才可删除 */
+const canDelete = computed(
+    () => isMine.value && !!detail.value && detail.value.status !== 'SOLD'
 );
 
 onLoad(async options => {
@@ -67,6 +72,44 @@ const goApply = () => {
         return;
     }
     uni.navigateTo({ url: `/pages/goods/Apply?id=${detail.value.id}` });
+};
+
+/** 下架 / 删除确认弹窗（message.confirm，确认后执行） */
+type ConfirmType = 'offShelf' | 'delete';
+
+const CONFIRM_META: Record<ConfirmType, { title: string; content: string }> = {
+    offShelf: {
+        title: '下架商品',
+        content: '下架后买家将无法浏览该商品，确定下架吗？',
+    },
+    delete: {
+        title: '删除商品',
+        content: '删除后不可恢复，确定删除该商品吗？',
+    },
+};
+
+const onConfirmAction = async (type: ConfirmType) => {
+    const goods = detail.value;
+    if (!goods) return;
+    const confirmed = await message.confirm({
+        title: CONFIRM_META[type].title,
+        content: CONFIRM_META[type].content,
+        confirmColor: type === 'delete' ? '#fa3534' : undefined,
+    });
+    if (!confirmed) return;
+    try {
+        if (type === 'offShelf') {
+            await offShelfGoodsApi(goods.id);
+            goods.status = 'OFF_SHELF';
+            toast.success('商品已下架');
+        } else {
+            await deleteGoodsApi(goods.id);
+            toast.success('商品已删除');
+            setTimeout(() => uni.navigateBack(), 600);
+        }
+    } catch (err) {
+        toast.error((err as Error).message || '操作失败');
+    }
 };
 
 /** 预览图片 */
@@ -208,7 +251,6 @@ const previewImages = (index: number) => {
 
             <!-- 底部操作栏 -->
             <view class="detail__footer">
-                <hy-safe-bottom></hy-safe-bottom>
                 <view class="detail__footer-inner">
                     <view v-if="canBuy" class="detail__footer-btns">
                         <hy-button
@@ -227,6 +269,29 @@ const previewImages = (index: number) => {
                             @click="goApply"
                         ></hy-button>
                     </view>
+                    <!-- 自己发布的商品：下架 / 删除 -->
+                    <view
+                        v-else-if="canOffShelf || canDelete"
+                        class="detail__footer-btns"
+                    >
+                        <hy-button
+                            v-if="canOffShelf"
+                            text="下架"
+                            shape="circle"
+                            plain
+                            type="warning"
+                            :custom-style="{ flex: 1 }"
+                            @click="onConfirmAction('offShelf')"
+                        ></hy-button>
+                        <hy-button
+                            v-if="canDelete"
+                            text="删除"
+                            shape="circle"
+                            type="error"
+                            :custom-style="{ flex: 1 }"
+                            @click="onConfirmAction('delete')"
+                        ></hy-button>
+                    </view>
                     <view v-else class="detail__footer-tip">
                         <hy-icon
                             :name="
@@ -237,14 +302,18 @@ const previewImages = (index: number) => {
                         />
                         <text>{{
                             isMine
-                                ? '这是您发布的商品'
+                                ? '商品已售出'
                                 : detail.status === 'SOLD'
                                   ? '商品已售出，看看其他宝贝吧'
                                   : '该商品交易进行中，暂不可申请'
                         }}</text>
                     </view>
+                    <hy-safe-bottom></hy-safe-bottom>
                 </view>
             </view>
+
+            <!-- message 弹窗渲染载体（配合 useMessage） -->
+            <hy-modal></hy-modal>
         </view>
     </the-root-pages>
 </template>
