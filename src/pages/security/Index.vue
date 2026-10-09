@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import SafetyTips from '@/components/SafetyTips.vue';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { SAFETY_PROMISES } from '@/types';
 import { ref } from 'vue';
 
@@ -53,7 +53,7 @@ const callPolice = () => {
                 >
                     <view class="sec__promise-icon">
                         <hy-icon
-                            name="check-mask"
+                            name="/static/icons/check.png"
                             color="var(--hy-success, #07c160)"
                             :size="16"
                         />
@@ -82,9 +82,8 @@ const callPolice = () => {
                         <template #icon>
                             <view class="sec__entry-icon sec__entry-icon--red">
                                 <hy-icon
-                                    name="warning"
-                                    color="var(--hy-error, #f56c6c)"
-                                    :size="20"
+                                    name="/static/icons/complaint.png"
+ :size="20"
                                 ></hy-icon>
                             </view>
                         </template>
@@ -99,9 +98,8 @@ const callPolice = () => {
                         <template #icon>
                             <view class="sec__entry-icon">
                                 <hy-icon
-                                    name="order"
-                                    color="var(--primary, #3d7eff)"
-                                    :size="20"
+                                    name="/static/icons/order.png"
+ :size="20"
                                 ></hy-icon>
                             </view>
                         </template>
@@ -116,7 +114,7 @@ const callPolice = () => {
                         <template #icon>
                             <view class="sec__entry-icon">
                                 <hy-icon
-                                    name="telephone"
+                                    name="/static/icons/telephone.png"
                                     color="var(--primary, #3d7eff)"
                                     :size="20"
                                 ></hy-icon>
@@ -133,7 +131,7 @@ const callPolice = () => {
                         <template #icon>
                             <view class="sec__entry-icon sec__entry-icon--red">
                                 <hy-icon
-                                    name="notice-fill"
+                                    name="/static/icons/notice.png"
                                     color="var(--hy-error, #f56c6c)"
                                     :size="20"
                                 ></hy-icon>

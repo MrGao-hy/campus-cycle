@@ -28,8 +28,8 @@ defineOptions({
             <hy-image
                 :src="goods.images[0]"
                 width="100%"
-                height="320rpx"
-                radius="12rpx 12rpx 0 0"
+                height="340rpx"
+                radius="16rpx 16rpx 0 0"
             />
             <view v-if="goods.status !== 'ON_SALE'" class="goods-card__mask">
                 <hy-tag
@@ -70,13 +70,13 @@ defineOptions({
 
 <style lang="scss" scoped>
 .goods-card {
-    width: calc(50% - 12rpx);
+    width: calc(50% - 10rpx);
     box-sizing: border-box;
     background: var(--hy-background--container, #ffffff);
-    border-radius: 12rpx;
+    border-radius: 16rpx;
     overflow: hidden;
-    margin-bottom: 24rpx;
-    box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+    margin-bottom: 20rpx;
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
 
     &--sold {
         opacity: 0.55;
@@ -88,12 +88,12 @@ defineOptions({
 
     &__mask {
         position: absolute;
-        top: 12rpx;
-        right: 12rpx;
+        top: 16rpx;
+        right: 16rpx;
     }
 
     &__body {
-        padding: 16rpx 20rpx 20rpx;
+        padding: 20rpx;
     }
 
     &__title {
@@ -111,7 +111,7 @@ defineOptions({
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-top: 12rpx;
+        margin-top: 14rpx;
     }
 
     &__want {
@@ -123,7 +123,7 @@ defineOptions({
         display: flex;
         align-items: baseline;
         gap: 10rpx;
-        margin-top: 8rpx;
+        margin-top: 10rpx;
     }
 
     &__origin {

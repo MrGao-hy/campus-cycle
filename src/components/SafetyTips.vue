@@ -13,7 +13,7 @@ withDefaults(defineProps<IProps>(), { compact: false });
     <view class="safety-tips">
         <view class="safety-tips__head">
             <hy-icon
-                name="warning-fill"
+                name="/static/icons/warning.png"
                 color="var(--warning, #f9ae3d)"
                 :size="18"
             />
@@ -37,30 +37,29 @@ withDefaults(defineProps<IProps>(), { compact: false });
 <style lang="scss" scoped>
 .safety-tips {
     background: var(--warning-light, rgba(249, 174, 61, 0.1));
-    border: 1rpx solid var(--warning, #f9ae3d);
-    border-radius: 12rpx;
-    padding: 20rpx 24rpx;
+    border-radius: 16rpx;
+    padding: 22rpx 26rpx;
 
     &__head {
         display: flex;
         align-items: center;
-        gap: 8rpx;
+        gap: 10rpx;
     }
 
     &__title {
-        font-size: 28rpx;
+        font-size: 27rpx;
         font-weight: 600;
         color: var(--warning, #f9ae3d);
     }
 
     &__list {
-        margin-top: 12rpx;
+        margin-top: 14rpx;
     }
 
     &__item {
         display: flex;
         gap: 10rpx;
-        margin-bottom: 8rpx;
+        margin-bottom: 10rpx;
 
         &:last-child {
             margin-bottom: 0;

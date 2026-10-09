@@ -5,7 +5,7 @@ import {
     getMyAppealsApi,
     getMyComplaintsApi,
 } from '@/api';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import {
     APPEAL_STATUS_TAG,
     APPEAL_STATUS_TEXT,
@@ -124,7 +124,7 @@ const goDetail = (complaintId: string) => {
                         <view class="crd__more">
                             <text>查看进度</text>
                             <hy-icon
-                                name="right"
+                                name="/static/icons/right.png"
                                 color="var(--hy-text-color--3, #929295)"
                                 :size="12"
                             />
@@ -182,7 +182,7 @@ const goDetail = (complaintId: string) => {
                         class="crd__appeal-tip"
                     >
                         <hy-icon
-                            name="remind"
+                            name="/static/icons/remind.png"
                             color="var(--warning, #f9ae3d)"
                             :size="14"
                         />
@@ -195,7 +195,7 @@ const goDetail = (complaintId: string) => {
                                 c.appeals?.length ? '查看申诉' : '去处理'
                             }}</text>
                             <hy-icon
-                                name="right"
+                                name="/static/icons/right.png"
                                 color="var(--hy-text-color--3, #929295)"
                                 :size="12"
                             />
@@ -250,7 +250,7 @@ const goDetail = (complaintId: string) => {
                         <view class="crd__more">
                             <text>查看详情</text>
                             <hy-icon
-                                name="right"
+                                name="/static/icons/right.png"
                                 color="var(--hy-text-color--3, #929295)"
                                 :size="12"
                             />

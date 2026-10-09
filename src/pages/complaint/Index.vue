@@ -2,7 +2,7 @@
 import TheRootPages from '@/components/TheRootPages.vue';
 import { getOrderDetailApi, submitComplaintApi } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import {
     COMPLAINT_TYPES,
     ORDER_STATUS_TAG,
@@ -101,9 +101,8 @@ const submit = async () => {
             <!-- 通用举报提示 -->
             <view v-if="!row" class="complaint__tip">
                 <hy-icon
-                    name="notice"
-                    color="var(--primary, #3d7eff)"
-                    :size="16"
+                    name="/static/icons/order.png"
+ :size="16"
                 />
                 <text
                     >建议从「订单详情 →
@@ -182,9 +181,8 @@ const submit = async () => {
                         >
                             <view class="complaint__upload-add-icon">
                                 <hy-icon
-                                    name="camera"
-                                    color="var(--primary, #3d7eff)"
-                                    :size="26"
+                                    name="/static/icons/camera.png"
+ :size="26"
                                 ></hy-icon>
                             </view>
                             <text class="complaint__upload-add-text"

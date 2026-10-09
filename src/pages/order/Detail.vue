@@ -13,7 +13,7 @@ import {
     submitReviewApi,
 } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { fmtAmount, fmtFullTime, fmtRemain } from '@/utils/format';
 import {
     CONTACT_ITEMS,
@@ -72,6 +72,15 @@ const peerContact = computed<ContactInfo>(() =>
         : row.value?.buyer.contact || {}
 );
 const peerLabel = computed(() => (isBuyer.value ? '卖家' : '买家'));
+
+/** 查看对方主页 */
+const goPeerProfile = () => {
+    const peerId = isBuyer.value
+        ? row.value?.seller.id
+        : row.value?.buyer.id;
+    if (!peerId) return;
+    uni.navigateTo({ url: `/pages/user/Detail?id=${peerId}` });
+};
 
 /** 步骤条进度 */
 const stepCurrent = computed(() => {
@@ -302,14 +311,22 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                     <hy-price :text="String(order.price)" :size="18" />
                 </view>
                 <hy-icon
-                    name="right"
+                    name="/static/icons/right.png"
                     color="var(--hy-text-color--3, #929295)"
                     :size="14"
                 ></hy-icon>
             </view>
-            <!-- 联系方式（卖家确认后展示） -->
-            <view class="od__card">
-                <view class="od__card-title">{{ peerLabel }}联系方式</view>
+
+            <!-- 联系方式（卖家确认后展示，点击查看对方主页） -->
+            <view class="od__card" @tap="goPeerProfile">
+                <view class="od__card-title">
+                    {{ peerLabel }}联系方式
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="var(--hy-info-color)"
+                        :size="14"
+                    ></hy-icon>
+                </view>
                 <template v-if="contactsVisible">
                     <view v-for="item in CONTACT_ITEMS" :key="item.key">
                         <view v-if="peerContact[item.key]" class="od__contact">
@@ -347,7 +364,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 </template>
                 <view v-else class="od__contact-locked">
                     <hy-icon
-                        name="lock"
+                        name="/static/icons/lock.png"
                         color="var(--hy-text-color--3, #929295)"
                         :size="16"
                     />
@@ -420,9 +437,8 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
             >
                 <view class="od__rights-icon">
                     <hy-icon
-                        name="warning"
-                        color="var(--hy-error, #f56c6c)"
-                        :size="18"
+                        name="/static/icons/complaint.png"
+ :size="18"
                     />
                 </view>
                 <view class="od__rights-info">
@@ -432,7 +448,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                     >
                 </view>
                 <hy-icon
-                    name="right"
+                    name="/static/icons/right.png"
                     color="var(--hy-text-color--placeholder, #c0c4cc)"
                     :size="14"
                 />
@@ -516,9 +532,8 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 class="od__remind od__remind--primary"
             >
                 <hy-icon
-                    name="notice"
-                    color="var(--primary, #3d7eff)"
-                    :size="16"
+                    name="/static/icons/order.png"
+ :size="16"
                 />
                 <text
                     >线下交易完成后，请买家及时在平台确认订单；确认后如遇纠纷，可在
@@ -532,7 +547,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 class="od__remind od__remind--warn"
             >
                 <hy-icon
-                    name="remind"
+                    name="/static/icons/remind.png"
                     color="var(--warning, #f9ae3d)"
                     :size="16"
                 />
@@ -682,35 +697,51 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                 </template>
             </view>
 
-            <!-- 确认弹窗 -->
-            <hy-modal
-                v-model="modalShow"
-                :title="
-                    modalType === 'objection'
-                        ? '提交异议'
-                        : modalType === 'confirm'
-                          ? '确认交易'
-                          : modalType === 'buyerConfirm'
-                            ? '确认完成交易'
-                            : '取消交易'
-                "
-                :content="
-                    modalType === 'confirm'
-                        ? '确认后将向买家展示您的联系方式（电话/QQ/微信/邮箱），请约定校内公共场所当面交易。'
-                        : modalType === 'reject'
-                          ? '拒绝后订单取消，商品继续在售。'
-                          : modalType === 'objection'
-                            ? '提交后订单将进入平台申诉处理，由平台客服介入核实，确认提交？'
-                            : modalType === 'buyerConfirm'
-                              ? '请确认已当面完成交易并验货无误。确认后订单进入 48 小时申诉期，期间如遇纠纷可发起投诉维权。'
-                              : '双方未交易成功可取消订单，商品将恢复在售。确认取消？'
-                "
-                :confirm-text="
-                    modalType === 'buyerConfirm' ? '确认完成' : '确定'
-                "
-                show-cancel-button
-                @confirm="onModalConfirm"
-            ></hy-modal>
+            <!-- 确认弹窗（自定义弹层：hy-modal 小程序端不渲染，改纯 view + fixed） -->
+            <view
+                v-if="modalShow"
+                class="od__modal-mask"
+                @tap="modalShow = false"
+            >
+                <view class="od__modal" @tap.stop>
+                    <text class="od__modal-title">{{
+                        modalType === 'objection'
+                            ? '提交异议'
+                            : modalType === 'confirm'
+                              ? '确认交易'
+                              : modalType === 'buyerConfirm'
+                                ? '确认完成交易'
+                                : '取消交易'
+                    }}</text>
+                    <text class="od__modal-content">{{
+                        modalType === 'confirm'
+                            ? '确认后将向买家展示您的联系方式（电话/QQ/微信/邮箱），请约定校内公共场所当面交易。'
+                            : modalType === 'reject'
+                              ? '拒绝后订单取消，商品继续在售。'
+                              : modalType === 'objection'
+                                ? '提交后订单将进入平台申诉处理，由平台客服介入核实，确认提交？'
+                                : modalType === 'buyerConfirm'
+                                  ? '请确认已当面完成交易并验货无误。确认后订单进入 48 小时申诉期，期间如遇纠纷可发起投诉维权。'
+                                  : '双方未交易成功可取消订单，商品将恢复在售。确认取消？'
+                    }}</text>
+                    <view class="od__modal-btns">
+                        <view
+                            class="od__modal-btn od__modal-btn--cancel"
+                            @tap="modalShow = false"
+                            >取消</view
+                        >
+                        <view
+                            class="od__modal-btn od__modal-btn--confirm"
+                            @tap="onModalConfirm"
+                            >{{
+                                modalType === 'buyerConfirm'
+                                    ? '确认完成'
+                                    : '确定'
+                            }}</view
+                        >
+                    </view>
+                </view>
+            </view>
         </view>
     </the-root-pages>
 </template>
@@ -973,6 +1004,85 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* 确认弹层 */
+.od__modal-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.od__modal {
+    width: 600rpx;
+    background: #fff;
+    border-radius: 24rpx;
+    padding: 44rpx 36rpx 32rpx;
+    display: flex;
+    flex-direction: column;
+    animation: od-modal-in 0.25s ease-out both;
+}
+
+.od__modal-title {
+    font-size: 32rpx;
+    font-weight: 600;
+    color: #1f2329;
+    text-align: center;
+}
+
+.od__modal-content {
+    margin-top: 20rpx;
+    font-size: 26rpx;
+    line-height: 1.7;
+    color: #46464a;
+    text-align: center;
+}
+
+.od__modal-btns {
+    display: flex;
+    gap: 20rpx;
+    margin-top: 36rpx;
+}
+
+.od__modal-btn {
+    flex: 1;
+    height: 84rpx;
+    border-radius: 42rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28rpx;
+    font-weight: 500;
+
+    &--cancel {
+        background: #f2f3f5;
+        color: #646a73;
+    }
+
+    &--confirm {
+        background: linear-gradient(135deg, #3d7eff 0%, #6fa0ff 100%);
+        color: #fff;
+        box-shadow: 0 8rpx 20rpx rgba(61, 126, 255, 0.3);
+    }
+}
+
+@keyframes od-modal-in {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(24rpx);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }
 </style>

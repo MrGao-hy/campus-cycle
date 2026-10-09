@@ -2,7 +2,7 @@
 import TheRootPages from '@/components/TheRootPages.vue';
 import { getOrderDetailApi, submitReviewApi } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import type { OrderRow } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
 import { ensureLoginAndSchool } from '@/utils/guard';
@@ -112,9 +112,8 @@ const submit = async () => {
             <!-- 提示 -->
             <view class="review__tip">
                 <hy-icon
-                    name="notice"
-                    color="var(--hy-text-color--3, #929295)"
-                    :size="14"
+                    name="/static/icons/order.png"
+ :size="14"
                 />
                 <text>评价将在卖家商品详情页展示，请文明评价</text>
             </view>
@@ -208,6 +207,7 @@ const submit = async () => {
         right: 0;
         bottom: 0;
         padding: 16rpx 24rpx;
+        padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
         background: var(--hy-background--container, #ffffff);
         box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
     }

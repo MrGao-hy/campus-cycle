@@ -9,7 +9,7 @@ import {
 } from '@/api';
 import { getGoodsDetailApi, applyBuyApi, type IGoodsDetail } from '@/api';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { fmtTime } from '@/utils/format';
 import type { ChatMessage } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
@@ -157,9 +157,8 @@ const goGoods = () => {
             <!-- 安全提示 -->
             <view class="chat__safety">
                 <hy-icon
-                    name="security"
-                    color="var(--hy-success, #07c160)"
-                    :size="14"
+                    name="/static/icons/shield.png"
+ :size="14"
                 />
                 <text
                     >请在校内公共场所当面交易、当面验货，勿提前转账，勿脱离平台沟通</text

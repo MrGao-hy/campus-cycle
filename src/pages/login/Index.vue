@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { computed, ref } from 'vue';
 import { wxLoginApi } from '@/api';
 
@@ -23,6 +23,29 @@ const agreeShake = ref(false);
 /** 协议弹窗 */
 const agreementShow = ref(false);
 const agreementKey = ref<'user' | 'privacy'>('privacy');
+
+/** 微信隐私授权弹层（小程序端：拦截原生隐私弹窗，用与协议弹层一致的风格渲染） */
+const privacyShow = ref(false);
+// #ifdef MP-WEIXIN
+let privacyResolveFn: ((res: any) => void) | null = null;
+onLoad(() => {
+    if (typeof wx !== 'undefined' && (wx as any).onNeedPrivacyAuthorization) {
+        (wx as any).onNeedPrivacyAuthorization(
+            (resolve: (res: any) => void) => {
+                privacyResolveFn = resolve;
+                privacyShow.value = true;
+            }
+        );
+    }
+});
+const agreePrivacy = () => {
+    if (privacyResolveFn) {
+        privacyResolveFn({ event: 'agree', buttonId: 'privacy-agree-btn' });
+    }
+    privacyResolveFn = null;
+    privacyShow.value = false;
+};
+// #endif
 
 const AGREEMENTS = {
     user: {
@@ -98,6 +121,11 @@ const agreeFromModal = () => {
     agreementShow.value = false;
 };
 
+/** 暂不登录，先逛逛（未登录态浏览首页） */
+const goGuest = () => {
+    uni.switchTab({ url: '/pages/index/Index' });
+};
+
 /** 未勾选协议时引导：抖动 + 轻震动 + 提示 */
 const remindAgreement = () => {
     agreeShake.value = true;
@@ -124,6 +152,18 @@ const handleLogin = async () => {
         userStore.setLogin(res.token, res.userInfo);
         toast.close();
         toast.success('登录成功');
+        // 同步学校：优先本地已选（未登录时选的），其次账号已绑定（userInfo.schoolId，
+        // 后端登录/建号时已写库）——否则清缓存后重新登录会因 school 实体为空
+        // 而被误判「未选校」，首页数据永不加载
+        const schoolId = userStore.school?.id || res.userInfo.schoolId;
+        if (schoolId) {
+            try {
+                const school = await confirmSchoolApi(schoolId);
+                userStore.setSchool(school);
+            } catch {
+                /* 同步失败不阻塞登录，本地学校保留 */
+            }
+        }
         // 未选择学校 → 先选择并确认学校
         if (!userStore.hasSchool) {
             setTimeout(
@@ -168,11 +208,7 @@ const handleLogin = async () => {
             <view class="login__trust">
                 <view class="login__trust-item">
                     <view class="login__trust-icon">
-                        <hy-icon
-                            name="security"
-                            color="var(--primary, #3d7eff)"
-                            :size="20"
-                        />
+                        <hy-icon name="/static/icons/shield.png" :size="20" />
                     </view>
                     <view class="login__trust-text">
                         <text class="login__trust-title">本校学生实名认证</text>
@@ -183,11 +219,7 @@ const handleLogin = async () => {
                 </view>
                 <view class="login__trust-item">
                     <view class="login__trust-icon">
-                        <hy-icon
-                            name="order"
-                            color="var(--primary, #3d7eff)"
-                            :size="20"
-                        />
+                        <hy-icon name="/static/icons/order.png" :size="20" />
                     </view>
                     <view class="login__trust-text">
                         <text class="login__trust-title">平台创建订单</text>
@@ -199,8 +231,7 @@ const handleLogin = async () => {
                 <view class="login__trust-item">
                     <view class="login__trust-icon">
                         <hy-icon
-                            name="warning"
-                            color="var(--primary, #3d7eff)"
+                            name="/static/icons/complaint.png"
                             :size="20"
                         />
                     </view>
@@ -226,7 +257,7 @@ const handleLogin = async () => {
                     >
                         <hy-icon
                             v-if="agreed"
-                            name="check-mask"
+                            name="/static/icons/check.png"
                             color="#fff"
                             :size="12"
                         />
@@ -256,12 +287,12 @@ const handleLogin = async () => {
                     @click="handleLogin"
                 ></hy-button>
 
+                <text class="login__guest" @tap="goGuest"
+                    >暂不登录，先逛逛</text
+                >
+
                 <view class="login__safety">
-                    <hy-icon
-                        name="notice"
-                        color="var(--hy-text-color--3, #929295)"
-                        :size="14"
-                    />
+                    <hy-icon name="/static/icons/order.png" :size="14" />
                     <text
                         >线下交易请当面验货、保留凭证，遇到异常立即终止交易</text
                     >
@@ -269,26 +300,40 @@ const handleLogin = async () => {
             </view>
         </view>
 
-        <!-- 协议内容弹窗 -->
-        <hy-modal
-            v-model="agreementShow"
-            :title="currentAgreement.title"
-            :show-cancel-button="false"
-            :close-on-click-overlay="true"
+        <!-- 协议内容弹窗（自定义弹层：hy-modal 组件链在小程序端多层 virtualHost 嵌套不可控，改为纯 view + fixed） -->
+        <view
+            v-if="agreementShow"
+            class="login__modal-mask"
+            @tap="agreementShow = false"
         >
-            <scroll-view class="login__agreement" scroll-y>
-                <view
-                    v-for="(s, i) in currentAgreement.sections"
-                    :key="i"
-                    class="login__agreement-item"
-                >
-                    <text class="login__agreement-heading">{{
-                        s.heading
+            <view class="login__modal" @tap.stop>
+                <view class="login__modal-head">
+                    <text class="login__modal-title">{{
+                        currentAgreement.title
                     }}</text>
-                    <text class="login__agreement-text">{{ s.text }}</text>
+                    <view
+                        class="login__modal-close"
+                        @tap="agreementShow = false"
+                    >
+                        <hy-icon
+                            name="/static/icons/close.png"
+                            color="#929295"
+                            :size="14"
+                        ></hy-icon>
+                    </view>
                 </view>
-            </scroll-view>
-            <template #confirmButton>
+                <scroll-view class="login__agreement" scroll-y>
+                    <view
+                        v-for="(s, i) in currentAgreement.sections"
+                        :key="i"
+                        class="login__agreement-item"
+                    >
+                        <text class="login__agreement-heading">{{
+                            s.heading
+                        }}</text>
+                        <text class="login__agreement-text">{{ s.text }}</text>
+                    </view>
+                </scroll-view>
                 <view class="login__agreement-btn">
                     <hy-button
                         text="同意并继续"
@@ -297,8 +342,35 @@ const handleLogin = async () => {
                         @click="agreeFromModal"
                     ></hy-button>
                 </view>
-            </template>
-        </hy-modal>
+            </view>
+        </view>
+
+        <!-- 微信隐私授权弹层（自定义：拦截原生隐私弹窗，风格与协议弹层统一） -->
+        <view v-if="privacyShow" class="login__modal-mask" @tap.stop>
+            <view class="login__modal login__privacy" @tap.stop>
+                <view class="login__modal-head">
+                    <text class="login__modal-title">隐私保护指引</text>
+                </view>
+                <view class="login__privacy-body">
+                    <text class="login__privacy-text"
+                        >为完成微信登录与账号创建，我们将处理你的微信登录凭证、微信昵称与头像，以及你主动填写的学校信息。上述信息仅用于创建与识别账号、展示交易身份、保障同校交易安全，存储于境内服务器，不会向任何第三方共享。</text
+                    >
+                    <text
+                        class="login__privacy-link"
+                        @tap="openAgreement('privacy')"
+                        >查看完整《隐私保护指引》</text
+                    >
+                </view>
+                <view class="login__agreement-btn">
+                    <hy-button
+                        text="同意并继续"
+                        type="primary"
+                        shape="circle"
+                        @click="agreePrivacy"
+                    ></hy-button>
+                </view>
+            </view>
+        </view>
     </the-root-pages>
 </template>
 
@@ -483,6 +555,14 @@ const handleLogin = async () => {
         color: var(--primary, #3d7eff);
     }
 
+    &__guest {
+        margin-top: 28rpx;
+        font-size: 26rpx;
+        color: var(--hy-text-color--3, #929295);
+        text-align: center;
+        text-decoration: underline;
+    }
+
     &__safety {
         margin-top: 28rpx;
         display: flex;
@@ -494,9 +574,81 @@ const handleLogin = async () => {
     }
 
     /* 协议弹窗 */
+    &__modal-mask {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 999;
+        background: rgba(0, 0, 0, 0.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* 微信隐私授权弹层 */
+    &__privacy {
+        padding-bottom: 36rpx;
+    }
+
+    &__privacy-body {
+        padding: 24rpx 36rpx 0;
+    }
+
+    &__privacy-text {
+        font-size: 26rpx;
+        line-height: 1.8;
+        color: #46464a;
+    }
+
+    &__privacy-link {
+        display: inline-block;
+        margin-top: 16rpx;
+        font-size: 24rpx;
+        color: var(--primary, #3d7eff);
+    }
+
+    &__modal {
+        width: 620rpx;
+        max-height: 74vh;
+        background: #fff;
+        border-radius: 24rpx;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        animation: login-modal-in 0.25s ease-out both;
+    }
+
+    &__modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 32rpx 32rpx 8rpx;
+        flex-shrink: 0;
+    }
+
+    &__modal-title {
+        font-size: 30rpx;
+        font-weight: 600;
+        color: #1f2329;
+    }
+
+    &__modal-close {
+        width: 48rpx;
+        height: 48rpx;
+        border-radius: 50%;
+        background: #f2f3f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     &__agreement {
-        height: 620rpx;
+        max-height: 52vh;
+        overflow-y: auto;
         text-align: left;
+        padding: 16rpx 32rpx 0;
     }
 
     &__agreement-item {
@@ -519,7 +671,20 @@ const handleLogin = async () => {
     }
 
     &__agreement-btn {
-        padding: 0 40rpx 24rpx;
+        padding: 24rpx 40rpx;
+        padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+        flex-shrink: 0;
+    }
+}
+
+@keyframes login-modal-in {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(24rpx);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }
 

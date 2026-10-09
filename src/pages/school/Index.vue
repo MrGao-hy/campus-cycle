@@ -2,7 +2,7 @@
 import TheRootPages from '@/components/TheRootPages.vue';
 import { confirmSchoolApi, getSchoolListApi } from '@/api';
 import { useToolsStore, useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { computed, ref } from 'vue';
 import type { School } from '@/types';
 
@@ -48,8 +48,20 @@ const onTapSchool = (school: School) => {
 
 const onConfirm = async () => {
     if (!selected.value) return;
-    const school = await confirmSchoolApi(selected.value.id);
-    userStore.setSchool(school);
+    const school = selected.value;
+    if (userStore.hasLogin) {
+        // 已登录：调接口确认并同步到账号
+        try {
+            const confirmed = await confirmSchoolApi(school.id);
+            userStore.setSchool(confirmed);
+        } catch {
+            // 接口失败不阻塞：本地学校先生效，登录页后续可重试同步
+            userStore.setSchool(school);
+        }
+    } else {
+        // 未登录：仅本地保存（学校独立于登录态），登录成功后自动同步账号
+        userStore.setSchool(school);
+    }
     toast.success(`已选择：${school.shortName || school.name}`);
     setTimeout(() => {
         // 从登录流程进入时进入首页；从我的页进入时返回
@@ -63,8 +75,9 @@ const onConfirm = async () => {
         <view class="school" :style="{ '--primary': tools.themeColor }">
             <!-- 渐变头部：标题 + 搜索 -->
             <view class="school__header">
-                <view class="school__blob school__blob--a"></view>
-                <view class="school__blob school__blob--b"></view>
+                <view class="school__ring school__ring--a"></view>
+                <view class="school__ring school__ring--b"></view>
+                <view class="school__ring school__ring--c"></view>
                 <text class="school__title">选择你的学校</text>
                 <text class="school__subtitle"
                     >确认后仅展示本校商品，同校交易更安全</text
@@ -83,7 +96,7 @@ const onConfirm = async () => {
                 </view>
             </view>
 
-            <!-- 当前学校 -->
+            <!-- 当前学校横幅 -->
             <view
                 v-if="userStore.school"
                 class="school__current"
@@ -91,7 +104,7 @@ const onConfirm = async () => {
                 :hover-stay-time="120"
             >
                 <view class="school__current-check">
-                    <hy-icon name="check-mask" color="#fff" :size="12" />
+                    <hy-icon name="/static/icons/check.png" color="#fff" :size="12" />
                 </view>
                 <view class="school__current-info">
                     <text class="school__current-name">{{
@@ -101,11 +114,18 @@ const onConfirm = async () => {
                         >当前学校 · 首页仅展示本校商品</text
                     >
                 </view>
-                <hy-tag label="已确认" type="primary" size="mini" />
+                <view class="school__current-badge">已确认</view>
             </view>
 
             <!-- 学校列表 -->
-            <view class="school__list">
+            <view class="school__body">
+                <view class="school__group">
+                    <text class="school__group-title">全部学校</text>
+                    <text v-if="!keyword" class="school__group-count"
+                        >共 {{ list.length }} 所</text
+                    >
+                </view>
+
                 <!-- 骨架屏 -->
                 <view v-if="loading" class="school__skeleton">
                     <hy-skeleton
@@ -129,31 +149,38 @@ const onConfirm = async () => {
                         :hover-stay-time="120"
                         @tap="onTapSchool(school)"
                     >
-                        <hy-avatar
-                            :text="school.shortName.slice(0, 1)"
-                            :random-bg-color="school.id !== currentSchoolId"
-                            :name="school.shortName"
-                            shape="square"
-                            :size="44"
-                        ></hy-avatar>
+                        <view
+                            class="school__avatar"
+                            :class="{
+                                'school__avatar--active':
+                                    school.id === currentSchoolId,
+                            }"
+                        >
+                            <text class="school__avatar-text">{{
+                                school.shortName.slice(0, 1)
+                            }}</text>
+                        </view>
                         <view class="school__item-info">
                             <text class="school__item-name">{{
                                 school.name
                             }}</text>
                             <text class="school__item-sub"
-                                >在售商品 {{ school.goodsCount }} 件</text
+                                >{{ school.goodsCount }} 件在售</text
                             >
                         </view>
-                        <hy-tag
+                        <view
                             v-if="school.id === currentSchoolId"
-                            label="当前"
-                            type="success"
-                            size="mini"
-                        />
+                            class="school__badge"
+                            >当前</view
+                        >
                         <hy-icon
                             v-else
-                            name="right"
-                            :color="'var(--hy-text-color--3, #929295)'"
+                            name="/static/icons/right.png"
+                            :color="
+                                school.id === currentSchoolId
+                                    ? 'var(--primary, #3d7eff)'
+                                    : 'var(--hy-text-color--3, #929295)'
+                            "
                             :size="14"
                         ></hy-icon>
                     </view>
@@ -168,17 +195,35 @@ const onConfirm = async () => {
 
             <!-- 底部说明 -->
             <view class="school__footer">
-                <hy-icon name="security" :color="'var(--primary)'" :size="14" />
+                <hy-icon name="/static/icons/shield.png" :size="14" />
                 <text>学校信息用于同校身份校验，不会对外展示你的位置</text>
             </view>
 
-            <hy-modal
-                v-model="modalShow"
-                title="确认选择学校"
-                :content="`选择「${selected?.name}」后，首页将只展示本校商品。确认选择？`"
-                show-cancel-button
-                @confirm="onConfirm"
-            ></hy-modal>
+            <!-- 确认弹窗（自定义弹层：hy-modal 组件链小程序端不渲染，改为纯 view + fixed） -->
+            <view
+                v-if="modalShow"
+                class="school__modal-mask"
+                @tap="modalShow = false"
+            >
+                <view class="school__modal" @tap.stop>
+                    <text class="school__modal-title">确认选择学校</text>
+                    <text class="school__modal-content"
+                        >选择「{{ selected?.name }}」后，首页将只展示本校商品。确认选择？</text
+                    >
+                    <view class="school__modal-btns">
+                        <view
+                            class="school__modal-btn school__modal-btn--cancel"
+                            @tap="modalShow = false"
+                            >取消</view
+                        >
+                        <view
+                            class="school__modal-btn school__modal-btn--confirm"
+                            @tap="onConfirm"
+                            >确认</view
+                        >
+                    </view>
+                </view>
+            </view>
         </view>
     </the-root-pages>
 </template>
@@ -189,43 +234,53 @@ const onConfirm = async () => {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    background: var(--hy-background, #f8f8f8);
+    background: var(--hy-background, #f5f6f8);
 
-    /* 渐变头部（跟随主题色） */
+    /* 渐变头部（深蓝质感，装饰圆环） */
     &__header {
         position: relative;
-        padding: 56rpx 40rpx 96rpx;
+        padding: 56rpx 40rpx 88rpx;
         background: linear-gradient(
-            150deg,
+            135deg,
             var(--primary, #3d7eff) 0%,
-            #6fa0ff 82%,
-            #b8d0ff 100%
+            #2d6bf0 55%,
+            #1e56c8 100%
         );
-        border-radius: 0 0 56rpx 56rpx;
+        border-radius: 0 0 48rpx 48rpx;
         overflow: hidden;
         display: flex;
         flex-direction: column;
         animation: school-fade-down 0.5s ease-out both;
     }
 
-    &__blob {
+    &__ring {
         position: absolute;
+        border: 3rpx solid rgba(255, 255, 255, 0.18);
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.12);
 
         &--a {
-            width: 280rpx;
-            height: 280rpx;
-            top: -90rpx;
-            right: -70rpx;
+            width: 320rpx;
+            height: 320rpx;
+            top: -120rpx;
+            right: -80rpx;
         }
 
         &--b {
-            width: 160rpx;
-            height: 160rpx;
-            bottom: -30rpx;
-            left: -50rpx;
-            background: rgba(255, 255, 255, 0.08);
+            width: 200rpx;
+            height: 200rpx;
+            top: -40rpx;
+            right: 140rpx;
+            border-width: 2rpx;
+            opacity: 0.7;
+        }
+
+        &--c {
+            width: 140rpx;
+            height: 140rpx;
+            bottom: -60rpx;
+            left: -40rpx;
+            border-width: 2rpx;
+            opacity: 0.6;
         }
     }
 
@@ -247,24 +302,28 @@ const onConfirm = async () => {
     /* 搜索框上提叠压渐变底缘 */
     &__search {
         position: relative;
-        margin: 36rpx -20rpx -76rpx;
+        margin: 36rpx -20rpx -72rpx;
         background: #fff;
-        border-radius: 16rpx;
-        box-shadow: 0 8rpx 24rpx rgba(20, 50, 110, 0.12);
+        border-radius: 20rpx;
+        box-shadow: 0 12rpx 32rpx rgba(14, 42, 110, 0.18);
         overflow: hidden;
     }
 
-    /* 当前学校横幅 */
+    /* 当前学校横幅（主色渐变） */
     &__current {
         position: relative;
-        margin: 108rpx 32rpx 0;
-        padding: 24rpx 28rpx;
+        margin: 100rpx 32rpx 0;
+        padding: 26rpx 28rpx;
         display: flex;
         align-items: center;
         gap: 20rpx;
-        border-radius: 20rpx;
-        border: 2rpx solid var(--primary, #3d7eff);
-        background: rgba(61, 126, 255, 0.08);
+        border-radius: 24rpx;
+        background: linear-gradient(
+            120deg,
+            var(--primary, #3d7eff) 0%,
+            #2d6bf0 100%
+        );
+        box-shadow: 0 12rpx 28rpx rgba(61, 126, 255, 0.28);
         animation: school-fade-up 0.5s ease-out 0.1s both;
     }
 
@@ -272,7 +331,7 @@ const onConfirm = async () => {
         width: 40rpx;
         height: 40rpx;
         border-radius: 50%;
-        background: var(--primary, #3d7eff);
+        background: rgba(255, 255, 255, 0.28);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -290,7 +349,7 @@ const onConfirm = async () => {
     &__current-name {
         font-size: 28rpx;
         font-weight: 600;
-        color: var(--hy-text-color, #000000);
+        color: #ffffff;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -298,66 +357,121 @@ const onConfirm = async () => {
 
     &__current-desc {
         font-size: 22rpx;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    &__current-badge {
+        flex-shrink: 0;
+        padding: 6rpx 20rpx;
+        border-radius: 999rpx;
+        background: #ffffff;
+        color: var(--primary, #3d7eff);
+        font-size: 22rpx;
+        font-weight: 600;
+    }
+
+    /* 列表区 */
+    &__body {
+        position: relative;
+        margin: 40rpx 32rpx 0;
+        flex: 1;
+    }
+
+    &__group {
+        display: flex;
+        align-items: baseline;
+        gap: 12rpx;
+        padding: 0 8rpx 20rpx;
+    }
+
+    &__group-title {
+        font-size: 28rpx;
+        font-weight: 600;
+        color: var(--hy-text-color, #000000);
+    }
+
+    &__group-count {
+        font-size: 22rpx;
         color: var(--hy-text-color--3, #929295);
     }
 
-    /* 列表 */
-    &__list {
-        position: relative;
-        margin: 24rpx 32rpx 0;
-        padding: 8rpx 28rpx;
-        background: var(--hy-background--container, #ffffff);
-        border-radius: 24rpx;
-        box-shadow: 0 8rpx 28rpx rgba(30, 60, 120, 0.06);
-    }
-
     &__skeleton {
-        padding: 24rpx 0;
+        padding: 8rpx 0;
     }
 
+    /* 独立卡片 */
     &__item {
         display: flex;
         align-items: center;
         gap: 24rpx;
-        padding: 26rpx 8rpx;
-        border-radius: 16rpx;
+        padding: 28rpx;
+        margin-bottom: 20rpx;
+        border-radius: 24rpx;
         border: 2rpx solid transparent;
+        background: var(--hy-background--container, #ffffff);
+        box-shadow: 0 6rpx 20rpx rgba(30, 60, 120, 0.05);
         transition:
             background-color 0.25s ease,
-            border-color 0.25s ease;
+            border-color 0.25s ease,
+            transform 0.25s ease;
         animation: school-fade-up 0.45s ease-out both;
 
-        & + & {
-            border-top: 1rpx solid var(--hy-text-color--4, rgba(0, 0, 0, 0.1));
-        }
-
-        /* 选中：主题色描边 + 浅底（覆盖分隔线） */
+        /* 选中：主色描边 + 浅底 */
         &--active {
             border-color: var(--primary, #3d7eff);
-            background: rgba(61, 126, 255, 0.08);
-
-            & + .school__item {
-                border-top: 1rpx solid transparent;
-            }
+            background: rgba(61, 126, 255, 0.07);
+            box-shadow: 0 8rpx 24rpx rgba(61, 126, 255, 0.14);
         }
 
         /* 按压反馈 */
         &--hover {
-            background: var(--primary-light-2, rgba(61, 126, 255, 0.15));
+            background: var(--primary-light-2, rgba(61, 126, 255, 0.12));
+            transform: scale(0.985);
         }
+    }
+
+    /* 首字渐变方块（品牌统一） */
+    &__avatar {
+        width: 84rpx;
+        height: 84rpx;
+        border-radius: 20rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        background: linear-gradient(
+            135deg,
+            var(--primary, #3d7eff) 0%,
+            #2d6bf0 100%
+        );
+        box-shadow: 0 6rpx 14rpx rgba(61, 126, 255, 0.24);
+
+        &--active {
+            background: linear-gradient(135deg, #ffffff 0%, #e8f1ff 100%);
+
+            .school__avatar-text {
+                color: var(--primary, #3d7eff);
+            }
+        }
+    }
+
+    &__avatar-text {
+        font-size: 36rpx;
+        font-weight: 700;
+        color: #ffffff;
     }
 
     &__item-info {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 6rpx;
+        gap: 8rpx;
         min-width: 0;
     }
 
     &__item-name {
         font-size: 30rpx;
-        font-weight: 500;
+        font-weight: 600;
         color: var(--hy-text-color, #000000);
         overflow: hidden;
         text-overflow: ellipsis;
@@ -367,6 +481,17 @@ const onConfirm = async () => {
     &__item-sub {
         font-size: 22rpx;
         color: var(--hy-text-color--3, #929295);
+    }
+
+    /* 当前胶囊 */
+    &__badge {
+        flex-shrink: 0;
+        padding: 6rpx 18rpx;
+        border-radius: 999rpx;
+        background: var(--primary, #3d7eff);
+        color: #ffffff;
+        font-size: 22rpx;
+        font-weight: 600;
     }
 
     /* 底部说明 */
@@ -401,6 +526,84 @@ const onConfirm = async () => {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* 确认弹层 */
+.school__modal-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.school__modal {
+    width: 560rpx;
+    background: #fff;
+    border-radius: 24rpx;
+    padding: 44rpx 36rpx 32rpx;
+    display: flex;
+    flex-direction: column;
+    animation: school-modal-in 0.25s ease-out both;
+}
+
+.school__modal-title {
+    font-size: 32rpx;
+    font-weight: 600;
+    color: #1f2329;
+    text-align: center;
+}
+
+.school__modal-content {
+    margin-top: 20rpx;
+    font-size: 26rpx;
+    line-height: 1.7;
+    color: #46464a;
+    text-align: center;
+}
+
+.school__modal-btns {
+    display: flex;
+    gap: 20rpx;
+    margin-top: 36rpx;
+}
+
+.school__modal-btn {
+    flex: 1;
+    height: 84rpx;
+    border-radius: 42rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28rpx;
+    font-weight: 500;
+
+    &--cancel {
+        background: #f2f3f5;
+        color: #646a73;
+    }
+
+    &--confirm {
+        background: linear-gradient(135deg, #3d7eff 0%, #6fa0ff 100%);
+        color: #fff;
+        box-shadow: 0 8rpx 20rpx rgba(61, 126, 255, 0.3);
+    }
+}
+
+@keyframes school-modal-in {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(24rpx);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }
 </style>

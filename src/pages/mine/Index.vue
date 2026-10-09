@@ -3,7 +3,7 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import { getFeeSummaryApi, updateProfileApi } from '@/api';
 import { uploadImage } from '@/utils/upload';
 import { useUserStore } from '@/store';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { onShow } from '@dcloudio/uni-app';
 import { computed, ref } from 'vue';
 
@@ -20,6 +20,7 @@ const unpaidAmount = ref(0);
 const unpaidCount = ref(0);
 
 onShow(() => {
+<<<<<<< HEAD
     if (!userStore.hasLogin) {
         uni.reLaunch({ url: '/pages/login/Index' });
         return;
@@ -29,6 +30,12 @@ onShow(() => {
         return;
     }
     syncNicknameDraft();
+=======
+    if (!userStore.hasLogin) return;
+    // 未选学校时不强制跳转（避免返回死循环），我的页可正常使用；
+    // 费用汇总依赖学校维度，未选学校时跳过加载
+    if (!userStore.hasSchool) return;
+>>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
     loadFee();
 });
 
@@ -45,6 +52,31 @@ const goFee = () => uni.navigateTo({ url: '/pages/fee/Index' });
 const goSecurity = () => uni.navigateTo({ url: '/pages/security/Index' });
 const goRecords = () => uni.navigateTo({ url: '/pages/complaint/Record' });
 const goSchool = () => uni.navigateTo({ url: '/pages/school/Index' });
+const goProfile = () => uni.navigateTo({ url: '/pages/profile/Index' });
+const goLogin = () => uni.navigateTo({ url: '/pages/login/Index' });
+
+/**
+ * 需登录的菜单项：未登录时弹确认框引导登录（用原生 showModal —— hy-modal 在小程序端不渲染）
+ * 列表本身始终展示（与主流小程序一致：不登录也能看到完整菜单，用到时再引导登录）
+ */
+const requireLogin = (action: () => void) => {
+    if (userStore.hasLogin) {
+        action();
+        return;
+    }
+    uni.showModal({
+        title: '需要登录',
+        content: '该功能需要登录后使用，是否前往登录？',
+        confirmText: '去登录',
+        cancelText: '再逛逛',
+        success: res => {
+            if (res.confirm) goLogin();
+        },
+    });
+};
+
+/** 顶部头像 / 昵称 / 设置图标：已登录进资料页，未登录进登录页 */
+const onUserTap = () => (userStore.hasLogin ? goProfile() : goLogin());
 
 /** 直接编辑资料：点头像用微信官方 open-type 换头像；昵称点击进入编辑态 */
 const nicknameEditing = ref(false);
@@ -138,10 +170,12 @@ const logout = () => {
 </script>
 
 <template>
-    <the-root-pages height="100vh">
+    <the-root-pages>
         <view class="mine">
-            <!-- 用户信息 -->
+            <!-- 用户信息（未登录也保持常规菜单样式：默认头像 + 登录/注册入口，
+                 不再用整块登录面板占满页面——参考主流小程序「我的」页） -->
             <view class="mine__user">
+<<<<<<< HEAD
                 <!-- 微信官方头像填写：open-type=chooseAvatar -->
                 <button
                     class="mine__avatar-btn"
@@ -197,13 +231,48 @@ const logout = () => {
                                 />
                             </view>
                         </template>
+=======
+                <view class="mine__user-decor"></view>
+                <view class="mine__user-decor mine__user-decor--2"></view>
+                <!-- 头像：已登录且已设置头像显示图片；否则显示默认灰人形图标。
+                     未登录点击直接进登录页 -->
+                <image
+                    v-if="userStore.hasLogin && userStore.userInfo?.avatar"
+                    :src="userStore.userInfo.avatar"
+                    class="mine__avatar"
+                    mode="aspectFill"
+                    @tap="onUserTap"
+                />
+                <image
+                    v-else
+                    src="/static/icons/user.png"
+                    class="mine__avatar"
+                    mode="aspectFill"
+                    @tap="onUserTap"
+                />
+                <view class="mine__user-info">
+                    <view
+                        v-if="userStore.hasLogin"
+                        class="mine__nickname"
+                        @tap="onUserTap"
+                    >
+                        {{ userStore.userInfo?.nickname || '校园用户' }}
+>>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
                         <hy-tag label="已认证" type="success" size="mini" />
+                    </view>
+                    <view v-else class="mine__nickname" @tap="onUserTap">
+                        登录 / 注册
+                        <hy-icon
+                            name="/static/icons/right.png"
+                            color="#ffffff"
+                            :size="14"
+                        />
                     </view>
                     <view class="mine__sub" @tap="goSchool">
                         <hy-icon
-                            name="map"
+                            name="/static/icons/school-cap.png"
                             color="var(--hy-text-color--3, #929295)"
-                            :size="13"
+                            :size="16"
                         />
                         <text
                             >{{
@@ -211,7 +280,7 @@ const logout = () => {
                             }}（点击切换）</text
                         >
                     </view>
-                    <view class="mine__stats">
+                    <view v-if="userStore.hasLogin" class="mine__stats">
                         <text
                             >信用分
                             {{ userStore.userInfo?.creditScore ?? '-' }}</text
@@ -222,13 +291,26 @@ const logout = () => {
                             {{ userStore.userInfo?.successCount ?? 0 }} 单</text
                         >
                     </view>
+                    <view v-else class="mine__stats"
+                        >登录后可发布商品、管理订单</view
+                    >
+                </view>
+                <view class="mine__user-edit" @tap="onUserTap">
+                    <hy-icon
+                        name="/static/icons/setting-white.png"
+                        :size="18"
+                    />
                 </view>
             </view>
 
             <!-- 欠费提示 -->
-            <view v-if="unpaidAmount > 0" class="mine__fee-warn" @tap="goFee">
+            <view
+                v-if="userStore.hasLogin && unpaidAmount > 0"
+                class="mine__fee-warn"
+                @tap="goFee"
+            >
                 <hy-icon
-                    name="warning-fill"
+                    name="/static/icons/warning.png"
                     color="var(--hy-error, #f56c6c)"
                     :size="16"
                 />
@@ -241,138 +323,151 @@ const logout = () => {
                 <text class="mine__fee-link">去处理 ›</text>
             </view>
 
-            <!-- 交易入口 -->
-            <hy-cell :border="false" custom-class="mine__group">
-                <hy-cell-item
-                    title="我买到的"
-                    sub="购买申请与订单进度"
-                    clickable
-                    is-right-icon
-                    @click="goOrders"
-                >
-                    <template #icon>
-                        <view class="mine__icon"
-                            ><hy-icon
-                                name="shopping-cart"
-                                color="var(--primary, #3d7eff)"
-                                :size="20"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-                <hy-cell-item
-                    title="我卖出的"
-                    sub="待确认申请与手续费账单"
-                    clickable
-                    is-right-icon
-                    @click="goOrders"
-                >
-                    <template #icon>
-                        <view class="mine__icon mine__icon--warn"
-                            ><hy-icon
-                                name="shop"
-                                color="var(--warning, #f9ae3d)"
-                                :size="20"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-                <hy-cell-item
-                    title="我发布的"
-                    sub="在售 / 交易中 / 已售出（置灰）"
-                    clickable
-                    is-right-icon
-                    @click="goMyGoods"
-                >
-                    <template #icon>
-                        <view class="mine__icon mine__icon--green"
-                            ><hy-icon
-                                name="picture"
-                                color="var(--hy-success, #07c160)"
-                                :size="20"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-                <hy-cell-item
-                    title="发布商品"
-                    sub="第一笔成功交易免手续费"
-                    clickable
-                    is-right-icon
-                    @click="goPublish"
-                >
-                    <template #icon>
-                        <view class="mine__icon"
-                            ><hy-icon
-                                name="plus"
-                                color="var(--primary, #3d7eff)"
-                                :size="20"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-            </hy-cell>
+            <!-- 交易入口（未登录也展示，点击时引导登录） -->
+            <view class="mine__group-title">我的交易</view>
+            <view class="mine__group">
+                <view class="mine__item" @tap="requireLogin(goOrders)">
+                    <view class="mine__item-icon"
+                        ><hy-icon
+                            name="/static/icons/cart.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">我买到的</text>
+                        <text class="mine__item-sub">购买申请与订单进度</text>
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+                <view class="mine__item" @tap="requireLogin(goOrders)">
+                    <view class="mine__item-icon mine__item-icon--warn"
+                        ><hy-icon
+                            name="/static/icons/sell.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">我卖出的</text>
+                        <text class="mine__item-sub"
+                            >待确认申请与手续费账单</text
+                        >
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+                <view class="mine__item" @tap="requireLogin(goMyGoods)">
+                    <view class="mine__item-icon mine__item-icon--green"
+                        ><hy-icon
+                            name="/static/icons/picture.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">我发布的</text>
+                        <text class="mine__item-sub"
+                            >在售 / 交易中 / 已售出（置灰）</text
+                        >
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+                <view class="mine__item" @tap="requireLogin(goPublish)">
+                    <view class="mine__item-icon"
+                        ><hy-icon
+                            name="/static/icons/plus.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">发布商品</text>
+                        <text class="mine__item-sub"
+                            >第一笔成功交易免手续费</text
+                        >
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+            </view>
 
             <!-- 服务入口 -->
-            <hy-cell :border="false" custom-class="mine__group">
-                <hy-cell-item
-                    title="手续费账单"
-                    clickable
-                    is-right-icon
-                    @click="goFee"
-                >
-                    <template #icon>
-                        <view class="mine__icon mine__icon--red"
-                            ><hy-icon
-                                name="order"
-                                color="var(--hy-error, #f56c6c)"
-                                :size="20"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                    <template #value>
-                        <text v-if="unpaidAmount > 0" class="mine__fee-amount"
-                            >待缴 ￥{{ unpaidAmount }}</text
+            <view class="mine__group-title">更多服务</view>
+            <view class="mine__group">
+                <view class="mine__item" @tap="requireLogin(goFee)">
+                    <view class="mine__item-icon mine__item-icon--red"
+                        ><hy-icon
+                            name="/static/icons/bill.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">手续费账单</text>
+                    </view>
+                    <text v-if="unpaidAmount > 0" class="mine__fee-amount"
+                        >待缴 ￥{{ unpaidAmount }}</text
+                    >
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+                <view class="mine__item" @tap="goSecurity">
+                    <view class="mine__item-icon mine__item-icon--green"
+                        ><hy-icon
+                            name="/static/icons/shield.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">安全中心</text>
+                        <text class="mine__item-sub"
+                            >交易守则 · 举报 · 紧急求助</text
                         >
-                    </template>
-                </hy-cell-item>
-                <hy-cell-item
-                    title="安全中心"
-                    sub="交易守则 · 举报 · 紧急求助"
-                    clickable
-                    is-right-icon
-                    @click="goSecurity"
-                >
-                    <template #icon>
-                        <view class="mine__icon mine__icon--green"
-                            ><hy-icon
-                                name="security"
-                                color="var(--hy-success, #07c160)"
-                                :size="20"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-                <hy-cell-item
-                    title="投诉与申诉"
-                    sub="投诉记录 · 申诉进度 · 处理结果"
-                    clickable
-                    is-right-icon
-                    @click="goRecords"
-                >
-                    <template #icon>
-                        <view class="mine__icon mine__icon--red"
-                            ><hy-icon
-                                name="warning"
-                                color="var(--hy-error, #f56c6c)"
-                                :size="20"
-                            ></hy-icon
-                        ></view>
-                    </template>
-                </hy-cell-item>
-            </hy-cell>
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+                <view class="mine__item" @tap="requireLogin(goRecords)">
+                    <view class="mine__item-icon mine__item-icon--red"
+                        ><hy-icon
+                            name="/static/icons/complaint.png"
+                            :size="22"
+                        ></hy-icon
+                    ></view>
+                    <view class="mine__item-body">
+                        <text class="mine__item-title">投诉与申诉</text>
+                        <text class="mine__item-sub"
+                            >投诉记录 · 申诉进度 · 处理结果</text
+                        >
+                    </view>
+                    <hy-icon
+                        name="/static/icons/right.png"
+                        color="#c8c9cc"
+                        :size="14"
+                    ></hy-icon>
+                </view>
+            </view>
 
-            <view class="mine__logout">
+            <!-- 仅已登录显示「退出登录」；未登录不显示底部按钮 ——
+                 顶部卡片的「登录 / 注册」入口已承担引导，底部再放一个主按钮
+                 既重复又会占据页面底部空间（与主流小程序一致） -->
+            <view v-if="userStore.hasLogin" class="mine__logout">
                 <hy-button
                     text="退出登录"
                     plain
@@ -389,11 +484,29 @@ const logout = () => {
 <style lang="scss" scoped>
 @use '../../styles/design.scss' as *;
 .mine {
-    min-height: 100vh;
-    padding: 24rpx;
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
+    padding: 24rpx;
+    padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+
+    /* 高度链：小程序 tabBar 页 provider 高度 auto（min-height:100%），
+       子级任何百分比高度（height/min-height:100%）都会解析为 auto，
+       导致 logout margin-top:auto 无剩余空间（底部 110px 空白）；
+       改用视口计算：100vh 含 tabBar，减 tabBar 实际高（--window-bottom，
+       uni 在 MP 端注入，含安全区，比 100rpx+safe 估算精确）= 可视区高度，
+       overflow-y 兜底内容超高时内部滚动（page 已禁页面滚动） */
+    /* #ifdef MP-WEIXIN */
+    height: calc(100vh - var(--window-bottom, 0px));
+    overflow-y: auto;
+    /* #endif */
+    /* #ifdef H5 */
+    min-height: calc(100vh - var(--window-bottom, 0px));
+    /* #endif */
 
     &__user {
+        flex-shrink: 0;
+        position: relative;
         display: flex;
         align-items: center;
         gap: 24rpx;
@@ -401,6 +514,59 @@ const logout = () => {
         padding: 36rpx 32rpx;
         box-shadow: 0 12rpx 32rpx rgba(30, 60, 120, 0.18);
         animation: mine-fade-up 0.45s ease-out both;
+        overflow: hidden;
+    }
+
+    &__avatar {
+        flex-shrink: 0;
+        width: 112rpx;
+        height: 112rpx;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
+    }
+
+    /* 未登录不再用整块登录面板（__login-guide 已移除），
+       与已登录共用同一张用户卡片，保持常规菜单样式 */
+
+    &__user-decor {
+        position: absolute;
+        width: 240rpx;
+        height: 240rpx;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        right: -60rpx;
+        top: -100rpx;
+
+        &--2 {
+            width: 120rpx;
+            height: 120rpx;
+            right: 70rpx;
+            bottom: -70rpx;
+            top: auto;
+            background: rgba(255, 255, 255, 0.06);
+        }
+    }
+
+    &__user-edit {
+        position: relative;
+        z-index: 1;
+        width: 56rpx;
+        height: 56rpx;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.16);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    &__group-title {
+        flex-shrink: 0;
+        font-size: 26rpx;
+        font-weight: 600;
+        color: var(--hy-text-color--3, #929295);
+        margin: 20rpx 8rpx 4rpx;
     }
 
     &__user-info {
@@ -485,6 +651,7 @@ const logout = () => {
     }
 
     &__fee-warn {
+        flex-shrink: 0;
         display: flex;
         align-items: center;
         gap: 10rpx;
@@ -510,36 +677,78 @@ const logout = () => {
     }
 
     &__group {
+        flex-shrink: 0;
         @include hy-card(20rpx);
         overflow: hidden;
-        margin-top: 24rpx;
+        margin-top: 12rpx;
     }
 
-    &__icon {
-        @include hy-icon-badge(60rpx, 16rpx);
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: 20rpx;
+        padding: 26rpx 28rpx;
+        position: relative;
+
+        & + & {
+            border-top: 1rpx solid #f2f3f5;
+        }
+    }
+
+    &__item-icon {
+        flex-shrink: 0;
+        width: 72rpx;
+        height: 72rpx;
+        border-radius: 18rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(61, 126, 255, 0.1);
 
         &--warn {
-            background: var(--warning-light, rgba(249, 174, 61, 0.1));
+            background: rgba(249, 174, 61, 0.12);
         }
 
         &--green {
-            background: rgba(7, 193, 96, 0.1);
+            background: rgba(7, 193, 96, 0.12);
         }
 
         &--red {
-            background: var(--hy-error--light, rgba(245, 108, 108, 0.1));
+            background: rgba(245, 108, 108, 0.12);
         }
+    }
+
+    &__item-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4rpx;
+        min-height: 0;
+    }
+
+    &__item-title {
+        font-size: 28rpx;
+        font-weight: 500;
+        color: #1f2329;
+        line-height: 1.4;
+    }
+
+    &__item-sub {
+        font-size: 22rpx;
+        color: #929295;
+        line-height: 1.4;
     }
 
     &__fee-amount {
         font-size: 24rpx;
         color: var(--hy-error, #f56c6c);
         font-weight: 600;
+        flex-shrink: 0;
     }
 
     &__logout {
-        @include hy-safe-bottom(48rpx);
-        margin-top: 24rpx;
+        margin-top: auto;
+        padding-top: 24rpx;
     }
 }
 

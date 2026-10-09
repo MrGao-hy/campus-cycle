@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import { getComplaintDetailApi, submitAppealApi } from '@/api';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { fmtFullTime } from '@/utils/format';
 import type { ComplaintRow } from '@/types';
 import type {
@@ -131,9 +131,8 @@ const submit = async () => {
                         >
                             <view class="apl__upload-add-icon">
                                 <hy-icon
-                                    name="camera"
-                                    color="var(--primary, #3d7eff)"
-                                    :size="26"
+                                    name="/static/icons/camera.png"
+ :size="26"
                                 ></hy-icon>
                             </view>
                             <text class="apl__upload-add-text"

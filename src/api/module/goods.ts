@@ -1,4 +1,5 @@
 import http from '@/api/request';
+<<<<<<< HEAD
 import type {
     GoodsReview,
     IGoods,
@@ -6,17 +7,37 @@ import type {
     UserProfile,
     ISearchGoods,
 } from '@/types';
+=======
+import type { Goods, GoodsReview, PageResult, UserProfile } from '@/types';
+
+/** 首页分页每页条数（后端 Nacos campus.goods.page-size 默认 20，保持一致） */
+export const GOODS_PAGE_SIZE = 20;
+>>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
 
 export interface IGoodsDetail extends IGoods {
     seller: UserProfile;
     reviews: GoodsReview[];
 }
 
+<<<<<<< HEAD
 /** 本校商品列表（已售出的置灰展示、不隐藏） */
 export const getGoodsListApi = (
     params: ISearchGoods
 ): Promise<IPage<IGoods>> => {
     return http.get('/goods/list', params);
+=======
+/** 本校商品列表（分页；已售出的置灰展示、不隐藏） */
+export const getGoodsListApi = (params: {
+    schoolId: string;
+    keyword?: string;
+    category?: string;
+    /** 页码，从 1 开始 */
+    pageNum?: number;
+    /** 每页条数，传 0/缺省时后端取 Nacos 中的 campus.goods.page-size */
+    pageSize?: number;
+}): Promise<PageResult<Goods>> => {
+    return http.get<PageResult<Goods>>('/goods/list', params);
+>>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
 };
 
 /** 商品详情（含卖家信息与评价） */

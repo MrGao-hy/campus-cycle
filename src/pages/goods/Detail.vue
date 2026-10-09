@@ -3,7 +3,12 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import SafetyTips from '@/components/SafetyTips.vue';
 import { getGoodsDetailApi, startConversationApi } from '@/api';
 import { useUserStore } from '@/store';
+<<<<<<< HEAD
 import { useToast, useMessage, type SwiperVo } from '@hy-app/ui';
+=======
+import { type SwiperVo } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
+>>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
 import { fmtTime } from '@/utils/format';
 import { GOODS_STATUS_TEXT } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
@@ -117,6 +122,12 @@ const previewImages = (index: number) => {
     if (!detail.value) return;
     uni.previewImage({ urls: detail.value.images, current: index });
 };
+
+/** 查看卖家主页（自己不跳） */
+const goSellerProfile = () => {
+    if (!detail.value || isMine.value) return;
+    uni.navigateTo({ url: `/pages/user/Detail?id=${detail.value.sellerId}` });
+};
 </script>
 
 <template>
@@ -176,8 +187,8 @@ const previewImages = (index: number) => {
                     </view>
                 </view>
 
-                <!-- 卖家信息 -->
-                <view class="detail__seller">
+                <!-- 卖家信息（点击查看用户主页） -->
+                <view class="detail__seller" @tap="goSellerProfile">
                     <hy-avatar
                         :text="detail.seller.nickname.slice(0, 1)"
                         random-bg-color

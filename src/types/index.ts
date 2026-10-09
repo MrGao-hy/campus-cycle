@@ -24,10 +24,10 @@ export const CONTACT_ITEMS: Array<{
     label: string;
     icon: string;
 }> = [
-    { key: 'phone', label: '电话', icon: 'telephone' },
-    { key: 'qq', label: 'QQ', icon: 'comment' },
-    { key: 'wechat', label: '微信', icon: 'message' },
-    { key: 'email', label: '邮箱', icon: 'send' },
+    { key: 'phone', label: '电话', icon: '/static/icons/telephone.png' },
+    { key: 'qq', label: 'QQ', icon: '/static/icons/comment.png' },
+    { key: 'wechat', label: '微信', icon: '/static/icons/message.png' },
+    { key: 'email', label: '邮箱', icon: '/static/icons/send.png' },
 ];
 
 /** 用户 */
@@ -36,6 +36,8 @@ export interface UserProfile {
     nickname: string;
     avatar?: string;
     schoolId: string;
+    /** 学校名称（后端联查填充） */
+    schoolName?: string;
     /** 信用分 */
     creditScore: number;
     /** 成功交易笔数（首笔免手续费判断依据） */
@@ -43,6 +45,19 @@ export interface UserProfile {
     contact: ContactInfo;
 }
 
+<<<<<<< HEAD
+=======
+/** 用户主页（资料 + 在售商品 + 收到的评价） */
+export interface UserDetail {
+    profile: UserProfile;
+    onSaleGoods: Goods[];
+    reviews: GoodsReview[];
+}
+
+/** 商品状态 */
+export type GoodsStatus = 'ON_SALE' | 'LOCKED' | 'SOLD';
+
+>>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
 export const GOODS_STATUS_TEXT: Record<GoodsStatus, string> = {
     ON_SALE: '在售',
     LOCKED: '交易进行中',
@@ -50,6 +65,40 @@ export const GOODS_STATUS_TEXT: Record<GoodsStatus, string> = {
     OFF_SHELF: '已下架',
 };
 
+<<<<<<< HEAD
+=======
+/** 商品 */
+export interface Goods {
+    id: string;
+    title: string;
+    price: number;
+    originalPrice?: number;
+    images: string[];
+    category: string;
+    /** 成色 */
+    condition: string;
+    description: string;
+    status: GoodsStatus;
+    sellerId: string;
+    schoolId: string;
+    publishTime: number;
+    views: number;
+    wantCount: number;
+}
+
+/** 统一分页结果（与后端 PageResult 对齐） */
+export interface PageResult<T> {
+    list: T[];
+    total: number;
+    /** 当前页码（从 1 开始） */
+    pageNum: number;
+    pageSize: number;
+    pages: number;
+    /** 是否还有下一页（触底加载据此判断） */
+    hasMore: boolean;
+}
+
+>>>>>>> 2562045febb196af83898a277883bc08a96b5b9b
 /** 商品评价 */
 export interface GoodsReview {
     id: string;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import { applyBuyApi, getGoodsDetailApi } from '@/api';
-import { useToast } from '@hy-app/ui';
+import { useToast } from '@/utils/toast';
 import { SAFETY_PROMISES } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
 import { ensureLoginAndSchool } from '@/utils/guard';
@@ -86,9 +86,8 @@ const submit = async () => {
                 <view class="apply__rule">
                     <view class="apply__rule-icon">
                         <hy-icon
-                            name="order"
-                            color="var(--primary, #3d7eff)"
-                            :size="16"
+                            name="/static/icons/order.png"
+ :size="16"
                         />
                     </view>
                     <text
@@ -98,7 +97,7 @@ const submit = async () => {
                 <view class="apply__rule">
                     <view class="apply__rule-icon">
                         <hy-icon
-                            name="telephone"
+                            name="/static/icons/telephone.png"
                             color="var(--primary, #3d7eff)"
                             :size="16"
                         />
@@ -108,9 +107,8 @@ const submit = async () => {
                 <view class="apply__rule">
                     <view class="apply__rule-icon apply__rule-icon--warn">
                         <hy-icon
-                            name="notice"
-                            color="var(--warning, #f9ae3d)"
-                            :size="16"
+                            name="/static/icons/order.png"
+ :size="16"
                         />
                     </view>
                     <text>平台不代收货款，请当面验货后自行付款</text>
@@ -118,7 +116,7 @@ const submit = async () => {
                 <view class="apply__rule">
                     <view class="apply__rule-icon">
                         <hy-icon
-                            name="time"
+                            name="/static/icons/time.png"
                             color="var(--primary, #3d7eff)"
                             :size="16"
                         />
@@ -163,7 +161,7 @@ const submit = async () => {
                 </hy-checkbox-group>
                 <view class="apply__promise-tip">
                     <hy-icon
-                        name="warning-fill"
+                        name="/static/icons/warning.png"
                         color="var(--warning, #f9ae3d)"
                         :size="14"
                     />
