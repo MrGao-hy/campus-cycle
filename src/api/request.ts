@@ -1,4 +1,4 @@
-import { Http } from '@hy-app/ui';
+import { Http } from '@/uni_modules/hy-app-ui';
 import { apiConfig } from '@/config/env';
 
 const http = new Http();

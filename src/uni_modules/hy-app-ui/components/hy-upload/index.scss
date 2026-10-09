@@ -1,0 +1,150 @@
+@use "../../libs/css/mixin" as *;
+@use "../../libs/css/theme" as *;
+
+$hy-upload-image-width: 80px !default;
+$hy-upload-text-font-size: 11px !default;
+
+
+@include b(upload) {
+  @include flex(column);
+  flex: 1;
+
+  @include e(wrap) {
+    @include flex;
+    flex-wrap: wrap;
+    flex: 1;
+
+    @include m(preview) {
+      border-radius: 2px;
+      margin: 0 8px 8px 0;
+      position: relative;
+      overflow: hidden;
+      @include flex;
+
+      @include e(image) {
+        width: $hy-upload-image-width;
+        height: $hy-upload-image-width;
+      }
+
+      @include e(other) {
+        width: $hy-upload-image-width;
+        height: $hy-upload-image-width;
+        background-color: rgb(242, 242, 242);
+        flex: 1;
+        @include flex(column);
+        justify-content: center;
+        align-items: center;
+
+        @include m(text) {
+          font-size: $hy-upload-text-font-size;
+          color: $hy-text-color--grey;
+          margin-top: 2px;
+        }
+      }
+
+      /* 进度条样式 */
+      @include e(progress) {
+        width: 100%;
+        height: 100%;
+        backdrop-filter: blur(6px);
+        position: absolute;
+        z-index: 10;
+        display: grid;
+        place-content: center;
+
+        @include m(number) {
+          width: 70px;
+          margin-bottom: 6rpx;
+        }
+
+        @include m(value) {
+          font-size: 20rpx;
+          color: $hy-primary;
+        }
+      }
+    }
+  }
+
+  @include e(deletable) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: rgb(55, 55, 55);
+    height: 14px;
+    width: 14px;
+    @include flex;
+    border-bottom-left-radius: 100px;
+    align-items: center;
+    justify-content: center;
+    z-index: 9;
+
+    @include m(icon) {
+      position: absolute;
+      transform: scale(0.7);
+      top: 0;
+      right: 0;
+    }
+  }
+
+  @include e(status) {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    @include flex;
+    /* #ifndef APP-NVUE */
+    border-style: solid;
+    border-width: 9px;
+    align-items: center;
+    justify-content: center;
+    /* #endif */
+  }
+
+  @include e(success) {
+    border-color: transparent $hy-success $hy-success transparent;
+
+    @include m(icon) {
+      /* #ifndef APP-NVUE */
+      position: absolute;
+      transform: scale(0.7);
+      bottom: -10px;
+      right: -10px;
+      /* #endif */
+      /* #ifdef APP-NVUE */
+      width: 16px;
+      height: 16px;
+      /* #endif */
+    }
+  }
+
+  @include e(error) {
+    border-color: transparent $hy-error $hy-error transparent;
+  }
+
+  @include e(button) {
+    @include flex(column);
+    align-items: center;
+    justify-content: center;
+    width: $hy-upload-image-width;
+    height: $hy-upload-image-width;
+    background-color: $hy-background--empty;
+    border-radius: 2px;
+    margin: 0 8px 8px 0;
+    /* #ifndef APP-NVUE */
+    box-sizing: border-box;
+    /* #endif */
+
+    @include m(text) {
+      font-size: $hy-upload-text-font-size;
+      color: $hy-text-color--grey;
+      margin-top: 2px;
+    }
+
+    @include m(hover) {
+      background-color: $hy-background--hover;
+    }
+
+    @include m(disabled) {
+      opacity: 0.5;
+    }
+  }
+}

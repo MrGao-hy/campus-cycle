@@ -1,0 +1,85 @@
+@use "../../libs/css/theme" as *;
+@use "../../libs/css/mixin" as *;
+
+$hy-tooltip--z-index: 998;
+$hy-tooltip--background-color: rgb(50, 50, 51);
+
+@include b(tooltip) {
+  position: relative;
+  @include flex;
+
+  @include squareArrow(6px, $hy-tooltip--background-color, -1, $hy-shadow-base);
+
+  @include edeep(popup) {
+    position: absolute;
+    box-sizing: border-box;
+    background-clip: padding-box;
+    text-align: center;
+    min-height: 36px;
+    transition: opacity 0.2s;
+    box-shadow: $hy-shadow-base;
+    border-radius: $hy-radius-sm;
+  }
+
+
+  @include e(hidden) {
+    left: -220vw;
+    visibility: hidden;
+  }
+
+  @include e(container) {
+    position: relative;
+    border-radius: $hy-radius-sm;
+  }
+
+  @include e(inner) {
+    position: relative;
+    padding: $hy-border-margin-padding-base;
+    line-height: 22px;
+    z-index: $hy-tooltip--z-index;
+    border-radius: $hy-radius-sm;
+    box-sizing: content-box;
+    width: 200px;
+  }
+
+  @include e(content) {
+    //@include flex;
+    //justify-content: center;
+    /* #ifndef APP-NVUE */
+    white-space: nowrap;
+    /* #endif */
+  }
+
+  @include e(container) {
+    @include flex;
+    justify-content: center;
+
+    @include m(list) {
+      background-color: $hy-tooltip--background-color;
+      position: relative;
+      flex: 1;
+      border-radius: $hy-radius-sm;
+      padding: 0;
+      @include flex(row);
+      align-items: center;
+
+      @include e(btn) {
+        padding: $hy-border-margin-padding-base;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        @include m(hover) {
+          background-color: $hy-background--hover;
+        }
+
+        @include m(text) {
+          font-size: 13px;
+          color: #ffffff;
+          white-space: nowrap;
+        }
+      }
+    }
+
+  }
+}

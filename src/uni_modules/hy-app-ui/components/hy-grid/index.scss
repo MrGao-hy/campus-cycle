@@ -1,0 +1,50 @@
+@use "../../libs/css/mixin" as *;
+@use "../../libs/css/theme" as *;
+
+@include b(grid) {
+  justify-content: center;
+  @include flex;
+  flex-wrap: wrap;
+  align-items: center;
+  // 在uni-app中应尽量避免使用flex布局以外的方式,因为nvue/uvue等方案都支持flex布局
+  // 这里使用grid布局使用为目前20240409uni-app在抖音小程序开启virtualHost时有bug，存在事件失效问题。
+  /* #ifndef APP-NVUE */
+  display: grid;
+  /* #endif */
+
+  @include e(item) {
+    justify-content: center;
+    position: relative;
+    flex-direction: column;
+    // overflow: hidden;
+    /* #ifndef APP-NVUE */
+    box-sizing: border-box;
+    display: flex;
+    /* #endif */
+
+    /* #ifdef MP */
+    float: left;
+    /* #endif */
+
+    // 只有当有 border 类时才显示边框
+    @include m(border) {
+      // 添加右边框和下边框
+      border-right: $hy-border-line;
+      border-bottom: $hy-border-line;
+  
+      // 最后一列不显示右边框
+      @include e(last-col) {
+        border-right: none;
+      }
+  
+      // 最后一行不显示下边框
+      @include e(last-row) {
+        border-bottom: none;
+      }
+    }
+
+    @include m(hover-class) {
+      opacity: 0.7;
+    }
+  }
+}

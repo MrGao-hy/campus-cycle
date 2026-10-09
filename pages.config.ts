@@ -39,7 +39,9 @@ export default defineUniPages({
     easycom: {
         autoscan: true,
         custom: {
-            '^hy-(.*)': '@hy-app/ui/components/hy-$1/hy-$1.vue',
+            // 本地化后的 uni_modules（node_modules 里的 npm 包编译产物 vendor 路径
+            // 会多一级导致微信端组件加载失败，组件必须放 src/uni_modules）
+            '^hy-(.*)': '@/uni_modules/hy-app-ui/components/hy-$1/hy-$1.vue',
         },
     },
 });

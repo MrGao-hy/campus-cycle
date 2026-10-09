@@ -7,7 +7,7 @@ import type { ComplaintRow } from '@/types';
 import type {
     FileVo,
     UploadFileParams,
-} from '@hy-app/ui/components/hy-upload/typing';
+} from '@/uni_modules/hy-app-ui/components/hy-upload/typing';
 import { onLoad } from '@dcloudio/uni-app';
 import { ref } from 'vue';
 

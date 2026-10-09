@@ -1,0 +1,28 @@
+@use "../../libs/css/theme" as *;
+@use "../../libs/css/mixin" as *;
+
+@include b(qrcode) {
+  @include e(content) {
+    position: relative;
+
+    @include m(canvas) {
+      position: fixed;
+       top: -99999rpx;
+       left: -99999rpx;
+       z-index: -99999;
+      overflow: hidden;
+    }
+
+    @include m(loading) {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: $hy-background;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+  }
+}

@@ -11,7 +11,7 @@
     "easycom": {
         "autoscan": true,
         "custom": {
-            "^hy-(.*)": "@hy-app/ui/components/hy-$1/hy-$1.vue"
+            "^hy-(.*)": "@/uni_modules/hy-app-ui/components/hy-$1/hy-$1.vue"
         }
     },
     "pages": [

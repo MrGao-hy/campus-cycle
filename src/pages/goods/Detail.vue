@@ -3,7 +3,7 @@ import TheRootPages from '@/components/TheRootPages.vue';
 import SafetyTips from '@/components/SafetyTips.vue';
 import { getGoodsDetailApi, startConversationApi } from '@/api';
 import { useUserStore } from '@/store';
-import { useMessage, type SwiperVo } from '@hy-app/ui';
+import { useMessage, type SwiperVo } from '@/uni_modules/hy-app-ui';
 import { useToast } from '@/utils/toast';
 import { fmtTime } from '@/utils/format';
 import { GOODS_STATUS_TEXT } from '@/types';

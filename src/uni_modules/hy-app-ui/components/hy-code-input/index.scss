@@ -1,0 +1,138 @@
+@use "../../libs/css/theme" as *;
+@use "../../libs/css/mixin" as *;
+
+@include b(code-input) {
+  @include flex;
+  position: relative;
+  overflow: hidden;
+
+  @include m(item) {
+    @include flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+
+    @include e(text) {
+      font-size: 15px;
+      color: $hy-icon-color;
+    }
+
+    @include e(dot) {
+      width: 7px;
+      height: 7px;
+      border-radius: 100px;
+      background-color: $hy-icon-color;
+    }
+
+    /* 无边框 */
+    @include e(no) {
+      background-color: $hy-background--track;
+      border-radius: $hy-radius-sm;
+      @include m(active) {
+        &:before {
+          content: "";
+          background-color: $hy-text-color;
+          width: 2rpx;
+          border-radius: 2px;
+          height: 50%;
+          animation: 1s hy-cursor-flicker--2 infinite;
+        }
+      }
+    }
+
+    /* 方块模式 */
+    @include e(box) {
+      border-color: $hy-border-color--2;
+      @include e(border) {
+        border-color: $hy-primary !important;
+
+        @include b(code-input--item__dot) {
+          background-color: $hy-primary;
+        }
+
+        @include b(code-input--item__text) {
+          color: $hy-primary;
+        }
+      }
+
+      @include e(active) {
+        border-color: $hy-primary !important;
+        animation: 1.5s hy-cursor-flicker infinite;
+      }
+    }
+
+    /* 线条模式 */
+    @include e(line) {
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        border-radius: $hy-radius-semicircle;
+        width: 40px;
+        background-color: $hy-border-color--2;
+      }
+
+      /* 边框 */
+      @include e(border) {
+        @include b(code-input--item__dot) {
+          background-color: $hy-primary;
+        }
+        &::after {
+          content: "";
+          background-color: $hy-primary !important;
+        }
+        text {
+          color: $hy-primary;
+        }
+      }
+
+      /* 状态 */
+      @include e(active) {
+        &::after {
+          content: "";
+          background-color: $hy-primary !important;
+          animation: 1.5s hy-cursor-flicker infinite;
+        }
+      }
+    }
+  }
+
+  @include e(input) {
+    // 之所以需要input输入框，是因为有它才能唤起键盘
+    // 这里将它设置为两倍的屏幕宽度，再将左边的一半移出屏幕，为了不让用户看到输入的内容
+    position: absolute;
+    left: -750rpx;
+    width: 1500rpx;
+    top: 0;
+    background-color: transparent;
+    text-align: left;
+  }
+}
+
+/* #ifndef APP-NVUE */
+@keyframes hy-cursor-flicker--2 {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* #endif */
+
+/* #ifndef APP-NVUE */
+@keyframes hy-cursor-flicker {
+  0% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}
+/* #endif */

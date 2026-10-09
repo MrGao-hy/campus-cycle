@@ -64,7 +64,7 @@ const config: IConfig = {
     },
     // 正式版（上线时替换为已备案域名，并置 wxMock: false）
     release: {
-        baseUrl: 'http://127.0.0.1:9000',
+        baseUrl: 'https://your-domain.com',
         decoBaseUrl: 'https://xryy.hfykcloud.com:99/pamirs',
         wxMock: false,
     },

@@ -1,0 +1,29 @@
+@use "../../libs/css/theme" as *;
+@use "../../libs/css/mixin" as *;
+
+@include b(sticky) {
+  width: 100%;
+  /* 默认 sticky（非 fixed）样式 */
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  box-sizing: border-box;
+
+  @include e(fixed) {
+    /* 在这里加过渡 */
+    transition:
+            box-shadow 0.18s ease,
+            transform 0.18s ease;
+  }
+
+  /* 哨兵样式：不可见但参与布局 */
+  @include e(sentinel) {
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+}

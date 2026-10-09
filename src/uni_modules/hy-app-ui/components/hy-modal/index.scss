@@ -1,0 +1,99 @@
+@use "../../libs/css/theme" as *;
+@use "../../libs/css/mixin" as *;
+
+@include b(modal) {
+  max-width: 650rpx;
+  border-radius: $hy-radius-base;
+  overflow: hidden;
+
+  /* 标题 */
+  @include e(title) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: $hy-font-size-base;
+    font-weight: bold;
+    color: $hy-text-color;
+    text-align: center;
+    padding-top: 25px;
+  }
+
+  /* 内容 */
+  @include e(content) {
+    padding: 20px;
+    @include flex;
+    justify-content: center;
+
+    @include m(text) {
+      font-size: $hy-font-size-sm;
+      color: $hy-text-color--grey;
+      flex: 1;
+      text-align: center;
+    }
+  }
+
+  /* 底部按钮 */
+  @include e(button) {
+    /* 两个按钮的样式 */
+    @include m(exact) {
+      .first {
+        margin-right: $hy-border-margin-padding-lg;
+      }
+      @include m(reverse) {
+        .last {
+          margin-right: $hy-border-margin-padding-lg;
+        }
+      }
+    }
+
+
+    @include m(group) {
+      @include flex;
+      padding: 20px;
+
+      /* 自定义底部按钮 */
+      @include e(confirm-button) {
+        flex-direction: column;
+        padding: 0 25px 15px;
+      }
+
+
+      @include e(wrapper) {
+        flex: 1;
+        @include flex;
+        justify-content: center;
+        align-items: center;
+        height: 43px;
+        border-radius: $hy-radius-semicircle;
+
+        /* 确认 */
+        @include m(confirm) {
+          background-color: $hy-primary;
+          @include e(text) {
+            color: #FFFFFF;
+          }
+        }
+
+        /* 取消 */
+        @include m(cancel) {
+          //background-color: $hy-background--empty;
+          background-color: $hy-background--empty;
+
+          @include e(text) {
+            color: $hy-text-color;
+          }
+        }
+
+        @include m(hover) {
+          opacity: 0.7;
+        }
+
+        @include m(text) {
+          font-size: 16px;
+          text-align: center;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,173 @@
+@use "../../libs/css/theme" as *;
+@use "../../libs/css/mixin" as *;
+
+@include b(steps) {
+  @include flex;
+
+  @include m(column) {
+    flex-direction: column;
+  }
+
+  @include m(row) {
+    flex-direction: row;
+    flex: 1;
+    /* #ifdef MP */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    /* #endif */
+  }
+
+  &-item {
+    flex: 1;
+    @include flex;
+
+    @include m(row) {
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    @include m(column) {
+      position: relative;
+      flex-direction: row;
+      justify-content: flex-start;
+      padding-bottom: 5px;
+    }
+
+    @include e(wrapper) {
+      @include flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      background-color: transparent;
+      border-radius: $hy-radius-semicircle;
+
+      /* 选择 */
+      &.process {
+        background-color: $hy-primary;
+      }
+
+      /* 已完成 */
+      &.finish {
+       border: 1px solid $hy-primary;
+        :deep(.hy-icon) {
+          color: $hy-primary;
+        }
+      }
+
+      @include m(column) {
+        width: 20px;
+        height: 20px;
+      }
+
+      @include m(row) {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* 点形状 */
+      @include m(dot) {
+        @include e(item) {
+          width: 10px;
+          height: 10px;
+          border-radius: $hy-radius-circle;
+          background-color: $hy-info;
+          border: none;
+        }
+        @include e(finish) {
+          background-color: $hy-primary;
+        }
+        @include e(process) {
+          background-color: $hy-primary;
+        }
+      }
+
+      @include e(circle) {
+        width: 20px;
+        height: 20px;
+        /* #ifndef APP-NVUE */
+        box-sizing: border-box;
+        flex-shrink: 0;
+        /* #endif */
+        border-radius: $hy-radius-semicircle;
+        border: $hy-border-line;
+        @include flex(row);
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s;
+
+        @include e(text) {
+          color: $hy-text-color--grey;
+          font-size: 11px;
+          @include flex(row);
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          line-height: 11px;
+        }
+      }
+    }
+
+    @include e(content) {
+      @include flex;
+      flex: 1;
+
+      @include e(title) {
+        line-height: 25px;
+        font-size: 30rpx;
+        @include m(active) {
+          color: $hy-primary;
+          font-size: 34rpx;
+        }
+
+        @include m(error) {
+          color: $hy-error;
+        }
+      }
+
+      @include m(row) {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      @include m(column) {
+        flex-direction: column;
+        justify-content: flex-start;
+        margin-left: $hy-border-margin-padding-sm;
+        min-height: 60px;
+      }
+
+      @include m(date) {
+        font-size: 24rpx;
+        color: #999;
+      }
+    }
+
+    /* 线条样式 */
+    @include e(line) {
+      position: absolute;
+      background: $hy-background--line;
+
+      &.finish {
+        background-color: $hy-primary;
+      }
+      &.process {
+        background-color: $hy-primary;
+      }
+      &.error {
+        background-color: $hy-error;
+      }
+      //&.wait {
+      //  background: $hy-background--track;
+      //}
+
+      @include m(row) {
+        height: 1px;
+      }
+
+      @include m(column) {
+        width: 1px;
+      }
+    }
+  }
+}

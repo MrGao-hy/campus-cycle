@@ -1,0 +1,86 @@
+@use "../../libs/css/mixin" as *;
+@use "../../libs/css/theme" as *;
+
+@include b(input) {
+  @include flex(row);
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  color: $hy-text-color;
+  
+  @include e(border) {
+  	border: $hy-border-line;
+  }
+
+  @include e(radius, square) {
+    border-radius: 4px;
+  }
+
+  @include e(disabled) {
+    background-color: $hy-background--disabled;
+    color: $hy-text-color--disabled;
+    :deep(.hy-icon) {
+      color: $hy-text-color--disabled;
+    }
+
+    &-text {
+      color: $hy-text-color--disabled !important;
+    }
+  }
+
+  @include e(no-radius){
+    border-radius: 0;
+  }
+
+  @include e(circle) {
+    border-radius: 100px;
+  }
+
+  @include e(content) {
+    flex: 1;
+    @include flex(row);
+    align-items: center;
+    justify-content: space-between;
+
+    @include m(field-wrapper) {
+      position: relative;
+      @include flex(row);
+      flex: 1;
+      margin-right: $hy-border-margin-padding-base;
+
+      @include e(field) {
+        background: transparent;
+        line-height: 26px;
+        text-align: left;
+        height: 24px;
+        font-size: 15px;
+        flex: 1;
+        color: $hy-text-color;
+        caret-color: $hy-text-color;
+      }
+
+      :deep(.input-placeholder) {
+        color: $hy-text-color--placeholder;
+      }
+    }
+
+    @include m(clear) {
+      width: 20px;
+      height: 20px;
+      border-radius: 100px;
+      background-color: $hy-background--track;
+      @include flex(row);
+      align-items: center;
+      justify-content: center;
+      transform: scale(0.82);
+    }
+
+    @include m(subfix-icon) {
+      margin-left: $hy-border-margin-padding-sm;
+    }
+
+    @include m(prefix-icon) {
+      margin-right: $hy-border-margin-padding-sm;
+    }
+  }
+}

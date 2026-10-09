@@ -1,0 +1,78 @@
+@use "../../libs/css/theme" as *;
+@use "../../libs/css/mixin" as *;
+
+@include b(tabs) {
+  @include e(wrapper) {
+    @include flex;
+    align-items: center;
+
+    @include m(scroll-view) {
+      @include flex;
+      flex: 1;
+
+      @include e(wrapper) {
+        flex: 1;
+        /* #ifndef APP-NVUE */
+        overflow: auto hidden;
+        /* #endif */
+      }
+    }
+
+    @include m(nav) {
+      @include flex;
+      position: relative;
+
+      @include e(item) {
+        height: 44px;
+        padding: 0 11px;
+        @include flex;
+        align-items: center;
+        justify-content: center;
+        /* #ifdef H5 */
+        cursor: pointer;
+        /* #endif */
+        flex-shrink: 0;
+
+        @include m(disabled) {
+          /* #ifdef H5 */
+          cursor: not-allowed;
+          /* #endif */
+        }
+
+        @include m(active) {
+          .hy-tabs__wrapper__nav__item--text {
+            color: $hy-text-color;
+          }
+        }
+
+        @include m(text) {
+          font-size: 15px;
+          color: $hy-text-color;
+          white-space: nowrap;
+
+          @include e(disabled) {
+            color: $hy-background--disabled !important;
+          }
+        }
+      }
+
+      @include e(line) {
+        height: 3px;
+        background: $hy-primary;
+        width: 30px;
+        position: absolute;
+        bottom: 2px;
+        border-radius: $hy-radius-semicircle;
+        transition-property: transform;
+        transition-duration: 300ms;
+      }
+    }
+  }
+}
+
+.swiper-item {
+  width: 100%;
+  height: 100%;
+  @include flex(column);
+  box-sizing: border-box;
+}

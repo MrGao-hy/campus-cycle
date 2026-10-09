@@ -1,0 +1,253 @@
+<template>
+    <view :class="['hy-code-input', customClass]">
+        <view
+            :class="itemClass(index)"
+            :style="[itemStyle(index)]"
+            v-for="(item, index) in codeLength"
+            :key="index"
+        >
+            <view
+                class="hy-code-input--item__dot"
+                v-if="dot && current > index"
+                :style="{ color: color }"
+            ></view>
+            <text
+                v-else
+                class="hy-code-input--item__text"
+                :style="{
+                    fontSize: addUnit(fontSize),
+                    fontWeight: bold ? 'bold' : 'normal',
+                    color: color
+                }"
+            >
+                {{ codeArray[index] }}
+            </text>
+        </view>
+        <input
+            :disabled="disabledKeyboard"
+            type="number"
+            :focus="focus"
+            :value="inputValue"
+            :maxlength="maxlength"
+            :adjustPosition="adjustPosition"
+            class="hy-code-input__input"
+            @input="inputHandler"
+            :style="{
+                height: boxSize
+            }"
+            @focus="handleFocus"
+            @blur="handleBlur"
+        />
+    </view>
+</template>
+
+<script lang="ts">
+export default {
+    name: 'hy-code-input',
+    options: {
+        addGlobalClass: true,
+        virtualHost: true,
+        styleIsolation: 'shared'
+    }
+}
+</script>
+
+<script setup lang="ts">
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
+import type { CSSProperties } from 'vue'
+import type { ICodeInputEmits } from './typing'
+import { addUnit, getPx } from '../../libs'
+import type { InputOnInputEvent } from '@uni-helper/uni-types'
+import codeInputProps from './props'
+
+/**
+ * 一般用于验证用户短信验证码的场景，也可以结合华玥的键盘组件使用
+ * @displayName hy-code-input
+ */
+defineOptions({})
+
+const props = defineProps(codeInputProps)
+const emit = defineEmits<ICodeInputEmits>()
+
+const current = ref(0)
+const inputValue = ref('')
+const isFocus = ref(props.focus)
+let timer: ReturnType<typeof setInterval>
+const opacity = ref(1)
+const borderWidth = computed(() => (props.hairline ? '0.5px' : '2px'))
+const lineHeight = computed(() => (props.hairline ? '2px' : '4px'))
+const boxSize = addUnit(props.size)
+
+watch(
+    () => props.modelValue,
+    (newValue: string | number | undefined, oldValue: string | number | undefined) => {
+        const newValueStr = String(newValue).substring(0, props.maxlength)
+        inputValue.value = newValueStr
+        current.value = newValueStr.length
+
+        // 当值从外部更新时（如键盘组件），也触发change事件
+        if (newValue !== oldValue) {
+            emit('change', newValueStr)
+        }
+
+        if (String(inputValue.value).length >= Number(props.maxlength)) {
+            emit('finish', inputValue.value)
+        }
+    },
+
+    { immediate: true }
+)
+
+watch(
+    () => isFocus.value,
+    (newValue) => {
+        // #ifdef APP-NVUE
+        if (newValue) {
+            timer = setInterval(() => {
+                opacity.value = Math.abs(opacity.value - 1)
+            }, 600)
+        } else {
+            clearInterval(timer)
+        }
+        // #endif
+    }
+)
+
+onUnmounted(() => {
+    // #ifdef APP-NVUE
+    clearInterval(timer)
+    // #endif
+})
+
+// 根据长度，循环输入框的个数，因为头条小程序数值不能用于v-for
+const codeLength = computed(() => {
+    return new Array(Number(props.maxlength))
+})
+// 循环item的样式
+const itemStyle = computed(() => {
+    return (index: number) => {
+        const style: CSSProperties = {
+            width: boxSize,
+            height: boxSize
+        }
+        if (props.borderColor) {
+            style['--hy-border-color'] = props.borderColor
+        }
+        // 盒子模式下，需要额外进行处理
+        if (props.mode === 'box' && props.border) {
+            // 设置盒子的边框，如果是细边框，则设置为1px宽度
+            style.borderWidth = borderWidth.value
+            style.borderStyle = 'solid'
+            style.borderColor = props.borderColor
+            // 如果盒子间距为0的话
+            if (getPx(props.space) === 0) {
+                // 给第一和最后一个盒子设置圆角
+                if (index === 0) {
+                    style.borderTopLeftRadius = '6px'
+                    style.borderBottomLeftRadius = '6px'
+                }
+                if (index === codeLength.value.length - 1) {
+                    style.borderTopRightRadius = '6px'
+                    style.borderBottomRightRadius = '6px'
+                }
+                // 最后一个盒子的右边框需要保留
+                if (index !== codeLength.value.length - 1) {
+                    style.borderRight = 'none'
+                }
+            }
+        }
+        if (index !== codeLength.value.length - 1) {
+            // 设置验证码字符之间的距离，通过margin-right设置，最后一个字符，无需右边框
+            style.marginRight = addUnit(props.space)
+        } else {
+            // 最后一个盒子的有边框需要保留
+            style.marginRight = 0
+        }
+
+        return style
+    }
+})
+
+const itemClass = computed(() => {
+    return (index: number) => {
+        return [
+            'hy-code-input--item',
+            props.border ? `hy-code-input--item__${props.mode}` : 'hy-code-input--item__no',
+            current.value > index &&
+                getPx(props.space) != 0 &&
+                props.border &&
+                `hy-code-input--item__${props.mode}__border`,
+            isFocus.value &&
+                current.value === index &&
+                getPx(props.space) != 0 &&
+                (props.border
+                    ? `hy-code-input--item__${props.mode}__active`
+                    : 'hy-code-input--item__no--active')
+        ]
+    }
+})
+
+/**
+ * 将输入的值，转为数组，给item历遍时，根据当前的索引显示数组的元素
+ */
+const codeArray = computed(() => {
+    return String(inputValue.value).split('')
+})
+
+/**
+ * 输入框获取焦点时触发
+ * */
+const handleFocus = () => {
+    isFocus.value = true
+    emit('focus')
+}
+
+/**
+ * 输入框失去焦点时触发
+ * */
+const handleBlur = () => {
+    isFocus.value = false
+    emit('blur')
+}
+
+/**
+ * 监听输入框的值发生变化
+ * */
+const inputHandler = (e: InputOnInputEvent) => {
+    const value = e.detail.value
+    inputValue.value = value
+    // 是否允许输入“.”符号
+    if (props.disabledDot) {
+        nextTick(() => {
+            inputValue.value = value.replace('.', '')
+        })
+    }
+    // 未达到maxlength之前，发送change事件，达到后发送finish事件
+    emit('change', value)
+    // 修改通过v-model双向绑定的值
+    emit('update:modelValue', value)
+}
+</script>
+
+<style lang="scss">
+@use './index.scss';
+@use '../../libs/css/mixin';
+@use '../../libs/css/theme';
+@include mixin.b(code-input) {
+    @include mixin.m(item) {
+        &__box {
+            &__active {
+                width: v-bind(boxSize);
+                height: v-bind(boxSize);
+                border-width: v-bind(borderWidth);
+            }
+        }
+        &__line {
+            &::after {
+                height: v-bind(lineHeight);
+                background-color: theme.$hy-border-color;
+            }
+        }
+    }
+}
+</style>

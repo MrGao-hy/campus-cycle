@@ -1,0 +1,53 @@
+@use "../../libs/css/theme" as *;
+@use "../../libs/css/mixin" as *;
+
+@include b(textarea) {
+  border-radius: $hy-radius-sm;
+  position: relative;
+  @include flex;
+  flex: 1;
+  padding: $hy-border-margin-padding-sm;
+
+  @include e(border) {
+    border: $hy-border-line;
+  }
+
+  @include e(radius) {
+    border-radius: $hy-radius-sm;
+  }
+
+  @include e(no-radius) {
+    border-radius: $hy-radius-no;
+  }
+
+  @include e(disabled) {
+    background-color: $hy-background--disabled;
+    color: $hy-text-color--disabled !important;
+
+    &-text {
+      color: $hy-text-color--disabled !important;
+    }
+  }
+
+  @include e(field) {
+    min-height: 50rpx;
+    max-height: 200rpx;
+    color: $hy-text-color;
+    caret-color: $hy-text-color;
+    flex: 1;
+    font-size: 15px;
+    width: 100%;
+    background-color: transparent;
+    border: none;
+  }
+
+  @include e(count) {
+    position: absolute;
+    right: 5px;
+    bottom: 2px;
+    font-size: 12px;
+    background-color: $hy-background--3;
+    padding: 1px 4px;
+    border-radius: $hy-radius-sm;
+  }
+}
