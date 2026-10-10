@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import GoodsCard from '@/components/GoodsCard.vue';
+import GoodsSkeleton from '@/components/GoodsSkeleton.vue';
 import { getGoodsListApi, confirmSchoolApi, GOODS_PAGE_SIZE } from '@/api';
 import { useUserStore } from '@/store';
 import { useToast } from '@/utils/toast';
@@ -62,9 +63,7 @@ const loadList = async (append = false) => {
             ? (res as unknown as Goods[])
             : (res?.list ?? []);
         list.value = append ? list.value.concat(rows) : rows;
-        hasMore.value = Array.isArray(res)
-            ? false
-            : (res?.hasMore ?? false);
+        hasMore.value = Array.isArray(res) ? false : (res?.hasMore ?? false);
     } catch {
         // 追加失败保留已加载数据；整页刷新失败才清空
         if (!append) {
@@ -149,7 +148,6 @@ const goProfile = () => {
 const goSecurity = () => {
     uni.navigateTo({ url: '/pages/security/Index' });
 };
-
 </script>
 
 <template>
@@ -287,13 +285,7 @@ const goSecurity = () => {
                 @refresherrefresh="onRefresh"
                 @scrolltolower="onScrollToLower"
             >
-                <view v-if="loading" class="home__skeleton">
-                    <view v-for="i in 4" :key="i" class="home__skeleton-card">
-                        <view class="home__skeleton-img"></view>
-                        <view class="home__skeleton-title"></view>
-                        <view class="home__skeleton-price"></view>
-                    </view>
-                </view>
+                <goods-skeleton v-if="loading"></goods-skeleton>
                 <view v-else-if="list.length" class="home__list-wrap">
                     <view class="home__list">
                         <goods-card
@@ -448,81 +440,7 @@ const goSecurity = () => {
         }
     }
 
-    &__loading {
-        padding: 24rpx;
-    }
-
-    /* 商品卡骨架屏（自绘：与 GoodsCard 同尺寸同间距，蓝主题淡色呼吸动画；
-       弃用 hy-skeleton 段落式——与商品列表形态不符，且第三方组件在 MP 端渲染不可控） */
-    &__skeleton {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        padding: 24rpx 24rpx 0;
-
-        &-card {
-            width: calc(50% - 10rpx);
-            margin-bottom: 20rpx;
-            background: #ffffff;
-            border-radius: 16rpx;
-            padding: 20rpx;
-            box-sizing: border-box;
-        }
-
-        &-img {
-            width: 100%;
-            height: 340rpx;
-            border-radius: 12rpx;
-            background: linear-gradient(
-                90deg,
-                #f0f2f6 25%,
-                #e6e9f2 37%,
-                #f0f2f6 63%
-            );
-            background-size: 400% 100%;
-            animation: home-skeleton-shimmer 1.4s ease infinite;
-        }
-
-        &-title {
-            margin-top: 16rpx;
-            height: 28rpx;
-            width: 76%;
-            border-radius: 8rpx;
-            background: linear-gradient(
-                90deg,
-                #f0f2f6 25%,
-                #e6e9f2 37%,
-                #f0f2f6 63%
-            );
-            background-size: 400% 100%;
-            animation: home-skeleton-shimmer 1.4s ease infinite;
-        }
-
-        &-price {
-            margin-top: 14rpx;
-            height: 30rpx;
-            width: 42%;
-            border-radius: 8rpx;
-            background: linear-gradient(
-                90deg,
-                #f0f2f6 25%,
-                #e6e9f2 37%,
-                #f0f2f6 63%
-            );
-            background-size: 400% 100%;
-            animation: home-skeleton-shimmer 1.4s ease infinite 0.15s;
-        }
-    }
-
-    @keyframes home-skeleton-shimmer {
-        0% {
-            background-position: 100% 50%;
-        }
-        100% {
-            background-position: 0 50%;
-        }
-    }
-
+    /* 商品卡骨架屏已抽离为 GoodsSkeleton 公共组件（首页 / 我的发布共用） */
     &__list {
         display: flex;
         flex-wrap: wrap;

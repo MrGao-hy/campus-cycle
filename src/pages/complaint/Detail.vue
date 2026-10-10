@@ -11,7 +11,7 @@ import {
     COMPLAINT_STATUS_TEXT,
     type ComplaintRow,
 } from '@/types';
-import type { StepListVo } from '@/uni_modules/hy-app-ui/components/hy-steps/typing';
+import type { StepListVo } from '@hy-app/ui';
 import { onLoad, onShow } from '@dcloudio/uni-app';
 import { computed, ref } from 'vue';
 

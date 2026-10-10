@@ -344,7 +344,7 @@ const fmtDate = (ts: number) => dayjs(ts).format('YYYY-MM-DD HH:mm');
                                 peerContact[item.key]
                             }}</text>
                             <hy-button
-                                v-if="item.key === 'phone'"
+                                v-if="item.key === 'contactPhone'"
                                 text="拨打"
                                 type="primary"
                                 size="mini"

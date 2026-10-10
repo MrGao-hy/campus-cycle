@@ -51,7 +51,7 @@ const config: IConfig = {
     // 连不到 Mac 上的后端 → 报「网络错误」）。换网络后改这里；模拟器同样可用。
     // 注意：后端端口是 8080（Nacos 控制台在 8848，勿混淆）。
     develop: {
-        baseUrl: 'http://192.168.3.10:8080',
+        baseUrl: 'http://127.0.0.1:9000',
         decoBaseUrl: 'https://xryy.hfykcloud.com:99/pamirs', // 装修接口地址
         // 已配置真实小程序 AppID/AppSecret（wx1d337ce3ce3bae15），走真实 code2session
         wxMock: false,
@@ -70,7 +70,6 @@ const config: IConfig = {
     },
     // #endif
 };
-
 
 // #ifndef H5 || APP_PLUS
 apiConfig = config[mini_env];

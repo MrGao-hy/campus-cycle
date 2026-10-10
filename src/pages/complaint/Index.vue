@@ -11,10 +11,7 @@ import {
 } from '@/types';
 import { onLoad } from '@dcloudio/uni-app';
 import { computed, ref } from 'vue';
-import type {
-    FileVo,
-    UploadFileParams,
-} from '@/uni_modules/hy-app-ui/components/hy-upload/typing';
+import type { FileVo, UploadFileParams } from '@hy-app/ui';
 import type { OrderRow } from '@/types';
 
 definePage({
@@ -100,10 +97,7 @@ const submit = async () => {
         <view class="complaint">
             <!-- 通用举报提示 -->
             <view v-if="!row" class="complaint__tip">
-                <hy-icon
-                    name="/static/icons/order.png"
- :size="16"
-                />
+                <hy-icon name="/static/icons/order.png" :size="16" />
                 <text
                     >建议从「订单详情 →
                     投诉与维权」进入，关联订单后平台可快速定位核实；通用举报可直接提交</text
@@ -182,7 +176,7 @@ const submit = async () => {
                             <view class="complaint__upload-add-icon">
                                 <hy-icon
                                     name="/static/icons/camera.png"
- :size="26"
+                                    :size="26"
                                 ></hy-icon>
                             </view>
                             <text class="complaint__upload-add-text"

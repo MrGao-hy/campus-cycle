@@ -1,9 +1,0 @@
-@use "../../libs/css/mixin" as *;
-@use "../../libs/css/theme" as *;
-
-@include b(line) {
-  /* #ifndef APP-NVUE */
-  vertical-align: middle;
-  /* #endif */
-  border-color: $hy-border-color;
-}

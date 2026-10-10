@@ -1,7 +1,7 @@
 import { createSSRApp } from 'vue';
 import App from './App.vue';
 import pinia from '@/store';
-import { useShare } from '@/uni_modules/hy-app-ui';
+import { useShare } from '@hy-app/ui';
 
 export function createApp() {
     const app = createSSRApp(App);

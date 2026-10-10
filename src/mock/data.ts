@@ -42,10 +42,10 @@ export const users: Record<string, UserProfile> = {
         creditScore: 96,
         successCount: 1,
         contact: {
-            phone: '13800001000',
-            qq: '510001000',
-            wechat: 'cycle_pd10001',
-            email: 'pidan@hust.edu.cn',
+            contactPhone: '13800001000',
+            contactQq: '510001000',
+            contactWechat: 'cycle_pd10001',
+            contactEmail: 'pidan@hust.edu.cn',
         },
     },
     u_20001: {
@@ -55,10 +55,10 @@ export const users: Record<string, UserProfile> = {
         creditScore: 92,
         successCount: 5,
         contact: {
-            phone: '13800002000',
-            qq: '510002000',
-            wechat: 'cycle_li2001',
-            email: 'li@hust.edu.cn',
+            contactPhone: '13800002000',
+            contactQq: '510002000',
+            contactWechat: 'cycle_li2001',
+            contactEmail: 'li@hust.edu.cn',
         },
     },
     u_20002: {
@@ -68,10 +68,10 @@ export const users: Record<string, UserProfile> = {
         creditScore: 98,
         successCount: 3,
         contact: {
-            phone: '13800002001',
-            qq: '510002001',
-            wechat: 'cycle_zhang02',
-            email: 'zhang@hust.edu.cn',
+            contactPhone: '13800002001',
+            contactQq: '510002001',
+            contactWechat: 'cycle_zhang02',
+            contactEmail: 'zhang@hust.edu.cn',
         },
     },
     u_20003: {
@@ -81,10 +81,10 @@ export const users: Record<string, UserProfile> = {
         creditScore: 90,
         successCount: 8,
         contact: {
-            phone: '13800002002',
-            qq: '510002002',
-            wechat: 'cycle_wang03',
-            email: 'wang@hust.edu.cn',
+            contactPhone: '13800002002',
+            contactQq: '510002002',
+            contactWechat: 'cycle_wang03',
+            contactEmail: 'wang@hust.edu.cn',
         },
     },
 };

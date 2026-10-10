@@ -10,6 +10,7 @@ type _LocationUrl =
   "/pages/complaint/Detail" |
   "/pages/complaint/Index" |
   "/pages/complaint/Record" |
+  "/pages/contact/Index" |
   "/pages/fee/Index" |
   "/pages/goods/Apply" |
   "/pages/goods/Detail" |

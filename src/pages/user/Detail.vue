@@ -43,7 +43,7 @@ const goChat = () => {
     if (!detail.value) return;
     const profile = detail.value.profile;
     // 进商品发起会话：取该用户最新在售商品作为会话锚点
-    const goods = detail.value.onSaleGoods[0];
+    const goods = detail.value.goods.find(g => g.status === 'ON_SALE');
     if (goods) {
         uni.navigateTo({ url: `/pages/chat/Detail?goodsId=${goods.id}` });
         return;
@@ -75,13 +75,21 @@ const goChat = () => {
                             />
                         </view>
                         <view class="ud__school">
-                            <hy-icon name="/static/icons/school-cap.png" color="var(--hy-info-color)" :size="16" />
-                            <text>{{ detail.profile.schoolName || '未设置学校' }}</text>
+                            <hy-icon
+                                name="/static/icons/school-cap.png"
+                                color="var(--hy-info-color)"
+                                :size="16"
+                            />
+                            <text>{{
+                                detail.profile.schoolName || '未设置学校'
+                            }}</text>
                         </view>
                         <view class="ud__stats">
                             <text>信用分 {{ detail.profile.creditScore }}</text>
                             <text class="ud__stats-divider">|</text>
-                            <text>成交 {{ detail.profile.successCount }} 单</text>
+                            <text
+                                >成交 {{ detail.profile.successCount }} 单</text
+                            >
                         </view>
                     </view>
                 </view>
@@ -94,20 +102,22 @@ const goChat = () => {
                 />
             </view>
 
-            <!-- 在售商品 -->
+            <!-- 名下商品（全部状态，非在售置灰展示） -->
             <view class="ud__section">
                 <view class="ud__section-title">
-                    在售商品（{{ detail.onSaleGoods.length }}）
+                    {{ isSelf ? '我的商品' : 'TA 的商品' }}（{{
+                        detail.goods.length
+                    }}）
                 </view>
-                <view v-if="detail.onSaleGoods.length" class="ud__goods">
+                <view v-if="detail.goods.length" class="ud__goods">
                     <GoodsCard
-                        v-for="goods in detail.onSaleGoods"
+                        v-for="goods in detail.goods"
                         :key="goods.id"
                         :goods="goods"
                         @click="goGoodsDetail(goods.id)"
                     />
                 </view>
-                <view v-else class="ud__empty">暂无在售商品</view>
+                <view v-else class="ud__empty">暂无商品</view>
             </view>
 
             <!-- 收到的评价 -->
@@ -138,7 +148,9 @@ const goChat = () => {
                                 active-color="#FFB300"
                             ></hy-rate>
                         </view>
-                        <view class="ud__review-content">{{ review.content }}</view>
+                        <view class="ud__review-content">{{
+                            review.content
+                        }}</view>
                         <view class="ud__review-time">{{
                             fmtTime(review.time)
                         }}</view>

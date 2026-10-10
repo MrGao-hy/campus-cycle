@@ -1,10 +1,10 @@
 import http from '@/api/request';
-import type { Goods, GoodsReview, PageResult, UserProfile } from '@/types';
+import type { IGoods, GoodsReview, IPage, UserProfile } from '@/types';
 
 /** 首页分页每页条数（后端 Nacos campus.goods.page-size 默认 20，保持一致） */
 export const GOODS_PAGE_SIZE = 20;
 
-export interface IGoodsDetail extends Goods {
+export interface IGoodsDetail extends IGoods {
     seller: UserProfile;
     reviews: GoodsReview[];
 }
@@ -21,8 +21,8 @@ export const getGoodsListApi = (params: {
     pageNum?: number;
     /** 每页条数，传 0/缺省时后端取 Nacos 中的 campus.goods.page-size */
     pageSize?: number;
-}): Promise<PageResult<Goods>> => {
-    return http.get<PageResult<Goods>>('/goods/list', params);
+}): Promise<IPage<IGoods>> => {
+    return http.get<IPage<IGoods>>('/goods/list', params);
 };
 
 /** 商品详情（含卖家信息与评价） */
@@ -31,8 +31,8 @@ export const getGoodsDetailApi = (id: string): Promise<IGoodsDetail> => {
 };
 
 /** 我发布的商品（后端按登录态取） */
-export const getMyGoodsApi = (): Promise<Goods[]> => {
-    return http.get<Goods[]>('/goods/mine');
+export const getMyGoodsApi = (): Promise<IGoods[]> => {
+    return http.get<IGoods[]>('/goods/mine');
 };
 
 /** 发布商品（卖家有未结清手续费时禁止发布） */
@@ -45,8 +45,8 @@ export const publishGoodsApi = (data: {
     condition: string;
     description: string;
     images: string[];
-}): Promise<Goods> => {
-    return http.post<Goods>('/goods/publish', data);
+}): Promise<IGoods> => {
+    return http.post<IGoods>('/goods/publish', data);
 };
 
 /** 买家提交购买申请（平台创建订单：待卖家确认） */

@@ -1,9 +1,0 @@
-@use "../../libs/css/mixin" as *;
-@use "../../libs/css/theme" as *;
-
-@include b(count-down) {
-  @include e(text) {
-    font-size: 15px;
-    line-height: 22px;
-  }
-}

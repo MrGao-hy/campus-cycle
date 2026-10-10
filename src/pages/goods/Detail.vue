@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import TheRootPages from '@/components/TheRootPages.vue';
 import SafetyTips from '@/components/SafetyTips.vue';
-import { getGoodsDetailApi, startConversationApi } from '@/api';
+import {
+    getGoodsDetailApi,
+    startConversationApi,
+    offShelfGoodsApi,
+    onShelfGoodsApi,
+    deleteGoodsApi,
+} from '@/api';
 import { useUserStore } from '@/store';
-import { useMessage, type SwiperVo } from '@/uni_modules/hy-app-ui';
+import { useMessage, type SwiperVo } from '@hy-app/ui';
 import { useToast } from '@/utils/toast';
 import { fmtTime } from '@/utils/format';
 import { GOODS_STATUS_TEXT } from '@/types';
@@ -21,7 +27,7 @@ const toast = useToast();
 const message = useMessage();
 const userStore = useUserStore();
 
-const detail = ref<IGoodsDetail | null>(null);
+const detail = ref<IGoodsDetail>();
 const current = ref(0);
 
 const isMine = computed(
@@ -33,6 +39,10 @@ const canBuy = computed(
 /** 自己发布的商品：在售状态下可下架 */
 const canOffShelf = computed(
     () => isMine.value && detail.value?.status === 'ON_SALE'
+);
+/** 自己发布的商品：已下架状态可重新上架 */
+const canOnShelf = computed(
+    () => isMine.value && detail.value?.status === 'OFF_SHELF'
 );
 /** 自己发布的商品：未售出才可删除 */
 const canDelete = computed(
@@ -75,13 +85,17 @@ const goApply = () => {
     uni.navigateTo({ url: `/pages/goods/Apply?id=${detail.value.id}` });
 };
 
-/** 下架 / 删除确认弹窗（message.confirm，确认后执行） */
-type ConfirmType = 'offShelf' | 'delete';
+/** 下架 / 上架 / 删除确认弹窗（message.confirm，确认后执行） */
+type ConfirmType = 'offShelf' | 'onShelf' | 'delete';
 
 const CONFIRM_META: Record<ConfirmType, { title: string; content: string }> = {
     offShelf: {
         title: '下架商品',
         content: '下架后买家将无法浏览该商品，确定下架吗？',
+    },
+    onShelf: {
+        title: '上架商品',
+        content: '上架后买家可重新浏览并购买该商品，确定上架吗？',
     },
     delete: {
         title: '删除商品',
@@ -103,6 +117,10 @@ const onConfirmAction = async (type: ConfirmType) => {
             await offShelfGoodsApi(goods.id);
             goods.status = 'OFF_SHELF';
             toast.success('商品已下架');
+        } else if (type === 'onShelf') {
+            await onShelfGoodsApi(goods.id);
+            goods.status = 'ON_SALE';
+            toast.success('商品已上架');
         } else {
             await deleteGoodsApi(goods.id);
             toast.success('商品已删除');
@@ -119,9 +137,9 @@ const previewImages = (index: number) => {
     uni.previewImage({ urls: detail.value.images, current: index });
 };
 
-/** 查看卖家主页（自己不跳） */
+/** 查看卖家主页 */
 const goSellerProfile = () => {
-    if (!detail.value || isMine.value) return;
+    if (!detail.value) return;
     uni.navigateTo({ url: `/pages/user/Detail?id=${detail.value.sellerId}` });
 };
 </script>
@@ -276,9 +294,9 @@ const goSellerProfile = () => {
                             @click="goApply"
                         ></hy-button>
                     </view>
-                    <!-- 自己发布的商品：下架 / 删除 -->
+                    <!-- 自己发布的商品：下架 / 上架 / 删除 -->
                     <view
-                        v-else-if="canOffShelf || canDelete"
+                        v-else-if="canOffShelf || canOnShelf || canDelete"
                         class="detail__footer-btns"
                     >
                         <hy-button
@@ -289,6 +307,15 @@ const goSellerProfile = () => {
                             type="warning"
                             :custom-style="{ flex: 1 }"
                             @click="onConfirmAction('offShelf')"
+                        ></hy-button>
+                        <hy-button
+                            v-else-if="canOnShelf"
+                            text="上架"
+                            shape="circle"
+                            plain
+                            type="primary"
+                            :custom-style="{ flex: 1 }"
+                            @click="onConfirmAction('onShelf')"
                         ></hy-button>
                         <hy-button
                             v-if="canDelete"
